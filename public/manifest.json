@@ -1,0 +1,38 @@
+{
+  "short_name": "Ppueri",
+  "name": "Ppueri - Prontuário Pediátrico & Puericultura",
+  "description": "Prontuário eletrônico pediátrico com curvas antropométricas OMS/SBP, acompanhamento do desenvolvimento, carteira vacinal e portal dos pais.",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "type": "image/svg+xml",
+      "sizes": "192x192 512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/",
+  "scope": "/",
+  "background_color": "#F0F9FF",
+  "theme_color": "#0F172A",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "categories": ["medical", "health", "productivity"],
+  "lang": "pt-BR",
+  "dir": "ltr",
+  "shortcuts": [
+    {
+      "name": "Agenda Pediátrica",
+      "short_name": "Agenda",
+      "description": "Visualizar compromissos e consultas do consultório",
+      "url": "/?tab=agenda",
+      "icons": [{ "src": "/icon.svg", "sizes": "192x192" }]
+    },
+    {
+      "name": "Portal dos Pais",
+      "short_name": "Pais",
+      "description": "Acessar prontuário e vacinas do filho",
+      "url": "/?role=paciente",
+      "icons": [{ "src": "/icon.svg", "sizes": "192x192" }]
+    }
+  ]
+}
