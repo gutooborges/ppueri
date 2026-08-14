@@ -1,5 +1,22 @@
 export type Role = 'medico' | 'paciente';
 
+export interface DoctorAccount {
+  id: string;
+  name: string;
+  email: string;
+  crm: string;
+  passwordHash: string;
+  createdAt: string;
+}
+
+export interface AuthSession {
+  doctorId: string;
+  doctorName: string;
+  doctorCrm: string;
+  email: string;
+  expiresAt: string;
+}
+
 export type Gender = 'masculino' | 'feminino';
 
 export type AgeBracket = 
@@ -11,6 +28,7 @@ export type AgeBracket =
 
 export interface Patient {
   id: string;
+  doctorId: string;
   name: string;
   birthDate: string; // YYYY-MM-DD
   gender: Gender;
@@ -135,6 +153,7 @@ export interface CarePlan {
 
 export interface Consultation {
   id: string;
+  doctorId: string;
   patientId: string;
   doctorName: string;
   doctorCrm: string;
@@ -180,6 +199,7 @@ export type AppointmentStatus = 'agendada' | 'concluida' | 'cancelada';
 
 export interface Appointment {
   id: string;
+  doctorId: string;
   patientId: string;
   patientName: string;
   motherName: string;

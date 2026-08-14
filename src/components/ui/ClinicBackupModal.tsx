@@ -18,6 +18,7 @@ interface ClinicBackupModalProps {
     vaccinesMap: Record<string, VaccineRecord[]>,
     notifications: PediatricNotification[]
   ) => void;
+  doctorId: string;
 }
 
 export const ClinicBackupModal: React.FC<ClinicBackupModalProps> = ({
@@ -29,6 +30,7 @@ export const ClinicBackupModal: React.FC<ClinicBackupModalProps> = ({
   vaccinesMap,
   notifications,
   onRestoreData,
+  doctorId,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [statusMessage, setStatusMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
@@ -37,7 +39,7 @@ export const ClinicBackupModal: React.FC<ClinicBackupModalProps> = ({
 
   const handleExport = () => {
     try {
-      exportClinicBackup(patients, consultations, appointments, vaccinesMap, notifications);
+      exportClinicBackup(doctorId, patients, consultations, appointments, vaccinesMap, notifications);
       setStatusMessage({ text: 'Backup exportado com sucesso! Arquivo JSON salvo no seu dispositivo.', type: 'success' });
     } catch (err) {
       setStatusMessage({ text: 'Falha ao exportar backup clínico.', type: 'error' });
@@ -52,7 +54,7 @@ export const ClinicBackupModal: React.FC<ClinicBackupModalProps> = ({
     reader.onload = (event) => {
       try {
         const content = event.target?.result as string;
-        const restored = importClinicBackup(content);
+        const restored = importClinicBackup(content, doctorId);
         if (restored) {
           onRestoreData(
             restored.patients,
@@ -77,8 +79,8 @@ export const ClinicBackupModal: React.FC<ClinicBackupModalProps> = ({
   };
 
   const handleResetDemo = () => {
-    if (window.confirm('Tem certeza de que deseja restaurar os dados de demonstração iniciais? As alterações locais serão substituídas.')) {
-      resetToDemoData();
+    if (window.confirm('Tem certeza de que deseja limpar seus dados e restaurar os pacientes de demonstração? Suas alterações locais serão substituídas.')) {
+      resetToDemoData(doctorId);
       window.location.reload();
     }
   };

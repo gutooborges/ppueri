@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Role, Patient, Consultation, Appointment, VaccineRecord, PediatricNotification } from '../../types/ppueri';
-import { Stethoscope, User, Key, Bell, Database } from 'lucide-react';
+import { Stethoscope, User, Bell, Database, LogOut, ChevronDown } from 'lucide-react';
 import { PpueriBrand } from './PpueriLogo';
 import { InstallPwaBanner } from './InstallPwaBanner';
 import { ClinicBackupModal } from './ClinicBackupModal';
@@ -8,6 +8,9 @@ import { ClinicBackupModal } from './ClinicBackupModal';
 interface HeaderProps {
   activeRole: Role;
   onRoleChange: (role: Role) => void;
+  doctorName: string;
+  doctorCrm: string;
+  onLogout: () => void;
   patients: Patient[];
   selectedPatientId: string;
   onSelectPatient: (patientId: string) => void;
@@ -27,11 +30,15 @@ interface HeaderProps {
     vaccinesMap: Record<string, VaccineRecord[]>,
     notifications: PediatricNotification[]
   ) => void;
+  doctorId: string;
 }
 
 export const Header: React.FC<HeaderProps> = ({
   activeRole,
   onRoleChange,
+  doctorName,
+  doctorCrm,
+  onLogout,
   patients,
   selectedPatientId,
   unreadNotificationCount = 0,
@@ -41,20 +48,24 @@ export const Header: React.FC<HeaderProps> = ({
   vaccinesMap = {},
   notifications = [],
   onRestoreData,
+  doctorId,
 }) => {
   const [isBackupModalOpen, setIsBackupModalOpen] = useState(false);
-  const selectedPatient = patients.find((p) => p.id === selectedPatientId);
+  const [showDoctorMenu, setShowDoctorMenu] = useState(false);
+
+  // Short display name (first word after "Dr(a)." or just first name)
+  const shortName = doctorName.replace(/^Dr[a]?\.\s*/i, '').split(' ')[0];
 
   return (
     <>
       <header className="sticky top-0 z-40 bg-slate-900/95 backdrop-blur-md text-white border-b border-sky-900/60 shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-3 sm:gap-4">
-          {/* Nova Identidade Visual: Símbolo em contêiner quadrado + Texto "Ppueri" logo ao lado */}
+          {/* Brand */}
           <div className="flex items-center">
             <PpueriBrand size="md" textColor="white" iconVariant="white" />
           </div>
 
-          {/* Role Switcher Pills */}
+          {/* Role Switcher */}
           <div className="bg-sky-950/80 backdrop-blur-md p-1 rounded-xl border border-sky-800/60 flex items-center gap-1 shadow-inner">
             <button
               onClick={() => onRoleChange('medico')}
@@ -82,33 +93,22 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
           </div>
 
-          {/* Right Actions: PWA Install Button, Backup Modal, Patient Key, Notifications */}
+          {/* Right Actions */}
           <div className="flex items-center gap-2 sm:gap-2.5">
-            {/* PWA Install Button */}
             <InstallPwaBanner variant="button" />
 
-            {/* Backup & Persistence Manager Button (Doctor Only) */}
             {activeRole === 'medico' && onRestoreData && (
               <button
                 onClick={() => setIsBackupModalOpen(true)}
                 className="p-2 bg-sky-950 hover:bg-sky-900 text-sky-300 hover:text-white rounded-xl transition-all border border-sky-800/80 active:scale-95 flex items-center gap-1.5 text-xs font-bold"
-                title="Backup e Persistência de Dados do Consultório"
+                title="Backup e Persistência de Dados"
               >
                 <Database className="w-3.5 h-3.5" />
                 <span className="hidden md:inline">Backup</span>
               </button>
             )}
 
-            {/* Patient Access Key indicator */}
-            {activeRole === 'paciente' && selectedPatient && (
-              <div className="hidden md:flex items-center gap-2 bg-sky-950/80 border border-sky-800/80 rounded-xl px-3 py-1 text-xs">
-                <Key className="w-3.5 h-3.5 text-cyan-400" />
-                <span className="text-sky-200">Código:</span>
-                <span className="font-mono font-bold text-sky-300">{selectedPatient.accessCode}</span>
-              </div>
-            )}
-
-            {/* Notification Center Trigger Button */}
+            {/* Notifications */}
             {onOpenNotifications && (
               <button
                 onClick={onOpenNotifications}
@@ -123,11 +123,52 @@ export const Header: React.FC<HeaderProps> = ({
                 )}
               </button>
             )}
+
+            {/* Doctor Account Menu */}
+            <div className="relative">
+              <button
+                onClick={() => setShowDoctorMenu((v) => !v)}
+                className="flex items-center gap-1.5 bg-sky-950 hover:bg-sky-900 border border-sky-800/80 rounded-xl px-2.5 py-1.5 transition-all active:scale-95"
+                title={`${doctorName} — ${doctorCrm}`}
+              >
+                <div className="w-6 h-6 rounded-lg bg-sky-600 flex items-center justify-center text-white font-extrabold text-[10px] shrink-0">
+                  {shortName.charAt(0)}
+                </div>
+                <span className="hidden md:block text-xs font-semibold text-sky-100 max-w-[100px] truncate">
+                  {shortName}
+                </span>
+                <ChevronDown className="w-3 h-3 text-sky-400" />
+              </button>
+
+              {showDoctorMenu && (
+                <>
+                  {/* Backdrop */}
+                  <div
+                    className="fixed inset-0 z-40"
+                    onClick={() => setShowDoctorMenu(false)}
+                  />
+                  <div className="absolute right-0 top-full mt-2 z-50 bg-slate-900 border border-sky-800/60 rounded-xl shadow-2xl min-w-[220px] overflow-hidden">
+                    <div className="p-3 border-b border-sky-900/60">
+                      <p className="text-xs font-extrabold text-white truncate">{doctorName}</p>
+                      <p className="text-[11px] text-sky-300 truncate mt-0.5">{doctorCrm}</p>
+                    </div>
+                    <div className="p-1">
+                      <button
+                        onClick={() => { setShowDoctorMenu(false); onLogout(); }}
+                        className="w-full flex items-center gap-2.5 px-3 py-2.5 text-xs font-semibold text-red-400 hover:text-red-300 hover:bg-red-950/40 rounded-lg transition-all"
+                      >
+                        <LogOut className="w-3.5 h-3.5" />
+                        Sair da Conta
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </div>
       </header>
 
-      {/* Backup & Data Persistence Modal */}
       {onRestoreData && (
         <ClinicBackupModal
           isOpen={isBackupModalOpen}
@@ -138,6 +179,7 @@ export const Header: React.FC<HeaderProps> = ({
           vaccinesMap={vaccinesMap}
           notifications={notifications}
           onRestoreData={onRestoreData}
+          doctorId={doctorId}
         />
       )}
     </>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Role, Patient, Consultation, VaccineRecord, PediatricNotification, NotificationPreferences, Appointment, AppointmentStatus } from './types/ppueri';
+import { Role, Patient, Consultation, VaccineRecord, PediatricNotification, NotificationPreferences, Appointment, AppointmentStatus, AuthSession } from './types/ppueri';
 import { DEFAULT_NOTIFICATION_PREFERENCES } from './lib/notifications';
 import {
   loadStoredPatients,
@@ -13,6 +13,13 @@ import {
   loadStoredNotifications,
   saveStoredNotifications,
 } from './lib/storage-sync';
+import {
+  loadAuthSession,
+  saveAuthSession,
+  clearAuthSession,
+  isSessionValid,
+  initializeDemoAccount,
+} from './lib/auth';
 import { Header } from './components/ui/Header';
 import { InstallPwaBanner } from './components/ui/InstallPwaBanner';
 import { NotificationCenter } from './components/ui/NotificationCenter';
@@ -21,63 +28,108 @@ import { MedicalRecordForm } from './components/medico/MedicalRecordForm';
 import { NewPatientModal } from './components/medico/NewPatientModal';
 import { PatientLogin } from './components/paciente/PatientLogin';
 import { PatientPortal } from './components/paciente/PatientPortal';
+import { DoctorAuthScreen } from './components/auth/DoctorAuthScreen';
 import { getAgeInMonths } from './lib/pediatric-rules';
 import { getInitialVaccinesForPatient } from './lib/mock-data';
 
+// ─── Auth Gate ──────────────────────────────────────────────────────────────
+
 export default function App() {
-  // Global State com Persistência Automática no Navegador (LocalStorage / PWA Cache)
+  const [authSession, setAuthSession] = useState<AuthSession | null>(null);
+  const [authReady, setAuthReady] = useState(false);
+
+  // Initialize demo account and resolve session on first mount
+  useEffect(() => {
+    initializeDemoAccount().then(() => {
+      const session = loadAuthSession();
+      if (session && isSessionValid(session)) {
+        setAuthSession(session);
+      }
+      setAuthReady(true);
+    });
+  }, []);
+
+  if (!authReady) {
+    // Brief loading splash while initializing crypto
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-sky-100/70 via-sky-50/90 to-cyan-100/60 flex items-center justify-center">
+        <div className="text-sky-700 text-sm font-semibold animate-pulse">Carregando Ppueri...</div>
+      </div>
+    );
+  }
+
+  if (!authSession) {
+    return (
+      <DoctorAuthScreen
+        onLoginSuccess={(session) => {
+          saveAuthSession(session);
+          setAuthSession(session);
+        }}
+      />
+    );
+  }
+
+  return (
+    <MainApp
+      authSession={authSession}
+      onLogout={() => {
+        clearAuthSession();
+        setAuthSession(null);
+      }}
+    />
+  );
+}
+
+// ─── Main Application (authenticated) ──────────────────────────────────────
+
+interface MainAppProps {
+  authSession: AuthSession;
+  onLogout: () => void;
+}
+
+function MainApp({ authSession, onLogout }: MainAppProps) {
+  const doctorId = authSession.doctorId;
+  const doctorName = authSession.doctorName;
+  const doctorCrm = authSession.doctorCrm;
+
   const [activeRole, setActiveRole] = useState<Role>('medico');
-  const [patients, setPatients] = useState<Patient[]>(() => loadStoredPatients());
+  const [patients, setPatients] = useState<Patient[]>(() => loadStoredPatients(doctorId));
   const [selectedPatientId, setSelectedPatientId] = useState<string>(() => {
-    const loaded = loadStoredPatients();
+    const loaded = loadStoredPatients(doctorId);
     return loaded.length > 0 ? loaded[0].id : '';
   });
-  const [consultations, setConsultations] = useState<Consultation[]>(() => loadStoredConsultations());
-  const [appointments, setAppointments] = useState<Appointment[]>(() => loadStoredAppointments());
+  const [consultations, setConsultations] = useState<Consultation[]>(() => loadStoredConsultations(doctorId));
+  const [appointments, setAppointments] = useState<Appointment[]>(() => loadStoredAppointments(doctorId));
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Doctor View Mode: 'dashboard' | 'consultation'
+  // Doctor View Mode
   const [doctorViewMode, setDoctorViewMode] = useState<'dashboard' | 'consultation'>('dashboard');
   const [isNewPatientModalOpen, setIsNewPatientModalOpen] = useState(false);
 
-  // Parent Portal State: Logged in patient ID or null
-  const [parentLoggedInPatientId, setParentLoggedInPatientId] = useState<string | null>(() => {
-    const loaded = loadStoredPatients();
-    return loaded.length > 0 ? loaded[0].id : null;
-  });
+  // Parent Portal: starts as null (must log in explicitly)
+  const [parentLoggedInPatientId, setParentLoggedInPatientId] = useState<string | null>(null);
 
-  // Vaccines map per patientId: Record<patientId, VaccineRecord[]>
+  // Vaccines map per patientId
   const [vaccinesMap, setVaccinesMap] = useState<Record<string, VaccineRecord[]>>(() =>
-    loadStoredVaccinesMap(loadStoredPatients())
+    loadStoredVaccinesMap(loadStoredPatients(doctorId))
   );
 
-  // Notifications State & Preferences
+  // Notifications
   const [isNotificationCenterOpen, setIsNotificationCenterOpen] = useState(false);
   const [notificationPreferences, setNotificationPreferences] = useState<NotificationPreferences>(DEFAULT_NOTIFICATION_PREFERENCES);
-  const [notifications, setNotifications] = useState<PediatricNotification[]>(() =>
-    loadStoredNotifications(loadStoredPatients(), loadStoredVaccinesMap(loadStoredPatients()), loadStoredConsultations())
-  );
+  const [notifications, setNotifications] = useState<PediatricNotification[]>(() => {
+    const pts = loadStoredPatients(doctorId);
+    const vmap = loadStoredVaccinesMap(pts);
+    const cons = loadStoredConsultations(doctorId);
+    return loadStoredNotifications(doctorId, pts, vmap, cons);
+  });
 
-  // Sincronização contínua com LocalStorage
-  useEffect(() => {
-    saveStoredPatients(patients);
-  }, [patients]);
-
-  useEffect(() => {
-    saveStoredConsultations(consultations);
-  }, [consultations]);
-
-  useEffect(() => {
-    saveStoredAppointments(appointments);
-  }, [appointments]);
-
-  useEffect(() => {
-    saveStoredVaccinesMap(vaccinesMap);
-  }, [vaccinesMap]);
-
-  useEffect(() => {
-    saveStoredNotifications(notifications);
-  }, [notifications]);
+  // Persist to localStorage on each change (scoped to current doctor)
+  useEffect(() => { saveStoredPatients(doctorId, patients); }, [doctorId, patients]);
+  useEffect(() => { saveStoredConsultations(doctorId, consultations); }, [doctorId, consultations]);
+  useEffect(() => { saveStoredAppointments(doctorId, appointments); }, [doctorId, appointments]);
+  useEffect(() => { saveStoredVaccinesMap(vaccinesMap); }, [vaccinesMap]);
+  useEffect(() => { saveStoredNotifications(doctorId, notifications); }, [doctorId, notifications]);
 
   const selectedPatient = patients.find((p) => p.id === selectedPatientId) || patients[0] || ({} as Patient);
   const activeVaccines = vaccinesMap[selectedPatientId] || [];
@@ -86,7 +138,7 @@ export default function App() {
     (n) => (!n.isRead && (n.targetRole === 'ambos' || n.targetRole === activeRole))
   ).length;
 
-  // Handlers para Notificações
+  // Notification handlers
   const handleMarkNotificationAsRead = (id: string) => {
     setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, isRead: true } : n)));
   };
@@ -99,20 +151,16 @@ export default function App() {
     setNotifications((prev) => [newNotif, ...prev]);
   };
 
-  const handleSelectNotificationAction = (actionLink: string, patientId?: string) => {
+  const handleSelectNotificationAction = (_actionLink: string, patientId?: string) => {
     if (patientId) {
       setSelectedPatientId(patientId);
-      if (activeRole === 'paciente') {
-        setParentLoggedInPatientId(patientId);
-      }
+      if (activeRole === 'paciente') setParentLoggedInPatientId(patientId);
     }
   };
 
-  // Handlers para Agendamentos
+  // Appointment handlers
   const handleAddAppointment = (newApt: Appointment) => {
     setAppointments((prev) => [newApt, ...prev]);
-
-    // Notificação automática de consulta agendada
     const notif: PediatricNotification = {
       id: `notif_apt_${newApt.id}`,
       patientId: newApt.patientId,
@@ -138,7 +186,6 @@ export default function App() {
     setAppointments((prev) =>
       prev.map((a) => (a.id === appointmentId ? { ...a, date: newDate, time: newTime } : a))
     );
-
     const targetApt = appointments.find((a) => a.id === appointmentId);
     if (targetApt) {
       const notif: PediatricNotification = {
@@ -146,7 +193,7 @@ export default function App() {
         patientId: targetApt.patientId,
         patientName: targetApt.patientName,
         title: 'Consulta Reagendada',
-        message: `Novo horário de atendimento: ${new Date(newDate + 'T00:00:00').toLocaleDateString('pt-BR')} às ${newTime}.`,
+        message: `Novo horário: ${new Date(newDate + 'T00:00:00').toLocaleDateString('pt-BR')} às ${newTime}.`,
         category: 'consulta',
         targetRole: 'ambos',
         priority: 'media',
@@ -157,25 +204,20 @@ export default function App() {
     }
   };
 
-  // Handler para adicionar novo paciente
+  // Add new patient (always tagged with current doctorId)
   const handleAddPatient = (newPatient: Patient) => {
     setPatients((prev) => [newPatient, ...prev]);
     setSelectedPatientId(newPatient.id);
 
-    // Inicializa vacinas do novo paciente
     const ageMonths = getAgeInMonths(newPatient.birthDate);
     const newVaccs = getInitialVaccinesForPatient(newPatient.id, ageMonths);
-    setVaccinesMap((prev) => ({
-      ...prev,
-      [newPatient.id]: newVaccs,
-    }));
+    setVaccinesMap((prev) => ({ ...prev, [newPatient.id]: newVaccs }));
 
-    // Gera notificação de boas-vindas ao novo paciente
     const welcomeNotif: PediatricNotification = {
       id: `notif_welcome_${newPatient.id}`,
       patientId: newPatient.id,
       patientName: newPatient.name,
-      title: `Paciente Cadastrado com Sucesso: ${newPatient.name}`,
+      title: `Paciente Cadastrado: ${newPatient.name}`,
       message: `Código de acesso gerado: ${newPatient.accessCode}. Prontuário pronto para atendimento.`,
       category: 'orientacao',
       targetRole: 'medico',
@@ -186,7 +228,6 @@ export default function App() {
     setNotifications((prev) => [welcomeNotif, ...prev]);
   };
 
-  // Handler para atualizar status de vacina
   const handleUpdateVaccineStatus = (
     vaccineId: string,
     status: VaccineRecord['status'],
@@ -210,31 +251,26 @@ export default function App() {
     });
   };
 
-  // Handler para regenerar Código de Acesso do Paciente
   const handleRegenerateAccessCode = (patientId: string) => {
     const randomNum = Math.floor(1000 + Math.random() * 9000);
     const target = patients.find((p) => p.id === patientId);
     const suffix = target ? target.name.substring(0, 3).toUpperCase() : 'PPU';
     const newCode = `PPUERI-${randomNum}-${suffix}`;
-
     setPatients((prev) =>
       prev.map((p) => (p.id === patientId ? { ...p, accessCode: newCode, accessCodeCreatedAt: new Date().toISOString() } : p))
     );
   };
 
-  // Handler para salvar nova consulta no prontuário
   const handleSaveConsultation = (newConsultation: Consultation) => {
     setConsultations((prev) => [newConsultation, ...prev]);
     setDoctorViewMode('dashboard');
-
-    // Notificação automática para os pais sobre a nova consulta
     const targetPatient = patients.find((p) => p.id === newConsultation.patientId);
     const notif: PediatricNotification = {
       id: `notif_cons_new_${Date.now()}`,
       patientId: newConsultation.patientId,
       patientName: targetPatient?.name,
       title: 'Nova Consulta Registrada no Prontuário',
-      message: `Atendimento de puericultura concluído por ${newConsultation.doctorName}. Novas prescrições e recomendações disponíveis.`,
+      message: `Atendimento concluído por ${newConsultation.doctorName}. Prescrições e recomendações disponíveis.`,
       category: 'orientacao',
       targetRole: 'paciente',
       priority: 'alta',
@@ -244,7 +280,6 @@ export default function App() {
     setNotifications((prev) => [notif, ...prev]);
   };
 
-  // Handler para restauração completa de backup clínico
   const handleRestoreData = (
     newPatients: Patient[],
     newConsultations: Consultation[],
@@ -262,15 +297,15 @@ export default function App() {
 
   return (
     <div className="min-h-screen font-sans text-slate-900 selection:bg-sky-500 selection:text-white pb-12 bg-gradient-to-br from-sky-100/70 via-sky-50/90 to-cyan-100/60 backdrop-blur-3xl">
-      {/* Top Main Navigation Header */}
       <Header
         activeRole={activeRole}
         onRoleChange={(role) => {
           setActiveRole(role);
-          if (role === 'paciente' && !parentLoggedInPatientId) {
-            setParentLoggedInPatientId(selectedPatientId);
-          }
+          if (role === 'paciente') setParentLoggedInPatientId(null);
         }}
+        doctorName={doctorName}
+        doctorCrm={doctorCrm}
+        onLogout={onLogout}
         patients={patients}
         selectedPatientId={selectedPatientId}
         onSelectPatient={(id) => {
@@ -287,11 +322,10 @@ export default function App() {
         vaccinesMap={vaccinesMap}
         notifications={notifications}
         onRestoreData={handleRestoreData}
+        doctorId={doctorId}
       />
 
-      {/* Main Container Workspace */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
-        {/* Banner discreto de Instalação PWA (Dispensável) */}
         <InstallPwaBanner variant="banner" />
 
         {activeRole === 'medico' ? (
@@ -310,6 +344,8 @@ export default function App() {
               onAddAppointment={handleAddAppointment}
               onUpdateAppointmentStatus={handleUpdateAppointmentStatus}
               onRescheduleAppointment={handleRescheduleAppointment}
+              doctorName={doctorName}
+              doctorCrm={doctorCrm}
             />
           ) : (
             <MedicalRecordForm
@@ -320,10 +356,12 @@ export default function App() {
               onUpdateVaccineStatus={handleUpdateVaccineStatus}
               onRegenerateAccessCode={handleRegenerateAccessCode}
               onBack={() => setDoctorViewMode('dashboard')}
+              doctorId={doctorId}
+              doctorName={doctorName}
+              doctorCrm={doctorCrm}
             />
           )
         ) : (
-          /* Portal do Paciente / Pais */
           parentLoggedInPatientId ? (
             <PatientPortal
               patient={patients.find((p) => p.id === parentLoggedInPatientId) || selectedPatient}
@@ -344,14 +382,13 @@ export default function App() {
         )}
       </main>
 
-      {/* Modal para Cadastrar Novo Paciente */}
       <NewPatientModal
         isOpen={isNewPatientModalOpen}
         onClose={() => setIsNewPatientModalOpen(false)}
         onAddPatient={handleAddPatient}
+        doctorId={doctorId}
       />
 
-      {/* Central de Notificações Drawer */}
       <NotificationCenter
         isOpen={isNotificationCenterOpen}
         onClose={() => setIsNotificationCenterOpen(false)}

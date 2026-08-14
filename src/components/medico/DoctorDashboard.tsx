@@ -28,6 +28,8 @@ interface DoctorDashboardProps {
   onAddAppointment: (appointment: Appointment) => void;
   onUpdateAppointmentStatus: (appointmentId: string, status: AppointmentStatus) => void;
   onRescheduleAppointment: (appointmentId: string, newDate: string, newTime: string) => void;
+  doctorName: string;
+  doctorCrm: string;
 }
 
 export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
@@ -41,6 +43,8 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
   onAddAppointment,
   onUpdateAppointmentStatus,
   onRescheduleAppointment,
+  doctorName,
+  doctorCrm,
 }) => {
   const [activeTab, setActiveTab] = useState<'pacientes' | 'agenda'>('pacientes');
   const [searchTerm, setSearchTerm] = useState('');
@@ -119,6 +123,9 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
           onRescheduleAppointment={onRescheduleAppointment}
           onSelectPatient={onSelectPatient}
           onStartNewConsultation={onStartNewConsultation}
+          doctorId={patients[0]?.doctorId ?? ''}
+          doctorName={doctorName}
+          doctorCrm={doctorCrm}
         />
       ) : (
         <div className="space-y-6">

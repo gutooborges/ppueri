@@ -18,6 +18,9 @@ interface MedicalRecordFormProps {
   onUpdateVaccineStatus: (vaccineId: string, status: VaccineRecord['status'], date?: string, batch?: string) => void;
   onRegenerateAccessCode: (patientId: string) => void;
   onBack: () => void;
+  doctorId: string;
+  doctorName: string;
+  doctorCrm: string;
 }
 
 export const MedicalRecordForm: React.FC<MedicalRecordFormProps> = ({
@@ -28,6 +31,9 @@ export const MedicalRecordForm: React.FC<MedicalRecordFormProps> = ({
   onUpdateVaccineStatus,
   onRegenerateAccessCode,
   onBack,
+  doctorId,
+  doctorName,
+  doctorCrm,
 }) => {
   const ageInMonths = getAgeInMonths(patient.birthDate);
   const ageBracket = getAgeBracket(ageInMonths);
@@ -125,9 +131,10 @@ export const MedicalRecordForm: React.FC<MedicalRecordFormProps> = ({
   const handleSaveAll = () => {
     const consultation: Consultation = {
       id: `cons_${Date.now()}`,
+      doctorId,
       patientId: patient.id,
-      doctorName: 'Dra. Beatriz Albuquerque',
-      doctorCrm: 'CRM/SP 184.920 - Pediatria SBP',
+      doctorName,
+      doctorCrm,
       date: new Date().toISOString(),
       anamnesis: {
         gestationalHistory,

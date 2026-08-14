@@ -1,9 +1,11 @@
 import { Patient, Consultation, LabExam, VaccineRecord, Appointment } from '../types/ppueri';
 import { OFFICIAL_VACCS_SCHEDULE, calculateZScores } from './pediatric-rules';
+import { DEMO_DOCTOR_ID } from './auth';
 
 export const INITIAL_PATIENTS: Patient[] = [
   {
     id: 'pat_1',
+    doctorId: DEMO_DOCTOR_ID,
     name: 'Gabriel Santos Ferreira',
     birthDate: '2024-02-15', // ~18 meses
     gender: 'masculino',
@@ -20,6 +22,7 @@ export const INITIAL_PATIENTS: Patient[] = [
   },
   {
     id: 'pat_2',
+    doctorId: DEMO_DOCTOR_ID,
     name: 'Sofia Lima Ribeiro',
     birthDate: '2025-11-20', // ~9 meses
     gender: 'feminino',
@@ -36,6 +39,7 @@ export const INITIAL_PATIENTS: Patient[] = [
   },
   {
     id: 'pat_3',
+    doctorId: DEMO_DOCTOR_ID,
     name: 'Enzo Gabriel Oliveira',
     birthDate: '2021-06-10', // ~5 anos
     gender: 'masculino',
@@ -52,6 +56,7 @@ export const INITIAL_PATIENTS: Patient[] = [
   },
   {
     id: 'pat_4',
+    doctorId: DEMO_DOCTOR_ID,
     name: 'Helena Martins Costa',
     birthDate: '2026-07-12', // ~1 mês (Recém-nascida / Lactente jovem)
     gender: 'feminino',
@@ -71,6 +76,7 @@ export const INITIAL_PATIENTS: Patient[] = [
 export const INITIAL_CONSULTATIONS: Consultation[] = [
   {
     id: 'cons_1',
+    doctorId: DEMO_DOCTOR_ID,
     patientId: 'pat_1',
     doctorName: 'Dra. Beatriz Albuquerque',
     doctorCrm: 'CRM/SP 184.920 - Pediatria SBP',
@@ -198,6 +204,7 @@ export const INITIAL_CONSULTATIONS: Consultation[] = [
   },
   {
     id: 'cons_2',
+    doctorId: DEMO_DOCTOR_ID,
     patientId: 'pat_2',
     doctorName: 'Dra. Beatriz Albuquerque',
     doctorCrm: 'CRM/SP 184.920 - Pediatria SBP',
@@ -347,6 +354,7 @@ export function getInitialVaccinesForPatient(patientId: string, ageInMonths: num
 export const INITIAL_APPOINTMENTS: Appointment[] = [
   {
     id: 'apt_1',
+    doctorId: DEMO_DOCTOR_ID,
     patientId: 'pat_1',
     patientName: 'Gabriel Santos Ferreira',
     motherName: 'Mariana Santos Ferreira',
@@ -368,6 +376,7 @@ export const INITIAL_APPOINTMENTS: Appointment[] = [
   },
   {
     id: 'apt_2',
+    doctorId: DEMO_DOCTOR_ID,
     patientId: 'pat_2',
     patientName: 'Sofia Lima Ribeiro',
     motherName: 'Camila Lima Ribeiro',
@@ -388,6 +397,7 @@ export const INITIAL_APPOINTMENTS: Appointment[] = [
   },
   {
     id: 'apt_3',
+    doctorId: DEMO_DOCTOR_ID,
     patientId: 'pat_4',
     patientName: 'Helena Martins Costa',
     motherName: 'Juliana Martins Costa',
@@ -408,6 +418,7 @@ export const INITIAL_APPOINTMENTS: Appointment[] = [
   },
   {
     id: 'apt_4',
+    doctorId: DEMO_DOCTOR_ID,
     patientId: 'pat_3',
     patientName: 'Enzo Gabriel Oliveira',
     motherName: 'Beatriz Oliveira',
@@ -428,6 +439,7 @@ export const INITIAL_APPOINTMENTS: Appointment[] = [
   },
   {
     id: 'apt_5',
+    doctorId: DEMO_DOCTOR_ID,
     patientId: 'pat_2',
     patientName: 'Sofia Lima Ribeiro',
     motherName: 'Camila Lima Ribeiro',
@@ -447,6 +459,7 @@ export const INITIAL_APPOINTMENTS: Appointment[] = [
   },
   {
     id: 'apt_6',
+    doctorId: DEMO_DOCTOR_ID,
     patientId: 'pat_1',
     patientName: 'Gabriel Santos Ferreira',
     motherName: 'Mariana Santos Ferreira',

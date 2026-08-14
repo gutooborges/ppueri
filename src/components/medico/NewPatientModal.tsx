@@ -6,9 +6,10 @@ interface NewPatientModalProps {
   isOpen: boolean;
   onClose: () => void;
   onAddPatient: (patient: Patient) => void;
+  doctorId: string;
 }
 
-export const NewPatientModal: React.FC<NewPatientModalProps> = ({ isOpen, onClose, onAddPatient }) => {
+export const NewPatientModal: React.FC<NewPatientModalProps> = ({ isOpen, onClose, onAddPatient, doctorId }) => {
   const [name, setName] = useState('');
   const [birthDate, setBirthDate] = useState('2024-06-10');
   const [gender, setGender] = useState<Gender>('masculino');
@@ -30,6 +31,7 @@ export const NewPatientModal: React.FC<NewPatientModalProps> = ({ isOpen, onClos
 
     const newPatient: Patient = {
       id: `pat_${Date.now()}`,
+      doctorId,
       name: name.trim(),
       birthDate,
       gender,

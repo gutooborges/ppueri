@@ -32,6 +32,9 @@ interface DoctorAgendaProps {
   onRescheduleAppointment: (appointmentId: string, newDate: string, newTime: string) => void;
   onSelectPatient: (patientId: string) => void;
   onStartNewConsultation: (patientId: string) => void;
+  doctorId: string;
+  doctorName: string;
+  doctorCrm: string;
 }
 
 export const DoctorAgenda: React.FC<DoctorAgendaProps> = ({
@@ -42,6 +45,9 @@ export const DoctorAgenda: React.FC<DoctorAgendaProps> = ({
   onRescheduleAppointment,
   onSelectPatient,
   onStartNewConsultation,
+  doctorId,
+  doctorName,
+  doctorCrm,
 }) => {
   const [currentMonthDate, setCurrentMonthDate] = useState(new Date(2026, 7, 1)); // Agosto 2026
   const [selectedDayString, setSelectedDayString] = useState<string | null>('2026-08-14'); // Hoje por padrão
@@ -150,11 +156,12 @@ export const DoctorAgenda: React.FC<DoctorAgendaProps> = ({
 
     const newApt: Appointment = {
       id: `apt_${Date.now()}`,
+      doctorId,
       patientId: targetPatient.id,
       patientName: targetPatient.name,
       motherName: targetPatient.motherName,
-      doctorName: 'Dra. Beatriz Albuquerque',
-      doctorCrm: 'CRM/SP 184.920',
+      doctorName,
+      doctorCrm,
       date: formDate,
       time: formTime,
       durationMinutes: formType === 'rotina' ? 45 : 30,

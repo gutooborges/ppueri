@@ -2,6 +2,7 @@ import { Patient, Consultation, Appointment, VaccineRecord, PediatricNotificatio
 import { INITIAL_PATIENTS, INITIAL_CONSULTATIONS, INITIAL_APPOINTMENTS, getInitialVaccinesForPatient } from './mock-data';
 import { generateInitialNotifications } from './notifications';
 import { getAgeInMonths } from './pediatric-rules';
+import { DEMO_DOCTOR_ID } from './auth';
 
 const STORAGE_KEYS = {
   PATIENTS: 'ppueri_patients_v1',
@@ -16,6 +17,7 @@ export interface ClinicBackupData {
   version: string;
   exportedAt: string;
   app: string;
+  doctorId: string;
   patients: Patient[];
   consultations: Consultation[];
   appointments: Appointment[];
@@ -23,99 +25,102 @@ export interface ClinicBackupData {
   notifications: PediatricNotification[];
 }
 
-/**
- * Carrega lista de pacientes do LocalStorage ou fallback para dados iniciais
- */
-export function loadStoredPatients(): Patient[] {
+// ─── Helper: read/write full arrays ────────────────────────────────────────
+
+function readAll<T>(key: string): T[] {
   try {
-    const raw = localStorage.getItem(STORAGE_KEYS.PATIENTS);
+    const raw = localStorage.getItem(key);
     if (raw) {
       const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      if (Array.isArray(parsed)) return parsed as T[];
     }
-  } catch (err) {
-    console.warn('[Ppueri Storage] Erro ao carregar pacientes do LocalStorage:', err);
+  } catch {
+    // fall through to empty
   }
-  return INITIAL_PATIENTS;
+  return [];
 }
 
-/**
- * Salva lista de pacientes
- */
-export function saveStoredPatients(patients: Patient[]): void {
+function writeAll<T>(key: string, items: T[]): void {
   try {
-    localStorage.setItem(STORAGE_KEYS.PATIENTS, JSON.stringify(patients));
+    localStorage.setItem(key, JSON.stringify(items));
     localStorage.setItem(STORAGE_KEYS.LAST_SYNC, new Date().toISOString());
   } catch (err) {
-    console.error('[Ppueri Storage] Erro ao salvar pacientes:', err);
+    console.error(`[Ppueri Storage] Erro ao salvar ${key}:`, err);
   }
 }
 
-/**
- * Carrega consultas do LocalStorage ou fallback
- */
-export function loadStoredConsultations(): Consultation[] {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEYS.CONSULTATIONS);
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-    }
-  } catch (err) {
-    console.warn('[Ppueri Storage] Erro ao carregar consultas do LocalStorage:', err);
+// ─── Patients ──────────────────────────────────────────────────────────────
+
+export function loadStoredPatients(doctorId: string): Patient[] {
+  const all = readAll<Patient>(STORAGE_KEYS.PATIENTS);
+  if (all.length > 0) {
+    const mine = all.filter((p) => p.doctorId === doctorId);
+    if (mine.length > 0) return mine;
   }
-  return INITIAL_CONSULTATIONS;
+  // Fallback: demo data only for the demo account
+  if (doctorId === DEMO_DOCTOR_ID) return INITIAL_PATIENTS;
+  return [];
 }
 
-/**
- * Salva consultas
- */
-export function saveStoredConsultations(consultations: Consultation[]): void {
-  try {
-    localStorage.setItem(STORAGE_KEYS.CONSULTATIONS, JSON.stringify(consultations));
-    localStorage.setItem(STORAGE_KEYS.LAST_SYNC, new Date().toISOString());
-  } catch (err) {
-    console.error('[Ppueri Storage] Erro ao salvar consultas:', err);
-  }
+export function saveStoredPatients(doctorId: string, myPatients: Patient[]): void {
+  // Preserve other doctors' records; replace only current doctor's
+  const others = readAll<Patient>(STORAGE_KEYS.PATIENTS).filter((p) => p.doctorId !== doctorId);
+  writeAll(STORAGE_KEYS.PATIENTS, [...others, ...myPatients]);
 }
 
-/**
- * Carrega agendamentos do LocalStorage ou fallback
- */
-export function loadStoredAppointments(): Appointment[] {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEYS.APPOINTMENTS);
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-    }
-  } catch (err) {
-    console.warn('[Ppueri Storage] Erro ao carregar agendamentos:', err);
+// ─── Consultations ─────────────────────────────────────────────────────────
+
+export function loadStoredConsultations(doctorId: string): Consultation[] {
+  const all = readAll<Consultation>(STORAGE_KEYS.CONSULTATIONS);
+  if (all.length > 0) {
+    const mine = all.filter((c) => c.doctorId === doctorId);
+    if (mine.length > 0) return mine;
   }
-  return INITIAL_APPOINTMENTS;
+  if (doctorId === DEMO_DOCTOR_ID) return INITIAL_CONSULTATIONS;
+  return [];
 }
 
-/**
- * Salva agendamentos
- */
-export function saveStoredAppointments(appointments: Appointment[]): void {
-  try {
-    localStorage.setItem(STORAGE_KEYS.APPOINTMENTS, JSON.stringify(appointments));
-    localStorage.setItem(STORAGE_KEYS.LAST_SYNC, new Date().toISOString());
-  } catch (err) {
-    console.error('[Ppueri Storage] Erro ao salvar agendamentos:', err);
-  }
+export function saveStoredConsultations(doctorId: string, myConsultations: Consultation[]): void {
+  const others = readAll<Consultation>(STORAGE_KEYS.CONSULTATIONS).filter((c) => c.doctorId !== doctorId);
+  writeAll(STORAGE_KEYS.CONSULTATIONS, [...others, ...myConsultations]);
 }
 
+// ─── Appointments ──────────────────────────────────────────────────────────
+
+export function loadStoredAppointments(doctorId: string): Appointment[] {
+  const all = readAll<Appointment>(STORAGE_KEYS.APPOINTMENTS);
+  if (all.length > 0) {
+    const mine = all.filter((a) => a.doctorId === doctorId);
+    if (mine.length > 0) return mine;
+  }
+  if (doctorId === DEMO_DOCTOR_ID) return INITIAL_APPOINTMENTS;
+  return [];
+}
+
+export function saveStoredAppointments(doctorId: string, myAppointments: Appointment[]): void {
+  const others = readAll<Appointment>(STORAGE_KEYS.APPOINTMENTS).filter((a) => a.doctorId !== doctorId);
+  writeAll(STORAGE_KEYS.APPOINTMENTS, [...others, ...myAppointments]);
+}
+
+// ─── Vaccines Map ──────────────────────────────────────────────────────────
+
 /**
- * Carrega mapa de vacinas por paciente
+ * Loads the vaccines map. vaccinesMap is keyed by patientId; isolation is
+ * enforced by only accessing keys that belong to the current doctor's patients.
  */
 export function loadStoredVaccinesMap(currentPatients: Patient[]): Record<string, VaccineRecord[]> {
   try {
     const raw = localStorage.getItem(STORAGE_KEYS.VACCINES);
     if (raw) {
       const parsed = JSON.parse(raw);
-      if (parsed && typeof parsed === 'object') return parsed;
+      if (parsed && typeof parsed === 'object') {
+        // Only return entries for the supplied (already-filtered) patients
+        const result: Record<string, VaccineRecord[]> = {};
+        currentPatients.forEach((p) => {
+          if (parsed[p.id]) result[p.id] = parsed[p.id];
+        });
+        if (Object.keys(result).length > 0) return result;
+      }
     }
   } catch (err) {
     console.warn('[Ppueri Storage] Erro ao carregar mapa de vacinas:', err);
@@ -129,28 +134,37 @@ export function loadStoredVaccinesMap(currentPatients: Patient[]): Record<string
   return initialMap;
 }
 
-/**
- * Salva mapa de vacinas
- */
 export function saveStoredVaccinesMap(vaccinesMap: Record<string, VaccineRecord[]>): void {
   try {
-    localStorage.setItem(STORAGE_KEYS.VACCINES, JSON.stringify(vaccinesMap));
+    // Merge with any existing entries (other doctors' patients)
+    const raw = localStorage.getItem(STORAGE_KEYS.VACCINES);
+    let existing: Record<string, VaccineRecord[]> = {};
+    if (raw) {
+      try { existing = JSON.parse(raw); } catch { /**/ }
+    }
+    localStorage.setItem(STORAGE_KEYS.VACCINES, JSON.stringify({ ...existing, ...vaccinesMap }));
     localStorage.setItem(STORAGE_KEYS.LAST_SYNC, new Date().toISOString());
   } catch (err) {
     console.error('[Ppueri Storage] Erro ao salvar vacinas:', err);
   }
 }
 
-/**
- * Carrega notificações
- */
+// ─── Notifications ─────────────────────────────────────────────────────────
+
+const NOTIF_KEY_PREFIX = 'ppueri_notifications_';
+
+function notifKey(doctorId: string): string {
+  return `${NOTIF_KEY_PREFIX}${doctorId}_v1`;
+}
+
 export function loadStoredNotifications(
+  doctorId: string,
   patients: Patient[],
   vaccinesMap: Record<string, VaccineRecord[]>,
   consultations: Consultation[]
 ): PediatricNotification[] {
   try {
-    const raw = localStorage.getItem(STORAGE_KEYS.NOTIFICATIONS);
+    const raw = localStorage.getItem(notifKey(doctorId));
     if (raw) {
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed) && parsed.length > 0) return parsed;
@@ -161,21 +175,18 @@ export function loadStoredNotifications(
   return generateInitialNotifications(patients, vaccinesMap, consultations);
 }
 
-/**
- * Salva notificações
- */
-export function saveStoredNotifications(notifications: PediatricNotification[]): void {
+export function saveStoredNotifications(doctorId: string, notifications: PediatricNotification[]): void {
   try {
-    localStorage.setItem(STORAGE_KEYS.NOTIFICATIONS, JSON.stringify(notifications));
+    localStorage.setItem(notifKey(doctorId), JSON.stringify(notifications));
   } catch (err) {
     console.error('[Ppueri Storage] Erro ao salvar notificações:', err);
   }
 }
 
-/**
- * Gera arquivo JSON de backup completo de todos os dados clínicos
- */
+// ─── Backup / Export ───────────────────────────────────────────────────────
+
 export function exportClinicBackup(
+  doctorId: string,
   patients: Patient[],
   consultations: Consultation[],
   appointments: Appointment[],
@@ -183,9 +194,10 @@ export function exportClinicBackup(
   notifications: PediatricNotification[]
 ): void {
   const backupData: ClinicBackupData = {
-    version: '2.5.0-prod',
+    version: '3.0.0-auth',
     exportedAt: new Date().toISOString(),
     app: 'Ppueri Prontuário Pediátrico',
+    doctorId,
     patients,
     consultations,
     appointments,
@@ -200,41 +212,42 @@ export function exportClinicBackup(
   const a = document.createElement('a');
   const dateStr = new Date().toISOString().split('T')[0];
   a.href = url;
-  a.download = `ppueri_backup_clinica_${dateStr}.json`;
+  a.download = `ppueri_backup_${dateStr}.json`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
 }
 
-/**
- * Restaura dados a partir de um arquivo JSON
- */
-export function importClinicBackup(jsonString: string): ClinicBackupData | null {
+export function importClinicBackup(jsonString: string, currentDoctorId: string): ClinicBackupData | null {
   try {
-    const parsed = JSON.parse(jsonString);
-    if (parsed && parsed.patients && Array.isArray(parsed.patients)) {
-      saveStoredPatients(parsed.patients);
-      if (parsed.consultations) saveStoredConsultations(parsed.consultations);
-      if (parsed.appointments) saveStoredAppointments(parsed.appointments);
-      if (parsed.vaccinesMap) saveStoredVaccinesMap(parsed.vaccinesMap);
-      if (parsed.notifications) saveStoredNotifications(parsed.notifications);
-      return parsed;
-    }
+    const parsed = JSON.parse(jsonString) as ClinicBackupData;
+    if (!parsed || !Array.isArray(parsed.patients)) return null;
+
+    // Re-stamp all records with the current doctor's ID to enforce ownership
+    const patients = parsed.patients.map((p) => ({ ...p, doctorId: currentDoctorId }));
+    const consultations = (parsed.consultations || []).map((c) => ({ ...c, doctorId: currentDoctorId }));
+    const appointments = (parsed.appointments || []).map((a) => ({ ...a, doctorId: currentDoctorId }));
+
+    saveStoredPatients(currentDoctorId, patients);
+    saveStoredConsultations(currentDoctorId, consultations);
+    saveStoredAppointments(currentDoctorId, appointments);
+    if (parsed.vaccinesMap) saveStoredVaccinesMap(parsed.vaccinesMap);
+    if (parsed.notifications) saveStoredNotifications(currentDoctorId, parsed.notifications);
+
+    return { ...parsed, doctorId: currentDoctorId, patients, consultations, appointments };
   } catch (err) {
     console.error('[Ppueri Storage] Erro na restauração de backup:', err);
   }
   return null;
 }
 
-/**
- * Limpa todos os dados salvos e restaura estado inicial de demonstração
- */
-export function resetToDemoData(): void {
-  localStorage.removeItem(STORAGE_KEYS.PATIENTS);
-  localStorage.removeItem(STORAGE_KEYS.CONSULTATIONS);
-  localStorage.removeItem(STORAGE_KEYS.APPOINTMENTS);
-  localStorage.removeItem(STORAGE_KEYS.VACCINES);
-  localStorage.removeItem(STORAGE_KEYS.NOTIFICATIONS);
-  localStorage.removeItem(STORAGE_KEYS.LAST_SYNC);
+export function resetToDemoData(doctorId: string): void {
+  saveStoredPatients(doctorId, []);
+  saveStoredConsultations(doctorId, []);
+  saveStoredAppointments(doctorId, []);
+  try {
+    localStorage.removeItem(notifKey(doctorId));
+    localStorage.removeItem(STORAGE_KEYS.LAST_SYNC);
+  } catch { /**/ }
 }
