@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Role, Patient, Consultation, VaccineRecord, PediatricNotification, NotificationPreferences, Appointment, AppointmentStatus, AuthSession } from './types/ppueri';
+import { Role, Patient, Consultation, VaccineRecord, PediatricNotification, NotificationPreferences, Appointment, AppointmentStatus, AuthSession, ParentSession } from './types/ppueri';
 import { DEFAULT_NOTIFICATION_PREFERENCES } from './lib/notifications';
 import {
   loadStoredPatients,
@@ -19,6 +19,10 @@ import {
   clearAuthSession,
   isSessionValid,
   initializeDemoAccount,
+  loadParentSession,
+  saveParentSession,
+  clearParentSession,
+  isParentSessionValid,
 } from './lib/auth';
 import { Header } from './components/ui/Header';
 import { InstallPwaBanner } from './components/ui/InstallPwaBanner';
@@ -108,8 +112,11 @@ function MainApp({ authSession, onLogout }: MainAppProps) {
   const [doctorViewMode, setDoctorViewMode] = useState<'dashboard' | 'patient-view' | 'consultation'>('dashboard');
   const [isNewPatientModalOpen, setIsNewPatientModalOpen] = useState(false);
 
-  // Parent Portal: starts as null (must log in explicitly)
-  const [parentLoggedInPatientId, setParentLoggedInPatientId] = useState<string | null>(null);
+  // Parent Portal: restored from localStorage if session is still valid
+  const [parentSession, setParentSession] = useState<ParentSession | null>(() => {
+    const s = loadParentSession();
+    return s && isParentSessionValid(s) ? s : null;
+  });
 
   // Vaccines map per patientId
   const [vaccinesMap, setVaccinesMap] = useState<Record<string, VaccineRecord[]>>(() =>
@@ -154,9 +161,8 @@ function MainApp({ authSession, onLogout }: MainAppProps) {
   };
 
   const handleSelectNotificationAction = (_actionLink: string, patientId?: string) => {
-    if (patientId) {
+    if (patientId && activeRole === 'medico') {
       setSelectedPatientId(patientId);
-      if (activeRole === 'paciente') setParentLoggedInPatientId(patientId);
     }
   };
 
@@ -304,7 +310,6 @@ function MainApp({ authSession, onLogout }: MainAppProps) {
         activeRole={activeRole}
         onRoleChange={(role) => {
           setActiveRole(role);
-          if (role === 'paciente') setParentLoggedInPatientId(null);
         }}
         doctorName={doctorName}
         doctorCrm={doctorCrm}
@@ -313,7 +318,6 @@ function MainApp({ authSession, onLogout }: MainAppProps) {
         selectedPatientId={selectedPatientId}
         onSelectPatient={(id) => {
           setSelectedPatientId(id);
-          if (activeRole === 'paciente') setParentLoggedInPatientId(id);
         }}
         onOpenNewPatientModal={() => setIsNewPatientModalOpen(true)}
         searchQuery={searchQuery}
@@ -381,20 +385,23 @@ function MainApp({ authSession, onLogout }: MainAppProps) {
             />
           )
         ) : (
-          parentLoggedInPatientId ? (
+          parentSession ? (
             <PatientPortal
-              patient={patients.find((p) => p.id === parentLoggedInPatientId) || selectedPatient}
-              consultations={consultations}
-              vaccines={vaccinesMap[parentLoggedInPatientId] || activeVaccines}
-              appointments={appointments}
-              onLogout={() => setParentLoggedInPatientId(null)}
+              patient={patients.find((p) => p.id === parentSession.linkedPatientId) || ({} as Patient)}
+              consultations={consultations.filter((c) => c.patientId === parentSession.linkedPatientId)}
+              vaccines={vaccinesMap[parentSession.linkedPatientId] || []}
+              appointments={appointments.filter((a) => a.patientId === parentSession.linkedPatientId)}
+              onLogout={() => {
+                clearParentSession();
+                setParentSession(null);
+              }}
             />
           ) : (
             <PatientLogin
               patients={patients}
-              onLoginSuccess={(patientId) => {
-                setParentLoggedInPatientId(patientId);
-                setSelectedPatientId(patientId);
+              onLoginSuccess={(session) => {
+                saveParentSession(session);
+                setParentSession(session);
               }}
             />
           )

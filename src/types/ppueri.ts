@@ -17,6 +17,22 @@ export interface AuthSession {
   expiresAt: string;
 }
 
+export interface ParentAccount {
+  id: string;
+  name: string;
+  email: string;
+  passwordHash: string;
+  linkedPatientId: string;
+  createdAt: string;
+}
+
+export interface ParentSession {
+  parentId: string;
+  parentName: string;
+  linkedPatientId: string;
+  expiresAt: string;
+}
+
 export type Gender = 'masculino' | 'feminino';
 
 export type AgeBracket = 

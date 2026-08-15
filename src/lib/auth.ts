@@ -1,4 +1,4 @@
-import { DoctorAccount, AuthSession } from '../types/ppueri';
+import { DoctorAccount, AuthSession, ParentAccount, ParentSession } from '../types/ppueri';
 
 export const DEMO_DOCTOR_ID = 'doctor_demo';
 export const DEMO_DOCTOR_EMAIL = 'demo@ppueri.com.br';
@@ -7,6 +7,8 @@ export const DEMO_DOCTOR_PASSWORD = 'ppueri2026';
 const AUTH_KEYS = {
   DOCTOR_ACCOUNTS: 'ppueri_doctor_accounts_v1',
   AUTH_SESSION: 'ppueri_auth_session_v1',
+  PARENT_ACCOUNTS: 'ppueri_parent_accounts_v1',
+  PARENT_SESSION: 'ppueri_parent_session_v1',
 };
 
 // SHA-256 hash via Web Crypto API (browser-native, no deps required)
@@ -125,6 +127,123 @@ export function clearAuthSession(): void {
 export function isSessionValid(session: AuthSession): boolean {
   return new Date(session.expiresAt) > new Date();
 }
+
+// ─── Parent Auth ─────────────────────────────────────────────────────────────
+
+export function loadParentAccounts(): ParentAccount[] {
+  try {
+    const raw = localStorage.getItem(AUTH_KEYS.PARENT_ACCOUNTS);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return parsed as ParentAccount[];
+    }
+  } catch (err) {
+    console.warn('[Ppueri Auth] Erro ao carregar contas dos responsáveis:', err);
+  }
+  return [];
+}
+
+export function saveParentAccounts(accounts: ParentAccount[]): void {
+  try {
+    localStorage.setItem(AUTH_KEYS.PARENT_ACCOUNTS, JSON.stringify(accounts));
+  } catch (err) {
+    console.error('[Ppueri Auth] Erro ao salvar contas dos responsáveis:', err);
+  }
+}
+
+export function getParentByEmail(email: string): ParentAccount | null {
+  const accounts = loadParentAccounts();
+  return accounts.find((a) => a.email.toLowerCase() === email.toLowerCase().trim()) ?? null;
+}
+
+export async function registerParent(
+  name: string,
+  email: string,
+  password: string,
+  linkedPatientId: string
+): Promise<{ session: ParentSession } | { error: string }> {
+  const existing = getParentByEmail(email);
+  if (existing) return { error: 'Este e-mail já está cadastrado. Faça login ou use outro e-mail.' };
+
+  const passwordHash = await hashPassword(password);
+  const newAccount: ParentAccount = {
+    id: `parent_${Date.now()}`,
+    name: name.trim(),
+    email: email.toLowerCase().trim(),
+    passwordHash,
+    linkedPatientId,
+    createdAt: new Date().toISOString(),
+  };
+
+  const accounts = loadParentAccounts();
+  accounts.push(newAccount);
+  saveParentAccounts(accounts);
+
+  const expiresAt = new Date();
+  expiresAt.setDate(expiresAt.getDate() + 30);
+
+  return {
+    session: {
+      parentId: newAccount.id,
+      parentName: newAccount.name,
+      linkedPatientId,
+      expiresAt: expiresAt.toISOString(),
+    },
+  };
+}
+
+export async function loginParent(
+  email: string,
+  password: string
+): Promise<ParentSession | null> {
+  const account = getParentByEmail(email);
+  if (!account) return null;
+
+  const valid = await verifyPassword(password, account.passwordHash);
+  if (!valid) return null;
+
+  const expiresAt = new Date();
+  expiresAt.setDate(expiresAt.getDate() + 30);
+
+  return {
+    parentId: account.id,
+    parentName: account.name,
+    linkedPatientId: account.linkedPatientId,
+    expiresAt: expiresAt.toISOString(),
+  };
+}
+
+export function loadParentSession(): ParentSession | null {
+  try {
+    const raw = localStorage.getItem(AUTH_KEYS.PARENT_SESSION);
+    if (raw) return JSON.parse(raw) as ParentSession;
+  } catch (err) {
+    console.warn('[Ppueri Auth] Erro ao carregar sessão dos responsáveis:', err);
+  }
+  return null;
+}
+
+export function saveParentSession(session: ParentSession): void {
+  try {
+    localStorage.setItem(AUTH_KEYS.PARENT_SESSION, JSON.stringify(session));
+  } catch (err) {
+    console.error('[Ppueri Auth] Erro ao salvar sessão dos responsáveis:', err);
+  }
+}
+
+export function clearParentSession(): void {
+  try {
+    localStorage.removeItem(AUTH_KEYS.PARENT_SESSION);
+  } catch (err) {
+    console.error('[Ppueri Auth] Erro ao limpar sessão dos responsáveis:', err);
+  }
+}
+
+export function isParentSessionValid(session: ParentSession): boolean {
+  return new Date(session.expiresAt) > new Date();
+}
+
+// ─── Doctor Demo Account ──────────────────────────────────────────────────────
 
 // Creates the demo "Dra. Beatriz" account if no accounts exist yet
 export async function initializeDemoAccount(): Promise<void> {
