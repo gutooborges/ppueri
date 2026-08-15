@@ -25,6 +25,8 @@ import { InstallPwaBanner } from './components/ui/InstallPwaBanner';
 import { NotificationCenter } from './components/ui/NotificationCenter';
 import { DoctorDashboard } from './components/medico/DoctorDashboard';
 import { MedicalRecordForm } from './components/medico/MedicalRecordForm';
+import { PatientClinicalView } from './components/medico/PatientClinicalView';
+import { ConsultationForm } from './components/medico/ConsultationForm';
 import { NewPatientModal } from './components/medico/NewPatientModal';
 import { PatientLogin } from './components/paciente/PatientLogin';
 import { PatientPortal } from './components/paciente/PatientPortal';
@@ -103,7 +105,7 @@ function MainApp({ authSession, onLogout }: MainAppProps) {
   const [searchQuery, setSearchQuery] = useState('');
 
   // Doctor View Mode
-  const [doctorViewMode, setDoctorViewMode] = useState<'dashboard' | 'consultation'>('dashboard');
+  const [doctorViewMode, setDoctorViewMode] = useState<'dashboard' | 'patient-view' | 'consultation'>('dashboard');
   const [isNewPatientModalOpen, setIsNewPatientModalOpen] = useState(false);
 
   // Parent Portal: starts as null (must log in explicitly)
@@ -208,6 +210,7 @@ function MainApp({ authSession, onLogout }: MainAppProps) {
   const handleAddPatient = (newPatient: Patient) => {
     setPatients((prev) => [newPatient, ...prev]);
     setSelectedPatientId(newPatient.id);
+    setDoctorViewMode('patient-view');
 
     const ageMonths = getAgeInMonths(newPatient.birthDate);
     const newVaccs = getInitialVaccinesForPatient(newPatient.id, ageMonths);
@@ -263,7 +266,7 @@ function MainApp({ authSession, onLogout }: MainAppProps) {
 
   const handleSaveConsultation = (newConsultation: Consultation) => {
     setConsultations((prev) => [newConsultation, ...prev]);
-    setDoctorViewMode('dashboard');
+    setDoctorViewMode('patient-view');
     const targetPatient = patients.find((p) => p.id === newConsultation.patientId);
     const notif: PediatricNotification = {
       id: `notif_cons_new_${Date.now()}`,
@@ -336,6 +339,10 @@ function MainApp({ authSession, onLogout }: MainAppProps) {
               appointments={appointments}
               selectedPatientId={selectedPatientId}
               onSelectPatient={(id) => setSelectedPatientId(id)}
+              onViewPatient={(id) => {
+                setSelectedPatientId(id);
+                setDoctorViewMode('patient-view');
+              }}
               onStartNewConsultation={(id) => {
                 setSelectedPatientId(id);
                 setDoctorViewMode('consultation');
@@ -347,15 +354,27 @@ function MainApp({ authSession, onLogout }: MainAppProps) {
               doctorName={doctorName}
               doctorCrm={doctorCrm}
             />
+          ) : doctorViewMode === 'patient-view' ? (
+            <PatientClinicalView
+              patient={selectedPatient}
+              consultations={consultations}
+              vaccines={activeVaccines}
+              appointments={appointments}
+              onStartNewConsultation={() => setDoctorViewMode('consultation')}
+              onBack={() => setDoctorViewMode('dashboard')}
+              onUpdateVaccineStatus={handleUpdateVaccineStatus}
+              onRegenerateAccessCode={handleRegenerateAccessCode}
+              doctorName={doctorName}
+              doctorCrm={doctorCrm}
+            />
           ) : (
-            <MedicalRecordForm
+            <ConsultationForm
               patient={selectedPatient}
               consultations={consultations}
               vaccines={activeVaccines}
               onSaveConsultation={handleSaveConsultation}
               onUpdateVaccineStatus={handleUpdateVaccineStatus}
-              onRegenerateAccessCode={handleRegenerateAccessCode}
-              onBack={() => setDoctorViewMode('dashboard')}
+              onBack={() => setDoctorViewMode('patient-view')}
               doctorId={doctorId}
               doctorName={doctorName}
               doctorCrm={doctorCrm}

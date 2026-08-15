@@ -90,6 +90,8 @@ export interface Anamnesis {
   historyOfPresentIllness: string; // HDA
   currentMedications: string[];
   allergies: string[];
+  currentHabits?: string;   // Hábitos atuais (alimentação, sono, atividade)
+  physicalExam?: string;    // Exame físico pediátrico (campo livre)
 }
 
 export interface LabExamItem {

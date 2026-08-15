@@ -23,6 +23,7 @@ interface DoctorDashboardProps {
   appointments: Appointment[];
   selectedPatientId: string;
   onSelectPatient: (patientId: string) => void;
+  onViewPatient: (patientId: string) => void;
   onStartNewConsultation: (patientId: string) => void;
   onOpenNewPatientModal: () => void;
   onAddAppointment: (appointment: Appointment) => void;
@@ -38,6 +39,7 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
   appointments,
   selectedPatientId,
   onSelectPatient,
+  onViewPatient,
   onStartNewConsultation,
   onOpenNewPatientModal,
   onAddAppointment,
@@ -346,21 +348,14 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
                       {/* Actions */}
                       <div className="flex items-center gap-2 pt-2 border-t border-sky-200/60">
                         <button
-                          onClick={() => onSelectPatient(p.id)}
-                          className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${
-                            isSelected
-                              ? 'bg-slate-900 text-white'
-                              : 'bg-sky-100/70 text-sky-900 hover:bg-sky-200/80 border border-sky-300/60'
-                          }`}
+                          onClick={() => onViewPatient(p.id)}
+                          className="flex-1 py-2 rounded-xl text-xs font-bold transition-all bg-sky-100/70 text-sky-900 hover:bg-sky-200/80 border border-sky-300/60"
                         >
-                          {isSelected ? 'Selecionado' : 'Prontuário'}
+                          Prontuário
                         </button>
 
                         <button
-                          onClick={() => {
-                            onSelectPatient(p.id);
-                            onStartNewConsultation(p.id);
-                          }}
+                          onClick={() => onStartNewConsultation(p.id)}
                           className="flex items-center gap-1.5 bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold px-3 py-2 rounded-xl transition-all shadow-sm"
                           title="Novo Atendimento"
                         >
@@ -441,20 +436,13 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
                             <td className="p-3.5 text-center">
                               <div className="flex items-center justify-center gap-2">
                                 <button
-                                  onClick={() => onSelectPatient(p.id)}
-                                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                                    isSelected
-                                      ? 'bg-slate-900 text-white'
-                                      : 'bg-sky-100 text-sky-900 hover:bg-sky-200 border border-sky-300/80'
-                                  }`}
+                                  onClick={() => onViewPatient(p.id)}
+                                  className="px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-sky-100 text-sky-900 hover:bg-sky-200 border border-sky-300/80"
                                 >
-                                  {isSelected ? 'Ativo' : 'Prontuário'}
+                                  Prontuário
                                 </button>
                                 <button
-                                  onClick={() => {
-                                    onSelectPatient(p.id);
-                                    onStartNewConsultation(p.id);
-                                  }}
+                                  onClick={() => onStartNewConsultation(p.id)}
                                   className="bg-sky-600 hover:bg-sky-500 text-white font-bold px-3 py-1.5 rounded-lg transition-all shadow-sm flex items-center gap-1"
                                 >
                                   <Stethoscope className="w-3.5 h-3.5" />
