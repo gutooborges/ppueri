@@ -1,10 +1,19 @@
 import React, { useState } from 'react';
-import { Patient, Consultation, VaccineRecord, Appointment } from '../../types/ppueri';
+import { Patient, Consultation, VaccineRecord, Appointment, LabExam } from '../../types/ppueri';
 import { formatPediatricAge } from '../../lib/pediatric-rules';
 import { GrowthChart } from '../ui/GrowthChart';
 import { VaccineTracker } from '../ui/VaccineTracker';
 import { AccessCodeGenerator } from '../ui/AccessCodeGenerator';
-import { ArrowLeft, Plus, ChevronDown, ChevronUp, FileText } from 'lucide-react';
+import {
+  ArrowLeft,
+  Plus,
+  ChevronDown,
+  ChevronUp,
+  FileText,
+  Microscope,
+  CheckCircle,
+  AlertTriangle,
+} from 'lucide-react';
 
 interface PatientClinicalViewProps {
   patient: Patient;
@@ -65,6 +74,7 @@ export const PatientClinicalView: React.FC<PatientClinicalViewProps> = ({
   doctorCrm: _doctorCrm,
 }) => {
   const [vaccinesExpanded, setVaccinesExpanded] = useState(false);
+  const [examsExpanded, setExamsExpanded] = useState(false);
 
   const patientConsultations = [...consultations]
     .filter((c) => c.patientId === patient.id)
@@ -72,6 +82,9 @@ export const PatientClinicalView: React.FC<PatientClinicalViewProps> = ({
 
   const latestConsultation = patientConsultations[0];
   const anamnesis = latestConsultation?.anamnesis;
+
+  // Aggregate all lab exams from all consultations (most recent first)
+  const allExams: LabExam[] = patientConsultations.flatMap((c) => c.exams ?? []);
 
   const nextApt = appointments.find(
     (a) => a.patientId === patient.id && a.status === 'agendada'
@@ -215,18 +228,24 @@ export const PatientClinicalView: React.FC<PatientClinicalViewProps> = ({
         </div>
       </div>
 
-      {/* Growth Chart - fed only by saved consultations */}
-      <GrowthChart patient={patient} consultations={patientConsultations} />
-
-      {/* Consultation Timeline */}
+      {/* Consultation Timeline — BEFORE growth chart */}
       <div className="bg-white/80 border border-sky-200 rounded-2xl p-5 shadow-sm space-y-4">
-        <div className="flex items-center gap-3 border-b border-sky-100 pb-3">
-          <FileText className="w-5 h-5 text-sky-700" />
-          <h3 className="text-sm font-extrabold text-sky-950">Histórico de Consultas</h3>
-          <span className="bg-sky-100 text-sky-800 text-xs font-bold px-2 py-0.5 rounded-full border border-sky-200">
-            {patientConsultations.length}{' '}
-            {patientConsultations.length === 1 ? 'consulta' : 'consultas'}
-          </span>
+        <div className="flex items-center justify-between gap-3 border-b border-sky-100 pb-3">
+          <div className="flex items-center gap-3">
+            <FileText className="w-5 h-5 text-sky-700" />
+            <h3 className="text-sm font-extrabold text-sky-950">Histórico de Consultas</h3>
+            <span className="bg-sky-100 text-sky-800 text-xs font-bold px-2 py-0.5 rounded-full border border-sky-200">
+              {patientConsultations.length}{' '}
+              {patientConsultations.length === 1 ? 'consulta' : 'consultas'}
+            </span>
+          </div>
+          <button
+            onClick={onStartNewConsultation}
+            className="flex items-center gap-1.5 text-xs font-bold text-sky-700 hover:text-sky-900 bg-sky-100 hover:bg-sky-200 border border-sky-300 px-3 py-1.5 rounded-xl transition-all shrink-0"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            Nova Consulta
+          </button>
         </div>
 
         {patientConsultations.length === 0 ? (
@@ -240,6 +259,7 @@ export const PatientClinicalView: React.FC<PatientClinicalViewProps> = ({
           <div className="space-y-3">
             {patientConsultations.map((c) => {
               const prescCount = c.carePlan.prescriptions.length;
+              const examCount = (c.exams ?? []).length;
               return (
                 <div
                   key={c.id}
@@ -256,11 +276,18 @@ export const PatientClinicalView: React.FC<PatientClinicalViewProps> = ({
                       </span>
                       <span className="text-xs text-sky-600 font-medium">· {c.doctorName}</span>
                     </div>
-                    {prescCount > 0 && (
-                      <span className="bg-sky-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-                        {prescCount} prescrição{prescCount > 1 ? 'ões' : ''}
-                      </span>
-                    )}
+                    <div className="flex items-center gap-1.5">
+                      {examCount > 0 && (
+                        <span className="bg-sky-100 text-sky-800 border border-sky-300 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                          {examCount} exame{examCount > 1 ? 's' : ''}
+                        </span>
+                      )}
+                      {prescCount > 0 && (
+                        <span className="bg-sky-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                          {prescCount} prescrição{prescCount > 1 ? 'ões' : ''}
+                        </span>
+                      )}
+                    </div>
                   </div>
 
                   {c.anamnesis.chiefComplaint && (
@@ -306,6 +333,120 @@ export const PatientClinicalView: React.FC<PatientClinicalViewProps> = ({
                 </div>
               );
             })}
+          </div>
+        )}
+      </div>
+
+      {/* Growth Chart — fed only by saved consultations */}
+      <GrowthChart patient={patient} consultations={patientConsultations} />
+
+      {/* Lab Exams (collapsible) */}
+      <div className="bg-white/80 border border-sky-200 rounded-2xl shadow-sm overflow-hidden">
+        <button
+          onClick={() => setExamsExpanded(!examsExpanded)}
+          className="w-full flex items-center justify-between p-5 hover:bg-sky-50/50 transition-colors"
+        >
+          <div className="flex items-center gap-2.5">
+            <Microscope className="w-4 h-4 text-sky-700" />
+            <span className="text-sm font-extrabold text-sky-950">Exames Laboratoriais</span>
+            <span className="bg-sky-100 text-sky-800 text-xs font-bold px-2 py-0.5 rounded-full border border-sky-200">
+              {allExams.length} {allExams.length === 1 ? 'exame' : 'exames'}
+            </span>
+          </div>
+          {examsExpanded ? (
+            <ChevronUp className="w-4 h-4 text-sky-700" />
+          ) : (
+            <ChevronDown className="w-4 h-4 text-sky-700" />
+          )}
+        </button>
+
+        {examsExpanded && (
+          <div className="border-t border-sky-200 p-4 space-y-4">
+            {allExams.length === 0 ? (
+              <p className="text-xs text-sky-700 font-medium text-center py-4">
+                Nenhum exame laboratorial registrado. Vincule exames durante uma consulta usando o Leitor OCR.
+              </p>
+            ) : (
+              allExams.map((exam) => (
+                <div key={exam.id} className="border border-sky-200 rounded-xl overflow-hidden">
+                  <div className="bg-sky-50 px-4 py-2.5 flex items-center justify-between gap-2 flex-wrap">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-extrabold text-sky-950">{exam.title}</span>
+                      <span className="bg-sky-200 text-sky-900 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                        {exam.category}
+                      </span>
+                    </div>
+                    <span className="text-xs text-sky-600 font-medium">
+                      {new Date(exam.date + 'T00:00:00').toLocaleDateString('pt-BR')}
+                    </span>
+                  </div>
+
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs">
+                      <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200 uppercase tracking-wider text-[10px]">
+                        <tr>
+                          <th className="px-3 py-2">Parâmetro</th>
+                          <th className="px-3 py-2">Resultado</th>
+                          <th className="px-3 py-2">Unidade</th>
+                          <th className="px-3 py-2">Referência Pediátrica</th>
+                          <th className="px-3 py-2 text-center">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-200 text-slate-800">
+                        {exam.items.map((item, idx) => {
+                          const isNormal = item.status === 'normal';
+                          return (
+                            <tr
+                              key={idx}
+                              className={
+                                isNormal ? 'hover:bg-slate-50' : 'bg-sky-50/70 font-semibold'
+                              }
+                            >
+                              <td className="px-3 py-2 font-medium text-slate-900">
+                                {item.parameter}
+                              </td>
+                              <td className="px-3 py-2 font-bold">{item.value}</td>
+                              <td className="px-3 py-2 text-slate-500">{item.unit}</td>
+                              <td className="px-3 py-2 text-slate-600">{item.referenceRange}</td>
+                              <td className="px-3 py-2 text-center">
+                                <span
+                                  className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                                    isNormal
+                                      ? 'bg-sky-100 text-sky-800'
+                                      : 'bg-amber-100 text-amber-900 border border-amber-300'
+                                  }`}
+                                >
+                                  {isNormal ? (
+                                    <>
+                                      <CheckCircle className="w-3 h-3 text-sky-600" />
+                                      Normal
+                                    </>
+                                  ) : (
+                                    <>
+                                      <AlertTriangle className="w-3 h-3 text-amber-600" />
+                                      {item.status === 'alterado_alto' ? 'Elevado' : 'Abaixo'}
+                                    </>
+                                  )}
+                                </span>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {exam.doctorInterpretation && (
+                    <div className="px-4 py-2.5 border-t border-sky-100 bg-sky-50/30">
+                      <p className="text-xs text-sky-800">
+                        <span className="font-semibold text-sky-700">Parecer médico: </span>
+                        {exam.doctorInterpretation}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              ))
+            )}
           </div>
         )}
       </div>

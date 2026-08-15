@@ -6,6 +6,8 @@ import {
   PrescriptionItem,
   ClinicalVitals,
   AntropometricParams,
+  LabExam,
+  Anamnesis,
 } from '../../types/ppueri';
 import {
   calculateZScores,
@@ -15,7 +17,9 @@ import {
   getZScoreClassification,
 } from '../../lib/pediatric-rules';
 import { ClinicalFlag } from '../ui/ClinicalFlag';
-import { ArrowLeft, Plus, Trash2, CheckCircle } from 'lucide-react';
+import { PdfOcrUploader } from '../ui/PdfOcrUploader';
+import { ClinicalAiAssistant } from './ClinicalAiAssistant';
+import { ArrowLeft, Plus, Trash2, CheckCircle, X } from 'lucide-react';
 
 interface ConsultationFormProps {
   patient: Patient;
@@ -90,7 +94,10 @@ export const ConsultationForm: React.FC<ConsultationFormProps> = ({
   // ── Section C: Exame Físico ───────────────────────────────────
   const [physicalExam, setPhysicalExam] = useState('');
 
-  // ── Section D: Conduta ────────────────────────────────────────
+  // ── Section D: Exames Laboratoriais (OCR) ────────────────────
+  const [linkedExams, setLinkedExams] = useState<LabExam[]>([]);
+
+  // ── Section F: Conduta ────────────────────────────────────────
   const [diagnosisText, setDiagnosisText] = useState('');
   const [prescriptions, setPrescriptions] = useState<PrescriptionItem[]>([]);
   const [feedingInstructions, setFeedingInstructions] = useState('');
@@ -129,6 +136,77 @@ export const ConsultationForm: React.FC<ConsultationFormProps> = ({
     };
     return evaluateClinicalVitals(vitals, ageMonths);
   }, [heartRate, respiratoryRate, systolicBP, diastolicBP, tempC, spo2, ageMonths]);
+
+  // Derived objects for CDSS
+  const currentVitals = useMemo<ClinicalVitals>(
+    () => ({
+      heartRateBpm: parseFloat(heartRate) || 0,
+      respiratoryRateRpm: parseFloat(respiratoryRate) || 0,
+      systolicBP: parseFloat(systolicBP) || 0,
+      diastolicBP: parseFloat(diastolicBP) || 0,
+      temperatureC: parseFloat(tempC) || 0,
+      oxygenSaturationPct: parseFloat(spo2) || 0,
+    }),
+    [heartRate, respiratoryRate, systolicBP, diastolicBP, tempC, spo2]
+  );
+
+  const currentAntropometry = useMemo<AntropometricParams>(() => {
+    const w = parseFloat(weightKg) || 0;
+    const h = parseFloat(heightCm) || 0;
+    if (w > 0 && h > 0) {
+      const hc = parseFloat(headCm) || undefined;
+      return calculateZScores(ageMonths, patient.gender, w, h, hc);
+    }
+    return { weightKg: w, heightCm: h };
+  }, [weightKg, heightCm, headCm, ageMonths, patient.gender]);
+
+  // Full Anamnesis object for CDSS (merges form state + perinatal defaults)
+  const cdssAnamnesis = useMemo<Anamnesis>(
+    () => ({
+      gestationalHistory: prevAnamnesis?.gestationalHistory ?? '',
+      birthType: prevAnamnesis?.birthType ?? 'vaginal',
+      birthWeightKg: prevAnamnesis?.birthWeightKg ?? 0,
+      birthLengthCm: prevAnamnesis?.birthLengthCm ?? 0,
+      headCircumferenceAtBirthCm: prevAnamnesis?.headCircumferenceAtBirthCm ?? 0,
+      apgar1Min: prevAnamnesis?.apgar1Min ?? 0,
+      apgar5Min: prevAnamnesis?.apgar5Min ?? 0,
+      breastfeedingStatus: prevAnamnesis?.breastfeedingStatus ?? 'exclusivo',
+      familyHistory: prevAnamnesis?.familyHistory ?? '',
+      chiefComplaint,
+      historyOfPresentIllness: hda,
+      currentMedications: prevAnamnesis?.currentMedications ?? [],
+      allergies: patient.allergies,
+      currentHabits,
+      physicalExam,
+    }),
+    [prevAnamnesis, chiefComplaint, hda, currentHabits, physicalExam, patient.allergies]
+  );
+
+  // ── Exam helpers ──────────────────────────────────────────────
+  const handleExamParsed = (exam: LabExam) => {
+    setLinkedExams((prev) => [...prev, exam]);
+  };
+
+  const removeLinkedExam = (id: string) => {
+    setLinkedExams((prev) => prev.filter((e) => e.id !== id));
+  };
+
+  // ── CDSS callbacks ────────────────────────────────────────────
+  const handleApplyDiagnosis = (text: string) => {
+    setDiagnosisText((prev) => (prev ? `${prev}; ${text}` : text));
+  };
+
+  const handleApplyPrescriptionSuggestion = (medicationText: string) => {
+    const newRx: PrescriptionItem = {
+      id: `rx_${Date.now()}`,
+      medication: medicationText,
+      dosage: '',
+      frequency: '',
+      duration: '',
+      instructions: '',
+    };
+    setPrescriptions((prev) => [...prev, newRx]);
+  };
 
   // ── Prescription helpers ──────────────────────────────────────
   const addPrescription = () => {
@@ -206,7 +284,7 @@ export const ConsultationForm: React.FC<ConsultationFormProps> = ({
       antropometry,
       vitals,
       vitalsEvaluations: evs,
-      exams: [],
+      exams: linkedExams,
       carePlan: {
         diagnosisText,
         prescriptions,
@@ -485,9 +563,66 @@ export const ConsultationForm: React.FC<ConsultationFormProps> = ({
         </div>
       </div>
 
-      {/* Section D — Conduta, Prescrição & Orientações */}
+      {/* Section D — Exames Laboratoriais (OCR) */}
       <div className={sectionCardCls}>
-        <h2 className={sectionHeadCls}>D — Conduta, Prescrição & Orientações</h2>
+        <h2 className={sectionHeadCls}>D — Exames Laboratoriais</h2>
+
+        <PdfOcrUploader patientId={patient.id} onExamParsed={handleExamParsed} />
+
+        {/* Linked exams list */}
+        {linkedExams.length > 0 && (
+          <div className="space-y-2 pt-1">
+            <p className="text-xs font-bold text-sky-800">
+              Exames vinculados a esta consulta ({linkedExams.length}):
+            </p>
+            {linkedExams.map((exam) => (
+              <div
+                key={exam.id}
+                className="flex items-center justify-between gap-3 bg-sky-50 border border-sky-200 rounded-xl px-4 py-2.5"
+              >
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="text-xs font-bold text-sky-950 truncate">{exam.title}</span>
+                  <span className="bg-sky-200 text-sky-900 text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0">
+                    {exam.category}
+                  </span>
+                  <span className="text-[10px] text-sky-600 font-medium shrink-0">
+                    {exam.items.length} parâmetro{exam.items.length !== 1 ? 's' : ''}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => removeLinkedExam(exam.id)}
+                  className="text-slate-400 hover:text-red-600 transition-colors p-1 rounded-lg hover:bg-red-50 shrink-0"
+                  title="Remover exame"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Section E — Suporte à Decisão Clínica (CDSS) */}
+      <div className="space-y-2">
+        <p className="text-xs font-extrabold text-sky-950 uppercase tracking-wider px-1">
+          E — Suporte à Decisão Clínica (CDSS IA)
+        </p>
+        <ClinicalAiAssistant
+          patient={patient}
+          anamnesis={cdssAnamnesis}
+          antropometry={currentAntropometry}
+          vitals={currentVitals}
+          vitalsEvaluations={vitalsEvaluations}
+          exams={linkedExams}
+          onApplyDiagnosis={handleApplyDiagnosis}
+          onApplyPrescriptionSuggestion={handleApplyPrescriptionSuggestion}
+        />
+      </div>
+
+      {/* Section F — Conduta, Prescrição & Orientações */}
+      <div className={sectionCardCls}>
+        <h2 className={sectionHeadCls}>F — Conduta, Prescrição & Orientações</h2>
 
         <div>
           <label className={labelCls}>Hipótese Diagnóstica</label>

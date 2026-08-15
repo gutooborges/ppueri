@@ -331,22 +331,25 @@ const SingleMetricSVGChart: React.FC<SingleMetricSVGChartProps> = ({
   const maxAge = Math.max(24, Math.ceil(maxPointAge / 6) * 6, 12);
   const minAge = 0;
 
-  // Escalonamento de valores min/max por métrica
-  let minVal = 2;
-  let maxVal = 22;
+  // Estimativa de P97 na idade máxima para garantir que a curva de referência caiba no gráfico
+  const getP97AtAge = (m: number): number => {
+    let median: number;
+    if (metric === 'peso') median = 3.3 + m * 0.52;
+    else if (metric === 'estatura') median = 49.0 + m * 1.75;
+    else median = 34.5 + Math.min(m, 12) * 0.88 + Math.max(0, m - 12) * 0.15;
+    return median * 1.18;
+  };
 
+  const minVal = metric === 'estatura' ? 40 : metric === 'perimetro' ? 30 : 2;
+  const currentMaxVal = validPoints.length > 0 ? Math.max(...validPoints.map((p) => p.val)) : 0;
+  const refMaxVal = getP97AtAge(maxAge);
+  let maxVal: number;
   if (metric === 'estatura') {
-    minVal = 40;
-    maxVal = 115;
+    maxVal = Math.max(115, currentMaxVal > 0 ? currentMaxVal + 5 : 0, Math.ceil(refMaxVal + 5));
   } else if (metric === 'perimetro') {
-    minVal = 30;
-    maxVal = 55;
-  }
-
-  // Ajusta limites dinamicamente se o paciente exceder
-  const currentMaxVal = Math.max(...validPoints.map((p) => p.val), 0);
-  if (currentMaxVal > maxVal) {
-    maxVal = Math.ceil(currentMaxVal + 3);
+    maxVal = Math.max(55, currentMaxVal > 0 ? currentMaxVal + 3 : 0, Math.ceil(refMaxVal + 3));
+  } else {
+    maxVal = Math.max(22, currentMaxVal > 0 ? currentMaxVal + 3 : 0, Math.ceil(refMaxVal + 3));
   }
 
   const xScale = (age: number) => padding + ((age - minAge) / (maxAge - minAge)) * (width - 2 * padding);
@@ -416,6 +419,9 @@ const SingleMetricSVGChart: React.FC<SingleMetricSVGChartProps> = ({
               <stop offset="0%" stopColor="#0284C7" stopOpacity="0.25" />
               <stop offset="100%" stopColor="#0284C7" stopOpacity="0.0" />
             </linearGradient>
+            <clipPath id={`chartArea_${metric}`}>
+              <rect x={padding} y={padding} width={width - 2 * padding} height={height - 2 * padding} />
+            </clipPath>
           </defs>
 
           {/* Grid de Fundo e Linhas de Escala */}
@@ -467,61 +473,60 @@ const SingleMetricSVGChart: React.FC<SingleMetricSVGChartProps> = ({
           <line x1={padding} y1={height - padding} x2={width - padding} y2={height - padding} stroke="#7DD3FC" strokeWidth="1.5" />
           <line x1={padding} y1={padding} x2={padding} y2={height - padding} stroke="#7DD3FC" strokeWidth="1.5" />
 
-          {/* Curvas Teóricas de Percentis da OMS */}
-          <polyline fill="none" stroke="#7DD3FC" strokeWidth="1" strokeDasharray="3,3" points={p97Line} />
-          <polyline fill="none" stroke="#38BDF8" strokeWidth="1" strokeDasharray="3,3" points={p85Line} />
-          <polyline fill="none" stroke="#0284C7" strokeWidth="2.5" points={p50Line} />
-          <polyline fill="none" stroke="#38BDF8" strokeWidth="1" strokeDasharray="3,3" points={p15Line} />
-          <polyline fill="none" stroke="#7DD3FC" strokeWidth="1" strokeDasharray="3,3" points={p3Line} />
+          {/* Curvas de referência e dados do paciente — clipados à área do gráfico */}
+          <g clipPath={`url(#chartArea_${metric})`}>
+            {/* Curvas Teóricas de Percentis da OMS */}
+            <polyline fill="none" stroke="#7DD3FC" strokeWidth="1" strokeDasharray="3,3" points={p97Line} />
+            <polyline fill="none" stroke="#38BDF8" strokeWidth="1" strokeDasharray="3,3" points={p85Line} />
+            <polyline fill="none" stroke="#0284C7" strokeWidth="2.5" points={p50Line} />
+            <polyline fill="none" stroke="#38BDF8" strokeWidth="1" strokeDasharray="3,3" points={p15Line} />
+            <polyline fill="none" stroke="#7DD3FC" strokeWidth="1" strokeDasharray="3,3" points={p3Line} />
 
-          {/* Rótulos das Curvas de Percentis */}
+            {/* Preenchimento Sombreado de Área do Paciente */}
+            {areaPolygonPoints && (
+              <polygon points={areaPolygonPoints} fill={`url(#blueAreaGrad_${metric})`} />
+            )}
+
+            {/* Trajetória Real do Paciente (Linha Azul Escura) */}
+            {linePoints && (
+              <polyline
+                fill="none"
+                stroke="#1E3A8A"
+                strokeWidth="3.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                points={linePoints}
+              />
+            )}
+
+            {/* Marcadores / Nós de Dados do Paciente */}
+            {validPoints.map((p, idx) => {
+              const cx = xScale(p.ageMonths);
+              const cy = yScale(p.val);
+              return (
+                <g key={idx} className="group cursor-pointer">
+                  <circle cx={cx} cy={cy} r="10" className="fill-sky-400/0 group-hover:fill-sky-300/40 transition-all" />
+                  <circle cx={cx} cy={cy} r="5.5" className="fill-sky-500 stroke-sky-950 stroke-2 group-hover:r-7 transition-all" />
+                  <text
+                    x={cx}
+                    y={cy - 10}
+                    textAnchor="middle"
+                    className="text-[10px] font-extrabold fill-sky-950 stroke-white stroke-2 paint-order-stroke"
+                  >
+                    {p.val} {unit}
+                  </text>
+                  <title>{`${p.dateFormatted} (${p.ageMonths} meses): ${p.val} ${unit} - Percentil P${p.percentile}`}</title>
+                </g>
+              );
+            })}
+          </g>
+
+          {/* Rótulos das Curvas de Percentis — fora do clip para ficarem visíveis na margem */}
           <text x={width - padding + 4} y={yScale(maxVal * 0.88)} className="text-[8px] fill-sky-700 font-bold">P97 (+2Z)</text>
           <text x={width - padding + 4} y={yScale(maxVal * 0.77)} className="text-[8px] fill-sky-700 font-semibold">P85 (+1Z)</text>
           <text x={width - padding + 4} y={yScale(maxVal * 0.65)} className="text-[8px] fill-sky-950 font-extrabold">P50 (OMS)</text>
           <text x={width - padding + 4} y={yScale(maxVal * 0.52)} className="text-[8px] fill-sky-700 font-semibold">P15 (-1Z)</text>
           <text x={width - padding + 4} y={yScale(maxVal * 0.41)} className="text-[8px] fill-sky-700 font-bold">P3 (-2Z)</text>
-
-          {/* Preenchimento Sombreado de Área do Paciente */}
-          {areaPolygonPoints && (
-            <polygon points={areaPolygonPoints} fill={`url(#blueAreaGrad_${metric})`} />
-          )}
-
-          {/* Trajetória Real do Paciente (Linha Azul Escura) */}
-          {linePoints && (
-            <polyline
-              fill="none"
-              stroke="#1E3A8A"
-              strokeWidth="3.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              points={linePoints}
-            />
-          )}
-
-          {/* Marcadores / Nós de Dados do Paciente */}
-          {validPoints.map((p, idx) => {
-            const cx = xScale(p.ageMonths);
-            const cy = yScale(p.val);
-            return (
-              <g key={idx} className="group cursor-pointer">
-                {/* Glow ring on hover */}
-                <circle cx={cx} cy={cy} r="10" className="fill-sky-400/0 group-hover:fill-sky-300/40 transition-all" />
-                <circle cx={cx} cy={cy} r="5.5" className="fill-sky-500 stroke-sky-950 stroke-2 group-hover:r-7 transition-all" />
-
-                {/* Val Tooltip / Label */}
-                <text
-                  x={cx}
-                  y={cy - 10}
-                  textAnchor="middle"
-                  className="text-[10px] font-extrabold fill-sky-950 stroke-white stroke-2 paint-order-stroke"
-                >
-                  {p.val} {unit}
-                </text>
-
-                <title>{`${p.dateFormatted} (${p.ageMonths} meses): ${p.val} ${unit} - Percentil P${p.percentile}`}</title>
-              </g>
-            );
-          })}
         </svg>
 
         {/* Rodapé e Legendas do Gráfico */}
