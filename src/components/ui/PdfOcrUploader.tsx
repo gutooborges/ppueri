@@ -12,7 +12,7 @@ export const PdfOcrUploader: React.FC<PdfOcrUploaderProps> = ({ patientId, onExa
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [fileName, setFileName] = useState<string | null>(null);
   const [parsedItems, setParsedItems] = useState<LabExamItem[]>([]);
-  const [examTitle, setExamTitle] = useState('Exame Laboratorial Extraído');
+  const [examTitle, setExamTitle] = useState('Exame Complementar Extraído');
   const [examCategory, setExamCategory] = useState<LabExam['category']>('Hemograma');
   const [doctorNotes, setDoctorNotes] = useState('');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -125,10 +125,10 @@ export const PdfOcrUploader: React.FC<PdfOcrUploaderProps> = ({ patientId, onExa
           </div>
           <div>
             <h3 className="text-sm font-bold text-slate-900">
-              Leitor Inteligente de Exames (PDF OCR & Vision Parsing)
+              Leitor Inteligente de Exames Complementares (OCR & IA)
             </h3>
             <p className="text-xs text-slate-500">
-              Extração automática de laudos e validação de limites pediátricos via IA
+              Extração e resumo estruturado de laudos laboratoriais, imagens e relatórios clínicos via Gemini Vision
             </p>
           </div>
         </div>
@@ -174,10 +174,10 @@ export const PdfOcrUploader: React.FC<PdfOcrUploaderProps> = ({ patientId, onExa
             <div className="py-4 space-y-3">
               <RefreshCw className="w-8 h-8 text-sky-600 animate-spin mx-auto" />
               <div className="text-sm font-semibold text-slate-800">
-                Analisando laudo com Gemini Vision OCR...
+                Analisando laudo com Gemini Vision...
               </div>
               <p className="text-xs text-slate-500">
-                Mapeando parâmetros bioquímicos e comparando com valores de referência por faixa etária
+                Extraindo dados, gerando resumo estruturado e identificando achados fora dos padrões de referência
               </p>
             </div>
           ) : (
@@ -186,10 +186,10 @@ export const PdfOcrUploader: React.FC<PdfOcrUploaderProps> = ({ patientId, onExa
                 <UploadCloud className="w-6 h-6" />
               </div>
               <div className="text-sm font-bold text-slate-800">
-                Arraste aqui o arquivo do exame (PDF ou Imagem)
+                Arraste o arquivo do exame complementar (PDF ou Imagem)
               </div>
               <p className="text-xs text-slate-500 max-w-md mx-auto">
-                Suporta laudos de Hemograma, Urina I, Bioquímica, Sorologias e Parasitológico em formato PDF, PNG ou JPG.
+                Suporta qualquer exame complementar: Hemograma, Urina I, Bioquímica, Sorologias, Radiografias, Ultrassonografias, Tomografias, Ecocardiogramas — PDF, PNG ou JPG.
               </p>
               <div className="pt-2">
                 <span className="inline-block bg-slate-900 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow-sm">
@@ -237,6 +237,7 @@ export const PdfOcrUploader: React.FC<PdfOcrUploaderProps> = ({ patientId, onExa
                 <option value="Bioquímica">Bioquímica</option>
                 <option value="Urina">Urina</option>
                 <option value="Sorologia">Sorologia</option>
+                <option value="Imagem">Imagem (Rx / US / TC / Eco)</option>
                 <option value="Outro">Outro</option>
               </select>
 

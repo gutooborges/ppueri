@@ -563,9 +563,9 @@ export const ConsultationForm: React.FC<ConsultationFormProps> = ({
         </div>
       </div>
 
-      {/* Section D — Exames Laboratoriais (OCR) */}
+      {/* Section D — Exames Complementares (OCR) */}
       <div className={sectionCardCls}>
-        <h2 className={sectionHeadCls}>D — Exames Laboratoriais</h2>
+        <h2 className={sectionHeadCls}>D — Exames Complementares</h2>
 
         <PdfOcrUploader patientId={patient.id} onExamParsed={handleExamParsed} />
 
@@ -573,7 +573,7 @@ export const ConsultationForm: React.FC<ConsultationFormProps> = ({
         {linkedExams.length > 0 && (
           <div className="space-y-2 pt-1">
             <p className="text-xs font-bold text-sky-800">
-              Exames vinculados a esta consulta ({linkedExams.length}):
+              Exames complementares vinculados a esta consulta ({linkedExams.length}):
             </p>
             {linkedExams.map((exam) => (
               <div

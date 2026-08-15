@@ -348,7 +348,7 @@ export const PatientClinicalView: React.FC<PatientClinicalViewProps> = ({
         >
           <div className="flex items-center gap-2.5">
             <Microscope className="w-4 h-4 text-sky-700" />
-            <span className="text-sm font-extrabold text-sky-950">Exames Laboratoriais</span>
+            <span className="text-sm font-extrabold text-sky-950">Exames Complementares</span>
             <span className="bg-sky-100 text-sky-800 text-xs font-bold px-2 py-0.5 rounded-full border border-sky-200">
               {allExams.length} {allExams.length === 1 ? 'exame' : 'exames'}
             </span>
@@ -364,7 +364,7 @@ export const PatientClinicalView: React.FC<PatientClinicalViewProps> = ({
           <div className="border-t border-sky-200 p-4 space-y-4">
             {allExams.length === 0 ? (
               <p className="text-xs text-sky-700 font-medium text-center py-4">
-                Nenhum exame laboratorial registrado. Vincule exames durante uma consulta usando o Leitor OCR.
+                Nenhum exame complementar registrado. Vincule exames durante uma consulta usando o Leitor OCR.
               </p>
             ) : (
               allExams.map((exam) => (
