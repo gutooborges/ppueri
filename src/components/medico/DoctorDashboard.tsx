@@ -51,7 +51,7 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
   const [viewMode, setViewMode] = useState<'cards' | 'list'>('cards');
   const [sortBy, setSortBy] = useState<'name' | 'consultation' | 'age'>('name');
 
-  const todayStr = '2026-08-14';
+  const todayStr = new Date().toISOString().split('T')[0];
   const todayAppointments = appointments.filter((a) => a.date === todayStr && a.status === 'agendada');
 
   // Filtragem
@@ -234,8 +234,34 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
               </div>
             </div>
 
-            {/* View Mode 1: Cards / Grid View */}
-            {viewMode === 'cards' ? (
+            {/* Empty State */}
+            {sortedPatients.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-20 px-6 text-center space-y-5 bg-white/60 backdrop-blur-md border border-sky-200/80 rounded-2xl shadow-sm">
+                <div className="w-20 h-20 rounded-2xl bg-sky-100 border border-sky-200 flex items-center justify-center">
+                  <Users className="w-10 h-10 text-sky-400" />
+                </div>
+                <div className="space-y-2 max-w-sm">
+                  <h3 className="text-lg font-extrabold text-sky-950">
+                    {searchTerm ? 'Nenhum resultado encontrado' : 'Nenhum paciente cadastrado ainda'}
+                  </h3>
+                  <p className="text-sm text-sky-700 font-medium leading-relaxed">
+                    {searchTerm
+                      ? `Nenhum paciente corresponde a "${searchTerm}". Verifique o nome, nome da mãe ou código de acesso.`
+                      : 'Clique em "Novo Paciente" para iniciar o primeiro prontuário pediátrico da sua clínica.'}
+                  </p>
+                </div>
+                {!searchTerm && (
+                  <button
+                    onClick={onOpenNewPatientModal}
+                    className="flex items-center gap-2 bg-gradient-to-r from-sky-500 to-cyan-400 hover:from-sky-400 hover:to-cyan-300 text-slate-950 text-sm font-extrabold px-6 py-3 rounded-xl transition-all shadow-md active:scale-95 border border-cyan-300/40"
+                  >
+                    <Plus className="w-4 h-4 stroke-[3]" />
+                    <span>Novo Paciente</span>
+                  </button>
+                )}
+              </div>
+            ) : viewMode === 'cards' ? (
+            /* View Mode 1: Cards / Grid View */
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {sortedPatients.map((p) => {
                   const isSelected = p.id === selectedPatientId;

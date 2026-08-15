@@ -49,8 +49,11 @@ export const DoctorAgenda: React.FC<DoctorAgendaProps> = ({
   doctorName,
   doctorCrm,
 }) => {
-  const [currentMonthDate, setCurrentMonthDate] = useState(new Date(2026, 7, 1)); // Agosto 2026
-  const [selectedDayString, setSelectedDayString] = useState<string | null>('2026-08-14'); // Hoje por padrão
+  const [currentMonthDate, setCurrentMonthDate] = useState(() => {
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), 1);
+  });
+  const [selectedDayString, setSelectedDayString] = useState<string | null>(() => new Date().toISOString().split('T')[0]);
   const [activeFilter, setActiveFilter] = useState<'hoje' | 'semana' | 'mes' | 'todos'>('mes');
   const [statusFilter, setStatusFilter] = useState<'todos' | AppointmentStatus>('todos');
   const [typeFilter, setTypeFilter] = useState<'todos' | AppointmentType>('todos');
@@ -60,15 +63,11 @@ export const DoctorAgenda: React.FC<DoctorAgendaProps> = ({
 
   // Form State para Novo Agendamento
   const [formPatientId, setFormPatientId] = useState(patients[0]?.id || '');
-  const [formDate, setFormDate] = useState('2026-08-14');
+  const [formDate, setFormDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [formTime, setFormTime] = useState('09:00');
   const [formType, setFormType] = useState<AppointmentType>('rotina');
   const [formNotes, setFormNotes] = useState('');
-  const [formChecklist, setFormChecklist] = useState<string[]>([
-    'Caderneta de Saúde da Criança (Vacinação)',
-    'Exames e laudos laboratoriais recentes',
-    'Lista de dúvidas sobre alimentação e sono',
-  ]);
+  const [formChecklist, setFormChecklist] = useState<string[]>([]);
   const [customChecklistItem, setCustomChecklistItem] = useState('');
 
   // Reschedule Form State
@@ -85,7 +84,7 @@ export const DoctorAgenda: React.FC<DoctorAgendaProps> = ({
   const firstDayOfWeek = new Date(year, month, 1).getDay(); // 0 = Domingo
 
   // Estatísticas rápidas
-  const todayStr = '2026-08-14';
+  const todayStr = new Date().toISOString().split('T')[0];
   const todayAppointments = appointments.filter((a) => a.date === todayStr);
   const scheduledCount = appointments.filter((a) => a.status === 'agendada').length;
   const completedCount = appointments.filter((a) => a.status === 'concluida').length;
@@ -345,7 +344,7 @@ export const DoctorAgenda: React.FC<DoctorAgendaProps> = ({
                   <ChevronLeft className="w-4 h-4" />
                 </button>
                 <button
-                  onClick={() => setCurrentMonthDate(new Date(2026, 7, 1))}
+                  onClick={() => { const now = new Date(); setCurrentMonthDate(new Date(now.getFullYear(), now.getMonth(), 1)); }}
                   className="px-2.5 py-1 text-xs font-bold text-sky-900 hover:bg-sky-100 rounded-lg border border-sky-200"
                 >
                   Mês Atual

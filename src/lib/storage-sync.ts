@@ -5,11 +5,11 @@ import { getAgeInMonths } from './pediatric-rules';
 import { DEMO_DOCTOR_ID } from './auth';
 
 const STORAGE_KEYS = {
-  PATIENTS: 'ppueri_patients_v1',
-  CONSULTATIONS: 'ppueri_consultations_v1',
-  APPOINTMENTS: 'ppueri_appointments_v1',
-  VACCINES: 'ppueri_vaccines_map_v1',
-  NOTIFICATIONS: 'ppueri_notifications_v1',
+  PATIENTS: 'ppueri_patients_v2',
+  CONSULTATIONS: 'ppueri_consultations_v2',
+  APPOINTMENTS: 'ppueri_appointments_v2',
+  VACCINES: 'ppueri_vaccines_map_v2',
+  NOTIFICATIONS: 'ppueri_notifications_v2',
   LAST_SYNC: 'ppueri_last_sync_timestamp',
 };
 
@@ -154,7 +154,7 @@ export function saveStoredVaccinesMap(vaccinesMap: Record<string, VaccineRecord[
 const NOTIF_KEY_PREFIX = 'ppueri_notifications_';
 
 function notifKey(doctorId: string): string {
-  return `${NOTIF_KEY_PREFIX}${doctorId}_v1`;
+  return `${NOTIF_KEY_PREFIX}${doctorId}_v2`;
 }
 
 export function loadStoredNotifications(

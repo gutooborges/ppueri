@@ -11,7 +11,7 @@ interface NewPatientModalProps {
 
 export const NewPatientModal: React.FC<NewPatientModalProps> = ({ isOpen, onClose, onAddPatient, doctorId }) => {
   const [name, setName] = useState('');
-  const [birthDate, setBirthDate] = useState('2024-06-10');
+  const [birthDate, setBirthDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [gender, setGender] = useState<Gender>('masculino');
   const [motherName, setMotherName] = useState('');
   const [fatherName, setFatherName] = useState('');

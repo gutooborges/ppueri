@@ -39,24 +39,24 @@ export const MedicalRecordForm: React.FC<MedicalRecordFormProps> = ({
   const ageBracket = getAgeBracket(ageInMonths);
 
   // 1. Anamnese State
-  const [gestationalHistory, setGestationalHistory] = useState('Gestação a termo, sem intercorrências reportadas no pré-natal.');
+  const [gestationalHistory, setGestationalHistory] = useState('');
   const [birthType, setBirthType] = useState<'vaginal' | 'cesarea' | 'forcipe'>('vaginal');
-  const [birthWeightKg, setBirthWeightKg] = useState(3.2);
-  const [birthLengthCm, setBirthLengthCm] = useState(49.0);
-  const [headCircumferenceAtBirthCm, setHeadCircumferenceAtBirthCm] = useState(34.5);
-  const [apgar1Min, setApgar1Min] = useState(9);
-  const [apgar5Min, setApgar5Min] = useState(10);
+  const [birthWeightKg, setBirthWeightKg] = useState(0);
+  const [birthLengthCm, setBirthLengthCm] = useState(0);
+  const [headCircumferenceAtBirthCm, setHeadCircumferenceAtBirthCm] = useState(0);
+  const [apgar1Min, setApgar1Min] = useState(0);
+  const [apgar5Min, setApgar5Min] = useState(0);
   const [breastfeedingStatus, setBreastfeedingStatus] = useState<'exclusivo' | 'misto' | 'formula' | 'desmamado'>('exclusivo');
-  const [chiefComplaint, setChiefComplaint] = useState('Consulta de acompanhamento de puericultura e rotina pediátrica.');
-  const [historyOfPresentIllness, setHistoryOfPresentIllness] = useState('Criança em bom estado geral, ativa, sem queixas agudas recentes.');
-  const [familyHistory, setFamilyHistory] = useState('Sem histórico familiar relevante de doenças crônicas precoces.');
+  const [chiefComplaint, setChiefComplaint] = useState('');
+  const [historyOfPresentIllness, setHistoryOfPresentIllness] = useState('');
+  const [familyHistory, setFamilyHistory] = useState('');
   const [allergiesInput, setAllergiesInput] = useState(patient.allergies.join(', '));
-  const [medicationsInput, setMedicationsInput] = useState('Vitamina D 400 UI/dia');
+  const [medicationsInput, setMedicationsInput] = useState('');
 
   // 2. Antropometria State
-  const [weightKg, setWeightKg] = useState(ageInMonths <= 6 ? 6.5 : ageInMonths <= 12 ? 9.2 : 12.5);
-  const [heightCm, setHeightCm] = useState(ageInMonths <= 6 ? 62.0 : ageInMonths <= 12 ? 74.0 : 86.0);
-  const [headCircumferenceCm, setHeadCircumferenceCm] = useState(ageInMonths <= 12 ? 44.0 : 47.0);
+  const [weightKg, setWeightKg] = useState(0);
+  const [heightCm, setHeightCm] = useState(0);
+  const [headCircumferenceCm, setHeadCircumferenceCm] = useState(0);
 
   // Auto-cálculo dos Z-Scores
   const antropometry = calculateZScores(
@@ -69,12 +69,12 @@ export const MedicalRecordForm: React.FC<MedicalRecordFormProps> = ({
 
   // 3. Sinais Vitais State
   const [vitals, setVitals] = useState<ClinicalVitals>({
-    systolicBP: ageInMonths <= 12 ? 90 : 95,
-    diastolicBP: ageInMonths <= 12 ? 55 : 60,
-    heartRateBpm: ageInMonths <= 12 ? 120 : 100,
-    respiratoryRateRpm: ageInMonths <= 12 ? 32 : 24,
-    temperatureC: 36.6,
-    oxygenSaturationPct: 98,
+    systolicBP: 0,
+    diastolicBP: 0,
+    heartRateBpm: 0,
+    respiratoryRateRpm: 0,
+    temperatureC: 0,
+    oxygenSaturationPct: 0,
   });
 
   // Validação dinâmica em tempo real
@@ -84,21 +84,12 @@ export const MedicalRecordForm: React.FC<MedicalRecordFormProps> = ({
   const [linkedExams, setLinkedExams] = useState<LabExam[]>([]);
 
   // 5. Plano de Cuidado e Prescrição State
-  const [diagnosisText, setDiagnosisText] = useState('Criança em adequado desenvolvimento neuropsicomotor e bom estado nutricional.');
-  const [prescriptions, setPrescriptions] = useState<PrescriptionItem[]>([
-    {
-      id: 'rx_init_1',
-      medication: 'Vitamina D3 (Colecalciferol 200 UI/gota)',
-      dosage: '2 gotas (400 UI)',
-      frequency: '1x ao dia pela manhã',
-      duration: 'Uso contínuo',
-      instructions: 'Administrar diretamente na boca da criança.',
-    },
-  ]);
-  const [feedingInstructions, setFeedingInstructions] = useState('Manter aleitamento / alimentação equilibrada variada com frutas, legumes e proteínas.');
-  const [generalCareInstructions, setGeneralCareInstructions] = useState('Estimular autonomia verbal e motora em ambiente seguro.');
-  const [warningSignsText, setWarningSignsText] = useState('Febre persistente acima de 38,5°C; Vômitos frequentes; Prostração excessiva ou recusa alimentar total.');
-  const [nextAppointment, setNextAppointment] = useState('30 dias');
+  const [diagnosisText, setDiagnosisText] = useState('');
+  const [prescriptions, setPrescriptions] = useState<PrescriptionItem[]>([]);
+  const [feedingInstructions, setFeedingInstructions] = useState('');
+  const [generalCareInstructions, setGeneralCareInstructions] = useState('');
+  const [warningSignsText, setWarningSignsText] = useState('');
+  const [nextAppointment, setNextAppointment] = useState('');
 
   const [activeTab, setActiveTab] = useState<'anamnese' | 'antropometria' | 'exames' | 'vacinas' | 'prescricao' | 'cdss_ia'>('anamnese');
 
