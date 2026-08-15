@@ -40,13 +40,13 @@ export const MedicalRecordForm: React.FC<MedicalRecordFormProps> = ({
 
   // 1. Anamnese State
   const [gestationalHistory, setGestationalHistory] = useState('');
-  const [birthType, setBirthType] = useState<'vaginal' | 'cesarea' | 'forcipe'>('vaginal');
+  const [birthType, setBirthType] = useState<'vaginal' | 'cesarea' | 'forcipe' | ''>('');
   const [birthWeightKg, setBirthWeightKg] = useState(0);
   const [birthLengthCm, setBirthLengthCm] = useState(0);
   const [headCircumferenceAtBirthCm, setHeadCircumferenceAtBirthCm] = useState(0);
   const [apgar1Min, setApgar1Min] = useState(0);
   const [apgar5Min, setApgar5Min] = useState(0);
-  const [breastfeedingStatus, setBreastfeedingStatus] = useState<'exclusivo' | 'misto' | 'formula' | 'desmamado'>('exclusivo');
+  const [breastfeedingStatus, setBreastfeedingStatus] = useState<'exclusivo' | 'misto' | 'formula' | 'desmamado' | ''>('');
   const [chiefComplaint, setChiefComplaint] = useState('');
   const [historyOfPresentIllness, setHistoryOfPresentIllness] = useState('');
   const [familyHistory, setFamilyHistory] = useState('');
@@ -308,6 +308,7 @@ export const MedicalRecordForm: React.FC<MedicalRecordFormProps> = ({
                   onChange={(e) => setBirthType(e.target.value as any)}
                   className="w-full bg-white border border-slate-300 rounded-lg p-2 font-semibold"
                 >
+                  <option value="" disabled>Selecione</option>
                   <option value="vaginal">Vaginal</option>
                   <option value="cesarea">Cesárea</option>
                   <option value="forcipe">Fórceps</option>
@@ -319,8 +320,8 @@ export const MedicalRecordForm: React.FC<MedicalRecordFormProps> = ({
                 <input
                   type="number"
                   step="0.01"
-                  value={birthWeightKg}
-                  onChange={(e) => setBirthWeightKg(parseFloat(e.target.value))}
+                  value={birthWeightKg || ''}
+                  onChange={(e) => setBirthWeightKg(parseFloat(e.target.value) || 0)}
                   className="w-full bg-white border border-slate-300 rounded-lg p-2 font-semibold"
                 />
               </div>
@@ -330,8 +331,8 @@ export const MedicalRecordForm: React.FC<MedicalRecordFormProps> = ({
                 <input
                   type="number"
                   step="0.1"
-                  value={birthLengthCm}
-                  onChange={(e) => setBirthLengthCm(parseFloat(e.target.value))}
+                  value={birthLengthCm || ''}
+                  onChange={(e) => setBirthLengthCm(parseFloat(e.target.value) || 0)}
                   className="w-full bg-white border border-slate-300 rounded-lg p-2 font-semibold"
                 />
               </div>
@@ -341,8 +342,8 @@ export const MedicalRecordForm: React.FC<MedicalRecordFormProps> = ({
                 <input
                   type="number"
                   step="0.1"
-                  value={headCircumferenceAtBirthCm}
-                  onChange={(e) => setHeadCircumferenceAtBirthCm(parseFloat(e.target.value))}
+                  value={headCircumferenceAtBirthCm || ''}
+                  onChange={(e) => setHeadCircumferenceAtBirthCm(parseFloat(e.target.value) || 0)}
                   className="w-full bg-white border border-slate-300 rounded-lg p-2 font-semibold"
                 />
               </div>
@@ -355,15 +356,15 @@ export const MedicalRecordForm: React.FC<MedicalRecordFormProps> = ({
                   <input
                     type="number"
                     placeholder="1 min"
-                    value={apgar1Min}
-                    onChange={(e) => setApgar1Min(parseInt(e.target.value))}
+                    value={apgar1Min || ''}
+                    onChange={(e) => setApgar1Min(parseInt(e.target.value) || 0)}
                     className="w-1/2 bg-white border border-slate-300 rounded-lg p-2 font-semibold text-center"
                   />
                   <input
                     type="number"
                     placeholder="5 min"
-                    value={apgar5Min}
-                    onChange={(e) => setApgar5Min(parseInt(e.target.value))}
+                    value={apgar5Min || ''}
+                    onChange={(e) => setApgar5Min(parseInt(e.target.value) || 0)}
                     className="w-1/2 bg-white border border-slate-300 rounded-lg p-2 font-semibold text-center"
                   />
                 </div>
@@ -376,6 +377,7 @@ export const MedicalRecordForm: React.FC<MedicalRecordFormProps> = ({
                   onChange={(e) => setBreastfeedingStatus(e.target.value as any)}
                   className="w-full bg-white border border-slate-300 rounded-lg p-2 font-semibold"
                 >
+                  <option value="" disabled>Selecione</option>
                   <option value="exclusivo">Aleitamento Materno Exclusivo</option>
                   <option value="misto">Aleitamento Misto / Complementado</option>
                   <option value="formula">Fórmula Infantil Exclusiva</option>
@@ -448,7 +450,7 @@ export const MedicalRecordForm: React.FC<MedicalRecordFormProps> = ({
                 <input
                   type="number"
                   step="0.05"
-                  value={weightKg}
+                  value={weightKg || ''}
                   onChange={(e) => setWeightKg(parseFloat(e.target.value) || 0)}
                   className="w-full bg-white border border-slate-300 rounded-xl p-2.5 font-bold text-base text-slate-900"
                 />
@@ -465,7 +467,7 @@ export const MedicalRecordForm: React.FC<MedicalRecordFormProps> = ({
                 <input
                   type="number"
                   step="0.5"
-                  value={heightCm}
+                  value={heightCm || ''}
                   onChange={(e) => setHeightCm(parseFloat(e.target.value) || 0)}
                   className="w-full bg-white border border-slate-300 rounded-xl p-2.5 font-bold text-base text-slate-900"
                 />
@@ -482,7 +484,7 @@ export const MedicalRecordForm: React.FC<MedicalRecordFormProps> = ({
                 <input
                   type="number"
                   step="0.1"
-                  value={headCircumferenceCm}
+                  value={headCircumferenceCm || ''}
                   onChange={(e) => setHeadCircumferenceCm(parseFloat(e.target.value) || 0)}
                   className="w-full bg-white border border-slate-300 rounded-xl p-2.5 font-bold text-base text-slate-900"
                 />
@@ -524,7 +526,7 @@ export const MedicalRecordForm: React.FC<MedicalRecordFormProps> = ({
                 <label className="block font-semibold text-slate-700 mb-1">FC (bpm):</label>
                 <input
                   type="number"
-                  value={vitals.heartRateBpm}
+                  value={vitals.heartRateBpm || ''}
                   onChange={(e) => setVitals({ ...vitals, heartRateBpm: parseInt(e.target.value) || 0 })}
                   className="w-full border border-slate-300 rounded-lg p-2 font-bold text-slate-900"
                 />
@@ -534,7 +536,7 @@ export const MedicalRecordForm: React.FC<MedicalRecordFormProps> = ({
                 <label className="block font-semibold text-slate-700 mb-1">FR (rpm):</label>
                 <input
                   type="number"
-                  value={vitals.respiratoryRateRpm}
+                  value={vitals.respiratoryRateRpm || ''}
                   onChange={(e) => setVitals({ ...vitals, respiratoryRateRpm: parseInt(e.target.value) || 0 })}
                   className="w-full border border-slate-300 rounded-lg p-2 font-bold text-slate-900"
                 />
@@ -544,7 +546,7 @@ export const MedicalRecordForm: React.FC<MedicalRecordFormProps> = ({
                 <label className="block font-semibold text-slate-700 mb-1">PA Sistólica (mmHg):</label>
                 <input
                   type="number"
-                  value={vitals.systolicBP}
+                  value={vitals.systolicBP || ''}
                   onChange={(e) => setVitals({ ...vitals, systolicBP: parseInt(e.target.value) || 0 })}
                   className="w-full border border-slate-300 rounded-lg p-2 font-bold text-slate-900"
                 />
@@ -554,7 +556,7 @@ export const MedicalRecordForm: React.FC<MedicalRecordFormProps> = ({
                 <label className="block font-semibold text-slate-700 mb-1">PA Diastólica (mmHg):</label>
                 <input
                   type="number"
-                  value={vitals.diastolicBP}
+                  value={vitals.diastolicBP || ''}
                   onChange={(e) => setVitals({ ...vitals, diastolicBP: parseInt(e.target.value) || 0 })}
                   className="w-full border border-slate-300 rounded-lg p-2 font-bold text-slate-900"
                 />
@@ -565,7 +567,7 @@ export const MedicalRecordForm: React.FC<MedicalRecordFormProps> = ({
                 <input
                   type="number"
                   step="0.1"
-                  value={vitals.temperatureC}
+                  value={vitals.temperatureC || ''}
                   onChange={(e) => setVitals({ ...vitals, temperatureC: parseFloat(e.target.value) || 0 })}
                   className="w-full border border-slate-300 rounded-lg p-2 font-bold text-slate-900"
                 />
@@ -575,7 +577,7 @@ export const MedicalRecordForm: React.FC<MedicalRecordFormProps> = ({
                 <label className="block font-semibold text-slate-700 mb-1">SatO2 (%):</label>
                 <input
                   type="number"
-                  value={vitals.oxygenSaturationPct}
+                  value={vitals.oxygenSaturationPct || ''}
                   onChange={(e) => setVitals({ ...vitals, oxygenSaturationPct: parseInt(e.target.value) || 0 })}
                   className="w-full border border-slate-300 rounded-lg p-2 font-bold text-slate-900"
                 />

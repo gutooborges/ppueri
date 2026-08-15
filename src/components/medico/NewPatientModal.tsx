@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Patient, Gender } from '../../types/ppueri';
-import { User, Plus, X, ShieldCheck, Key } from 'lucide-react';
+import { Patient } from '../../types/ppueri';
+import { User, Plus, X, Key } from 'lucide-react';
 
 interface NewPatientModalProps {
   isOpen: boolean;
@@ -11,19 +11,19 @@ interface NewPatientModalProps {
 
 export const NewPatientModal: React.FC<NewPatientModalProps> = ({ isOpen, onClose, onAddPatient, doctorId }) => {
   const [name, setName] = useState('');
-  const [birthDate, setBirthDate] = useState(() => new Date().toISOString().split('T')[0]);
-  const [gender, setGender] = useState<Gender>('masculino');
+  const [birthDate, setBirthDate] = useState('');
+  const [gender, setGender] = useState('');
   const [motherName, setMotherName] = useState('');
   const [fatherName, setFatherName] = useState('');
   const [cpf, setCpf] = useState('');
-  const [bloodType, setBloodType] = useState<Patient['bloodType']>('O+');
+  const [bloodType, setBloodType] = useState<Patient['bloodType'] | ''>('' );
   const [allergiesText, setAllergiesText] = useState('');
 
   if (!isOpen) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !motherName.trim()) return;
+    if (!name.trim() || !motherName.trim() || !birthDate || !gender) return;
 
     const randomNum = Math.floor(1000 + Math.random() * 9000);
     const suffix = name.substring(0, 3).toUpperCase();
@@ -34,11 +34,11 @@ export const NewPatientModal: React.FC<NewPatientModalProps> = ({ isOpen, onClos
       doctorId,
       name: name.trim(),
       birthDate,
-      gender,
+      gender: gender as Patient['gender'],
       motherName: motherName.trim(),
       fatherName: fatherName.trim() || undefined,
       cpf: cpf.trim() || undefined,
-      bloodType,
+      bloodType: bloodType || undefined,
       accessCode,
       accessCodeCreatedAt: new Date().toISOString(),
       allergies: allergiesText ? allergiesText.split(',').map((s) => s.trim()) : [],
@@ -49,9 +49,12 @@ export const NewPatientModal: React.FC<NewPatientModalProps> = ({ isOpen, onClos
     onClose();
     // Reset form
     setName('');
+    setBirthDate('');
+    setGender('');
     setMotherName('');
     setFatherName('');
     setCpf('');
+    setBloodType('');
     setAllergiesText('');
   };
 
@@ -105,10 +108,12 @@ export const NewPatientModal: React.FC<NewPatientModalProps> = ({ isOpen, onClos
             <div>
               <label className="block font-bold text-slate-700 mb-1">Sexo Biológico *</label>
               <select
+                required
                 value={gender}
-                onChange={(e) => setGender(e.target.value as Gender)}
+                onChange={(e) => setGender(e.target.value)}
                 className="w-full p-2.5 border border-slate-300 rounded-xl font-semibold text-slate-800 bg-white"
               >
+                <option value="" disabled>Selecione</option>
                 <option value="masculino">Masculino (Menino)</option>
                 <option value="feminino">Feminino (Menina)</option>
               </select>
@@ -159,6 +164,7 @@ export const NewPatientModal: React.FC<NewPatientModalProps> = ({ isOpen, onClos
                 onChange={(e) => setBloodType(e.target.value as any)}
                 className="w-full p-2.5 border border-slate-300 rounded-xl font-semibold text-slate-800 bg-white"
               >
+                <option value="">Não informado</option>
                 <option value="O+">O+</option>
                 <option value="O-">O-</option>
                 <option value="A+">A+</option>
