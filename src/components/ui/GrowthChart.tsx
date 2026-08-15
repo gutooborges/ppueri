@@ -390,6 +390,16 @@ const SingleMetricSVGChart: React.FC<SingleMetricSVGChartProps> = ({
   const p15Line = generateWHOPercentileBand(0.91);
   const p3Line = generateWHOPercentileBand(0.82);
 
+  // Mediana na idade máxima do eixo — mesma fórmula de generateWHOPercentileBand
+  // Usada para alinhar cada label exatamente na ponta final de sua respectiva curva
+  const medianAtMaxAge = (() => {
+    const m = maxAge;
+    if (metric === 'peso') return 3.3 + m * 0.52;
+    if (metric === 'estatura') return 49.0 + m * 1.75;
+    return 34.5 + Math.min(m, 12) * 0.88 + Math.max(0, m - 12) * 0.15;
+  })();
+  const labelY = (factor: number) => yScale(medianAtMaxAge * factor);
+
   // Marcadores de eixo Y
   const yTicksCount = 5;
   const yTicks = Array.from({ length: yTicksCount }, (_, i) => {
@@ -521,12 +531,12 @@ const SingleMetricSVGChart: React.FC<SingleMetricSVGChartProps> = ({
             })}
           </g>
 
-          {/* Rótulos das Curvas de Percentis — fora do clip para ficarem visíveis na margem */}
-          <text x={width - padding + 4} y={yScale(maxVal * 0.88)} className="text-[8px] fill-sky-700 font-bold">P97 (+2Z)</text>
-          <text x={width - padding + 4} y={yScale(maxVal * 0.77)} className="text-[8px] fill-sky-700 font-semibold">P85 (+1Z)</text>
-          <text x={width - padding + 4} y={yScale(maxVal * 0.65)} className="text-[8px] fill-sky-950 font-extrabold">P50 (OMS)</text>
-          <text x={width - padding + 4} y={yScale(maxVal * 0.52)} className="text-[8px] fill-sky-700 font-semibold">P15 (-1Z)</text>
-          <text x={width - padding + 4} y={yScale(maxVal * 0.41)} className="text-[8px] fill-sky-700 font-bold">P3 (-2Z)</text>
+          {/* Rótulos das Curvas de Percentis — alinhados dinamicamente na ponta final de cada curva */}
+          <text x={width - padding + 4} y={labelY(1.18)} dominantBaseline="central" className="text-[8px] fill-sky-700 font-bold">P97 (+2Z)</text>
+          <text x={width - padding + 4} y={labelY(1.09)} dominantBaseline="central" className="text-[8px] fill-sky-700 font-semibold">P85 (+1Z)</text>
+          <text x={width - padding + 4} y={labelY(1.0)}  dominantBaseline="central" className="text-[8px] fill-sky-950 font-extrabold">P50 (OMS)</text>
+          <text x={width - padding + 4} y={labelY(0.91)} dominantBaseline="central" className="text-[8px] fill-sky-700 font-semibold">P15 (-1Z)</text>
+          <text x={width - padding + 4} y={labelY(0.82)} dominantBaseline="central" className="text-[8px] fill-sky-700 font-bold">P3 (-2Z)</text>
         </svg>
 
         {/* Rodapé e Legendas do Gráfico */}
