@@ -3,7 +3,6 @@ import { AuthSession } from '../../types/ppueri';
 import {
   loginDoctor,
   registerDoctor,
-  saveAuthSession,
   DEMO_DOCTOR_EMAIL,
   DEMO_DOCTOR_PASSWORD,
 } from '../../lib/auth';
@@ -41,7 +40,6 @@ export const DoctorAuthScreen: React.FC<DoctorAuthScreenProps> = ({ onLoginSucce
     try {
       const session = await loginDoctor(loginEmail.trim(), loginPassword);
       if (session) {
-        saveAuthSession(session);
         onLoginSuccess(session);
       } else {
         setLoginError('E-mail ou senha incorretos. Verifique suas credenciais e tente novamente.');
@@ -59,10 +57,9 @@ export const DoctorAuthScreen: React.FC<DoctorAuthScreenProps> = ({ onLoginSucce
     try {
       const session = await loginDoctor(DEMO_DOCTOR_EMAIL, DEMO_DOCTOR_PASSWORD);
       if (session) {
-        saveAuthSession(session);
         onLoginSuccess(session);
       } else {
-        setLoginError('Conta de demonstração não encontrada. Recarregue a página.');
+        setLoginError('Conta de demonstração não encontrada. Crie-a no Supabase Dashboard ou cadastre-se com este e-mail.');
       }
     } catch {
       setLoginError('Erro ao acessar conta demo.');
@@ -94,11 +91,13 @@ export const DoctorAuthScreen: React.FC<DoctorAuthScreenProps> = ({ onLoginSucce
       if ('error' in result) {
         setRegError(result.error);
       } else {
-        // Auto-login after successful registration
+        // Auto-login após cadastro
         const session = await loginDoctor(regEmail, regPassword);
         if (session) {
-          saveAuthSession(session);
           onLoginSuccess(session);
+        } else {
+          setRegError('Conta criada! Verifique seu e-mail para confirmar o cadastro e faça login.');
+          setActiveTab('login');
         }
       }
     } catch {
@@ -236,7 +235,7 @@ export const DoctorAuthScreen: React.FC<DoctorAuthScreenProps> = ({ onLoginSucce
               <form onSubmit={handleRegister} className="space-y-3.5">
                 <div>
                   <p className="text-sm font-extrabold text-slate-900 mb-1">Cadastro Médico</p>
-                  <p className="text-xs text-slate-500 mb-3">Crie sua conta profissional para gerenciar seus pacientes com privacidade total.</p>
+                  <p className="text-xs text-slate-500 mb-3">Crie sua conta profissional para gerenciar seus pacientes com segurança em nuvem.</p>
                 </div>
 
                 <div className="space-y-1">
@@ -347,10 +346,10 @@ export const DoctorAuthScreen: React.FC<DoctorAuthScreenProps> = ({ onLoginSucce
           </div>
         </div>
 
-        {/* Footer LGPD notice */}
+        {/* Footer notice */}
         <div className="flex items-center justify-center gap-1.5 text-[11px] text-slate-500">
           <ShieldCheck className="w-3.5 h-3.5 text-sky-600" />
-          <span>Dados armazenados localmente. Conformidade com a LGPD.</span>
+          <span>Dados protegidos em nuvem PostgreSQL. Conformidade com a LGPD.</span>
         </div>
       </div>
     </div>

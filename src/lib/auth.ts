@@ -1,264 +1,220 @@
-import { DoctorAccount, AuthSession, ParentAccount, ParentSession } from '../types/ppueri';
+/**
+ * auth.ts — Autenticação via Supabase Auth
+ * Médicos e responsáveis usam clientes Supabase separados para que as
+ * sessões não colidam no localStorage do navegador.
+ */
+import { supabase, parentSupabase } from './supabase/client';
+import { AuthSession, ParentSession } from '../types/ppueri';
 
-export const DEMO_DOCTOR_ID = 'doctor_demo';
 export const DEMO_DOCTOR_EMAIL = 'demo@ppueri.com.br';
 export const DEMO_DOCTOR_PASSWORD = 'ppueri2026';
 
-const AUTH_KEYS = {
-  DOCTOR_ACCOUNTS: 'ppueri_doctor_accounts_v1',
-  AUTH_SESSION: 'ppueri_auth_session_v1',
-  PARENT_ACCOUNTS: 'ppueri_parent_accounts_v1',
-  PARENT_SESSION: 'ppueri_parent_session_v1',
-};
-
-// SHA-256 hash via Web Crypto API (browser-native, no deps required)
-export async function hashPassword(password: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(password + 'ppueri_secure_salt_2026_lgpd');
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
-}
-
-export async function verifyPassword(password: string, hash: string): Promise<boolean> {
-  const computed = await hashPassword(password);
-  return computed === hash;
-}
-
-export function loadDoctorAccounts(): DoctorAccount[] {
-  try {
-    const raw = localStorage.getItem(AUTH_KEYS.DOCTOR_ACCOUNTS);
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed)) return parsed as DoctorAccount[];
-    }
-  } catch (err) {
-    console.warn('[Ppueri Auth] Erro ao carregar contas:', err);
-  }
-  return [];
-}
-
-export function saveDoctorAccounts(accounts: DoctorAccount[]): void {
-  try {
-    localStorage.setItem(AUTH_KEYS.DOCTOR_ACCOUNTS, JSON.stringify(accounts));
-  } catch (err) {
-    console.error('[Ppueri Auth] Erro ao salvar contas:', err);
-  }
-}
-
-export function getDoctorByEmail(email: string): DoctorAccount | null {
-  const accounts = loadDoctorAccounts();
-  return accounts.find((a) => a.email.toLowerCase() === email.toLowerCase().trim()) ?? null;
-}
+// ─── Doctor Auth ──────────────────────────────────────────────────────────────
 
 export async function registerDoctor(
   name: string,
   email: string,
   crm: string,
   password: string
-): Promise<{ account: DoctorAccount } | { error: string }> {
-  const existing = getDoctorByEmail(email);
-  if (existing) return { error: 'Este e-mail já está cadastrado. Faça login ou use outro e-mail.' };
+): Promise<{ account: { id: string; name: string; email: string; crm: string } } | { error: string }> {
+  const { data, error } = await supabase.auth.signUp({ email, password });
 
-  const passwordHash = await hashPassword(password);
-  const newAccount: DoctorAccount = {
-    id: `doctor_${Date.now()}`,
-    name: name.trim(),
-    email: email.toLowerCase().trim(),
-    crm: crm.trim(),
-    passwordHash,
-    createdAt: new Date().toISOString(),
-  };
+  if (error) return { error: error.message };
+  if (!data.user) return { error: 'Erro ao criar conta. Tente novamente.' };
 
-  const accounts = loadDoctorAccounts();
-  accounts.push(newAccount);
-  saveDoctorAccounts(accounts);
-  return { account: newAccount };
+  const { error: profileError } = await supabase
+    .from('profiles')
+    .insert({ id: data.user.id, email: email.toLowerCase().trim(), role: 'doctor', name: name.trim(), crm: crm.trim() });
+
+  if (profileError) return { error: profileError.message };
+
+  return { account: { id: data.user.id, name: name.trim(), email: email.toLowerCase().trim(), crm: crm.trim() } };
 }
 
-export async function loginDoctor(
-  email: string,
-  password: string
-): Promise<AuthSession | null> {
-  const account = getDoctorByEmail(email);
-  if (!account) return null;
+export async function loginDoctor(email: string, password: string): Promise<AuthSession | null> {
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error || !data.user || !data.session) return null;
 
-  const valid = await verifyPassword(password, account.passwordHash);
-  if (!valid) return null;
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('name, crm, role')
+    .eq('id', data.user.id)
+    .single();
 
-  const expiresAt = new Date();
-  expiresAt.setDate(expiresAt.getDate() + 7);
+  if (!profile || profile.role !== 'doctor') {
+    await supabase.auth.signOut();
+    return null;
+  }
 
   return {
-    doctorId: account.id,
-    doctorName: account.name,
-    doctorCrm: account.crm,
-    email: account.email,
-    expiresAt: expiresAt.toISOString(),
+    doctorId: data.user.id,
+    doctorName: profile.name as string,
+    doctorCrm: (profile.crm as string) ?? '',
+    email: data.user.email ?? email,
+    expiresAt: new Date(data.session.expires_at! * 1000).toISOString(),
   };
 }
 
-export function loadAuthSession(): AuthSession | null {
-  try {
-    const raw = localStorage.getItem(AUTH_KEYS.AUTH_SESSION);
-    if (raw) return JSON.parse(raw) as AuthSession;
-  } catch (err) {
-    console.warn('[Ppueri Auth] Erro ao carregar sessão:', err);
-  }
-  return null;
+/**
+ * Carrega a sessão do médico a partir do Supabase (gerenciado internamente).
+ * Retorna null se não há sessão válida ou o perfil não é de médico.
+ */
+export async function loadAuthSession(): Promise<AuthSession | null> {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) return null;
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('name, crm, role')
+    .eq('id', session.user.id)
+    .single();
+
+  if (!profile || profile.role !== 'doctor') return null;
+
+  return {
+    doctorId: session.user.id,
+    doctorName: profile.name as string,
+    doctorCrm: (profile.crm as string) ?? '',
+    email: session.user.email ?? '',
+    expiresAt: new Date(session.expires_at! * 1000).toISOString(),
+  };
 }
 
-export function saveAuthSession(session: AuthSession): void {
-  try {
-    localStorage.setItem(AUTH_KEYS.AUTH_SESSION, JSON.stringify(session));
-  } catch (err) {
-    console.error('[Ppueri Auth] Erro ao salvar sessão:', err);
-  }
-}
-
-export function clearAuthSession(): void {
-  try {
-    localStorage.removeItem(AUTH_KEYS.AUTH_SESSION);
-  } catch (err) {
-    console.error('[Ppueri Auth] Erro ao limpar sessão:', err);
-  }
+export async function clearAuthSession(): Promise<void> {
+  await supabase.auth.signOut();
 }
 
 export function isSessionValid(session: AuthSession): boolean {
   return new Date(session.expiresAt) > new Date();
 }
 
-// ─── Parent Auth ─────────────────────────────────────────────────────────────
-
-export function loadParentAccounts(): ParentAccount[] {
-  try {
-    const raw = localStorage.getItem(AUTH_KEYS.PARENT_ACCOUNTS);
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed)) return parsed as ParentAccount[];
-    }
-  } catch (err) {
-    console.warn('[Ppueri Auth] Erro ao carregar contas dos responsáveis:', err);
-  }
-  return [];
-}
-
-export function saveParentAccounts(accounts: ParentAccount[]): void {
-  try {
-    localStorage.setItem(AUTH_KEYS.PARENT_ACCOUNTS, JSON.stringify(accounts));
-  } catch (err) {
-    console.error('[Ppueri Auth] Erro ao salvar contas dos responsáveis:', err);
-  }
-}
-
-export function getParentByEmail(email: string): ParentAccount | null {
-  const accounts = loadParentAccounts();
-  return accounts.find((a) => a.email.toLowerCase() === email.toLowerCase().trim()) ?? null;
-}
+// ─── Parent Auth ──────────────────────────────────────────────────────────────
 
 export async function registerParent(
   name: string,
   email: string,
   password: string,
-  linkedPatientId: string
+  accessCode: string
 ): Promise<{ session: ParentSession } | { error: string }> {
-  const existing = getParentByEmail(email);
-  if (existing) return { error: 'Este e-mail já está cadastrado. Faça login ou use outro e-mail.' };
+  // 1. Busca o paciente pelo código de acesso via RPC pública
+  const { data: found, error: rpcError } = await supabase.rpc('find_patient_by_access_code', {
+    p_code: accessCode.trim().toUpperCase(),
+  });
 
-  const passwordHash = await hashPassword(password);
-  const newAccount: ParentAccount = {
-    id: `parent_${Date.now()}`,
-    name: name.trim(),
-    email: email.toLowerCase().trim(),
-    passwordHash,
-    linkedPatientId,
-    createdAt: new Date().toISOString(),
-  };
+  if (rpcError || !found || found.length === 0) {
+    return { error: 'Código de acesso não localizado. Verifique o código fornecido pelo pediatra.' };
+  }
 
-  const accounts = loadParentAccounts();
-  accounts.push(newAccount);
-  saveParentAccounts(accounts);
+  const patientId: string = found[0].patient_id;
+  const patientName: string = found[0].patient_name;
 
-  const expiresAt = new Date();
-  expiresAt.setDate(expiresAt.getDate() + 30);
+  // 2. Cria conta no Supabase Auth (cliente separado para o responsável)
+  const { data, error } = await parentSupabase.auth.signUp({ email, password });
+  if (error) return { error: error.message };
+  if (!data.user) return { error: 'Erro ao criar conta. Tente novamente.' };
+
+  // 3. Cria o perfil do responsável
+  const { error: profileError } = await parentSupabase
+    .from('profiles')
+    .insert({
+      id: data.user.id,
+      email: email.toLowerCase().trim(),
+      role: 'parent',
+      name: name.trim(),
+      linked_patient_id: patientId,
+    });
+
+  if (profileError) return { error: profileError.message };
+
+  const expiresAt = data.session
+    ? new Date(data.session.expires_at! * 1000).toISOString()
+    : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
 
   return {
     session: {
-      parentId: newAccount.id,
-      parentName: newAccount.name,
-      linkedPatientId,
-      expiresAt: expiresAt.toISOString(),
+      parentId: data.user.id,
+      parentName: name.trim(),
+      linkedPatientId: patientId,
+      linkedPatientName: patientName,
+      expiresAt,
     },
   };
 }
 
-export async function loginParent(
-  email: string,
-  password: string
-): Promise<ParentSession | null> {
-  const account = getParentByEmail(email);
-  if (!account) return null;
+export async function loginParent(email: string, password: string): Promise<ParentSession | null> {
+  const { data, error } = await parentSupabase.auth.signInWithPassword({ email, password });
+  if (error || !data.user || !data.session) return null;
 
-  const valid = await verifyPassword(password, account.passwordHash);
-  if (!valid) return null;
+  const { data: profile } = await parentSupabase
+    .from('profiles')
+    .select('name, role, linked_patient_id')
+    .eq('id', data.user.id)
+    .single();
 
-  const expiresAt = new Date();
-  expiresAt.setDate(expiresAt.getDate() + 30);
+  if (!profile || profile.role !== 'parent') {
+    await parentSupabase.auth.signOut();
+    return null;
+  }
+
+  // Busca o nome do paciente vinculado
+  let patientName = '';
+  if (profile.linked_patient_id) {
+    const { data: patient } = await parentSupabase
+      .from('patients')
+      .select('name')
+      .eq('id', profile.linked_patient_id)
+      .single();
+    patientName = (patient?.name as string) ?? '';
+  }
 
   return {
-    parentId: account.id,
-    parentName: account.name,
-    linkedPatientId: account.linkedPatientId,
-    expiresAt: expiresAt.toISOString(),
+    parentId: data.user.id,
+    parentName: profile.name as string,
+    linkedPatientId: (profile.linked_patient_id as string) ?? '',
+    linkedPatientName: patientName,
+    expiresAt: new Date(data.session.expires_at! * 1000).toISOString(),
   };
 }
 
-export function loadParentSession(): ParentSession | null {
-  try {
-    const raw = localStorage.getItem(AUTH_KEYS.PARENT_SESSION);
-    if (raw) return JSON.parse(raw) as ParentSession;
-  } catch (err) {
-    console.warn('[Ppueri Auth] Erro ao carregar sessão dos responsáveis:', err);
+export async function loadParentSession(): Promise<ParentSession | null> {
+  const { data: { session } } = await parentSupabase.auth.getSession();
+  if (!session) return null;
+
+  const { data: profile } = await parentSupabase
+    .from('profiles')
+    .select('name, role, linked_patient_id')
+    .eq('id', session.user.id)
+    .single();
+
+  if (!profile || profile.role !== 'parent') return null;
+
+  let patientName = '';
+  if (profile.linked_patient_id) {
+    const { data: patient } = await parentSupabase
+      .from('patients')
+      .select('name')
+      .eq('id', profile.linked_patient_id)
+      .single();
+    patientName = (patient?.name as string) ?? '';
   }
-  return null;
+
+  return {
+    parentId: session.user.id,
+    parentName: profile.name as string,
+    linkedPatientId: (profile.linked_patient_id as string) ?? '',
+    linkedPatientName: patientName,
+    expiresAt: new Date(session.expires_at! * 1000).toISOString(),
+  };
 }
 
-export function saveParentSession(session: ParentSession): void {
-  try {
-    localStorage.setItem(AUTH_KEYS.PARENT_SESSION, JSON.stringify(session));
-  } catch (err) {
-    console.error('[Ppueri Auth] Erro ao salvar sessão dos responsáveis:', err);
-  }
-}
-
-export function clearParentSession(): void {
-  try {
-    localStorage.removeItem(AUTH_KEYS.PARENT_SESSION);
-  } catch (err) {
-    console.error('[Ppueri Auth] Erro ao limpar sessão dos responsáveis:', err);
-  }
+export async function clearParentSession(): Promise<void> {
+  await parentSupabase.auth.signOut();
 }
 
 export function isParentSessionValid(session: ParentSession): boolean {
   return new Date(session.expiresAt) > new Date();
 }
 
-// ─── Doctor Demo Account ──────────────────────────────────────────────────────
-
-// Creates the demo "Dra. Beatriz" account if no accounts exist yet
-export async function initializeDemoAccount(): Promise<void> {
-  const accounts = loadDoctorAccounts();
-  if (accounts.some((a) => a.id === DEMO_DOCTOR_ID)) return;
-
-  const passwordHash = await hashPassword(DEMO_DOCTOR_PASSWORD);
-  const demoAccount: DoctorAccount = {
-    id: DEMO_DOCTOR_ID,
-    name: 'Dra. Beatriz Albuquerque',
-    email: DEMO_DOCTOR_EMAIL,
-    crm: 'CRM/SP 184.920 - Pediatria SBP',
-    passwordHash,
-    createdAt: '2026-01-01T00:00:00Z',
-  };
-  accounts.push(demoAccount);
-  saveDoctorAccounts(accounts);
-}
+// Mantido para compatibilidade — não faz nada pois o Supabase gerencia a sessão
+export async function saveAuthSession(_session: AuthSession): Promise<void> { /* no-op */ }
+export async function saveParentSession(_session: ParentSession): Promise<void> { /* no-op */ }

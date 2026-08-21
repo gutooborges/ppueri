@@ -30,6 +30,7 @@ export interface ParentSession {
   parentId: string;
   parentName: string;
   linkedPatientId: string;
+  linkedPatientName?: string;
   expiresAt: string;
 }
 

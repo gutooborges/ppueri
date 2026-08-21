@@ -1,29 +1,35 @@
-import React, { useState, useEffect } from 'react';
-import { Role, Patient, Consultation, VaccineRecord, PediatricNotification, NotificationPreferences, Appointment, AppointmentStatus, AuthSession, ParentSession } from './types/ppueri';
+import React, { useState, useEffect, useCallback } from 'react';
+import {
+  Role, Patient, Consultation, VaccineRecord, PediatricNotification,
+  NotificationPreferences, Appointment, AppointmentStatus, AuthSession, ParentSession,
+} from './types/ppueri';
 import { DEFAULT_NOTIFICATION_PREFERENCES } from './lib/notifications';
 import {
   loadStoredPatients,
-  saveStoredPatients,
   loadStoredConsultations,
-  saveStoredConsultations,
   loadStoredAppointments,
-  saveStoredAppointments,
   loadStoredVaccinesMap,
-  saveStoredVaccinesMap,
   loadStoredNotifications,
   saveStoredNotifications,
+  insertPatient,
+  insertConsultation,
+  insertAppointment,
+  updateAppointmentStatus as dbUpdateAppointmentStatus,
+  rescheduleAppointment as dbRescheduleAppointment,
+  updatePatientAccessCode,
+  updateVaccineRecord,
+  insertInitialVaccines,
+  exportClinicBackup,
+  importClinicBackup,
 } from './lib/storage-sync';
 import {
   loadAuthSession,
-  saveAuthSession,
   clearAuthSession,
-  isSessionValid,
-  initializeDemoAccount,
   loadParentSession,
-  saveParentSession,
   clearParentSession,
   isParentSessionValid,
 } from './lib/auth';
+import { supabase } from './lib/supabase/client';
 import { Header } from './components/ui/Header';
 import { InstallPwaBanner } from './components/ui/InstallPwaBanner';
 import { NotificationCenter } from './components/ui/NotificationCenter';
@@ -44,19 +50,29 @@ export default function App() {
   const [authSession, setAuthSession] = useState<AuthSession | null>(null);
   const [authReady, setAuthReady] = useState(false);
 
-  // Initialize demo account and resolve session on first mount
   useEffect(() => {
-    initializeDemoAccount().then(() => {
-      const session = loadAuthSession();
-      if (session && isSessionValid(session)) {
-        setAuthSession(session);
-      }
+    // Resolve sessão inicial do médico
+    loadAuthSession().then((session) => {
+      setAuthSession(session);
       setAuthReady(true);
+    }).catch(() => setAuthReady(true));
+
+    // Escuta mudanças de sessão do Supabase
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event) => {
+      if (event === 'SIGNED_OUT') {
+        setAuthSession(null);
+      }
+      // Em caso de SIGNED_IN ou TOKEN_REFRESHED, recarrega a sessão
+      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        const session = await loadAuthSession();
+        if (session) setAuthSession(session);
+      }
     });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   if (!authReady) {
-    // Brief loading splash while initializing crypto
     return (
       <div className="min-h-screen bg-gradient-to-br from-sky-100/70 via-sky-50/90 to-cyan-100/60 flex items-center justify-center">
         <div className="text-sky-700 text-sm font-semibold animate-pulse">Carregando Ppueri...</div>
@@ -67,10 +83,7 @@ export default function App() {
   if (!authSession) {
     return (
       <DoctorAuthScreen
-        onLoginSuccess={(session) => {
-          saveAuthSession(session);
-          setAuthSession(session);
-        }}
+        onLoginSuccess={(session) => setAuthSession(session)}
       />
     );
   }
@@ -78,8 +91,8 @@ export default function App() {
   return (
     <MainApp
       authSession={authSession}
-      onLogout={() => {
-        clearAuthSession();
+      onLogout={async () => {
+        await clearAuthSession();
         setAuthSession(null);
       }}
     />
@@ -99,55 +112,78 @@ function MainApp({ authSession, onLogout }: MainAppProps) {
   const doctorCrm = authSession.doctorCrm;
 
   const [activeRole, setActiveRole] = useState<Role>('medico');
-  const [patients, setPatients] = useState<Patient[]>(() => loadStoredPatients(doctorId));
-  const [selectedPatientId, setSelectedPatientId] = useState<string>(() => {
-    const loaded = loadStoredPatients(doctorId);
-    return loaded.length > 0 ? loaded[0].id : '';
-  });
-  const [consultations, setConsultations] = useState<Consultation[]>(() => loadStoredConsultations(doctorId));
-  const [appointments, setAppointments] = useState<Appointment[]>(() => loadStoredAppointments(doctorId));
+  const [dataLoading, setDataLoading] = useState(true);
+  const [patients, setPatients] = useState<Patient[]>([]);
+  const [selectedPatientId, setSelectedPatientId] = useState<string>('');
+  const [consultations, setConsultations] = useState<Consultation[]>([]);
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [vaccinesMap, setVaccinesMap] = useState<Record<string, VaccineRecord[]>>({});
   const [searchQuery, setSearchQuery] = useState('');
 
   // Doctor View Mode
   const [doctorViewMode, setDoctorViewMode] = useState<'dashboard' | 'patient-view' | 'consultation'>('dashboard');
   const [isNewPatientModalOpen, setIsNewPatientModalOpen] = useState(false);
 
-  // Parent Portal: restored from localStorage if session is still valid
-  const [parentSession, setParentSession] = useState<ParentSession | null>(() => {
-    const s = loadParentSession();
-    return s && isParentSessionValid(s) ? s : null;
-  });
+  // Parent portal session
+  const [parentSession, setParentSession] = useState<ParentSession | null>(null);
+  const [parentSessionReady, setParentSessionReady] = useState(false);
 
-  // Vaccines map per patientId
-  const [vaccinesMap, setVaccinesMap] = useState<Record<string, VaccineRecord[]>>(() =>
-    loadStoredVaccinesMap(loadStoredPatients(doctorId))
-  );
-
-  // Notifications
+  // Notifications (mantidas em localStorage)
   const [isNotificationCenterOpen, setIsNotificationCenterOpen] = useState(false);
   const [notificationPreferences, setNotificationPreferences] = useState<NotificationPreferences>(DEFAULT_NOTIFICATION_PREFERENCES);
-  const [notifications, setNotifications] = useState<PediatricNotification[]>(() => {
-    const pts = loadStoredPatients(doctorId);
-    const vmap = loadStoredVaccinesMap(pts);
-    const cons = loadStoredConsultations(doctorId);
-    return loadStoredNotifications(doctorId, pts, vmap, cons);
-  });
+  const [notifications, setNotifications] = useState<PediatricNotification[]>([]);
 
-  // Persist to localStorage on each change (scoped to current doctor)
-  useEffect(() => { saveStoredPatients(doctorId, patients); }, [doctorId, patients]);
-  useEffect(() => { saveStoredConsultations(doctorId, consultations); }, [doctorId, consultations]);
-  useEffect(() => { saveStoredAppointments(doctorId, appointments); }, [doctorId, appointments]);
-  useEffect(() => { saveStoredVaccinesMap(vaccinesMap); }, [vaccinesMap]);
-  useEffect(() => { saveStoredNotifications(doctorId, notifications); }, [doctorId, notifications]);
+  // ── Carrega todos os dados do Supabase ao montar ──────────────────────────
+  const loadAllData = useCallback(async () => {
+    setDataLoading(true);
+    try {
+      const [pts, cons, apts] = await Promise.all([
+        loadStoredPatients(doctorId),
+        loadStoredConsultations(doctorId),
+        loadStoredAppointments(doctorId),
+      ]);
+
+      const vmap = await loadStoredVaccinesMap(pts);
+      const notifs = loadStoredNotifications(doctorId, pts, vmap, cons);
+
+      setPatients(pts);
+      setConsultations(cons);
+      setAppointments(apts);
+      setVaccinesMap(vmap);
+      setNotifications(notifs);
+      if (pts.length > 0) setSelectedPatientId(pts[0].id);
+    } catch (err) {
+      console.error('[Ppueri App] Erro ao carregar dados:', err);
+    } finally {
+      setDataLoading(false);
+    }
+  }, [doctorId]);
+
+  useEffect(() => { loadAllData(); }, [loadAllData]);
+
+  // ── Carrega sessão do responsável ─────────────────────────────────────────
+  useEffect(() => {
+    loadParentSession().then((s) => {
+      if (s && isParentSessionValid(s)) setParentSession(s);
+      setParentSessionReady(true);
+    }).catch(() => setParentSessionReady(true));
+  }, []);
+
+  // ── Persiste notificações no localStorage ─────────────────────────────────
+  useEffect(() => {
+    if (!dataLoading) {
+      saveStoredNotifications(doctorId, notifications);
+    }
+  }, [doctorId, notifications, dataLoading]);
 
   const selectedPatient = patients.find((p) => p.id === selectedPatientId) || patients[0] || ({} as Patient);
   const activeVaccines = vaccinesMap[selectedPatientId] || [];
 
   const unreadCount = notifications.filter(
-    (n) => (!n.isRead && (n.targetRole === 'ambos' || n.targetRole === activeRole))
+    (n) => !n.isRead && (n.targetRole === 'ambos' || n.targetRole === activeRole)
   ).length;
 
-  // Notification handlers
+  // ── Notification handlers ─────────────────────────────────────────────────
   const handleMarkNotificationAsRead = (id: string) => {
     setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, isRead: true } : n)));
   };
@@ -161,14 +197,14 @@ function MainApp({ authSession, onLogout }: MainAppProps) {
   };
 
   const handleSelectNotificationAction = (_actionLink: string, patientId?: string) => {
-    if (patientId && activeRole === 'medico') {
-      setSelectedPatientId(patientId);
-    }
+    if (patientId && activeRole === 'medico') setSelectedPatientId(patientId);
   };
 
-  // Appointment handlers
-  const handleAddAppointment = (newApt: Appointment) => {
+  // ── Appointment handlers ──────────────────────────────────────────────────
+  const handleAddAppointment = async (newApt: Appointment) => {
     setAppointments((prev) => [newApt, ...prev]);
+    await insertAppointment(newApt).catch(console.error);
+
     const notif: PediatricNotification = {
       id: `notif_apt_${newApt.id}`,
       patientId: newApt.patientId,
@@ -184,36 +220,39 @@ function MainApp({ authSession, onLogout }: MainAppProps) {
     setNotifications((prev) => [notif, ...prev]);
   };
 
-  const handleUpdateAppointmentStatus = (appointmentId: string, status: AppointmentStatus) => {
-    setAppointments((prev) =>
-      prev.map((a) => (a.id === appointmentId ? { ...a, status } : a))
-    );
+  const handleUpdateAppointmentStatus = async (appointmentId: string, status: AppointmentStatus) => {
+    setAppointments((prev) => prev.map((a) => (a.id === appointmentId ? { ...a, status } : a)));
+    await dbUpdateAppointmentStatus(appointmentId, status).catch(console.error);
   };
 
-  const handleRescheduleAppointment = (appointmentId: string, newDate: string, newTime: string) => {
+  const handleRescheduleAppointment = async (appointmentId: string, newDate: string, newTime: string) => {
     setAppointments((prev) =>
       prev.map((a) => (a.id === appointmentId ? { ...a, date: newDate, time: newTime } : a))
     );
+    await dbRescheduleAppointment(appointmentId, newDate, newTime).catch(console.error);
+
     const targetApt = appointments.find((a) => a.id === appointmentId);
     if (targetApt) {
-      const notif: PediatricNotification = {
-        id: `notif_resched_${Date.now()}`,
-        patientId: targetApt.patientId,
-        patientName: targetApt.patientName,
-        title: 'Consulta Reagendada',
-        message: `Novo horário: ${new Date(newDate + 'T00:00:00').toLocaleDateString('pt-BR')} às ${newTime}.`,
-        category: 'consulta',
-        targetRole: 'ambos',
-        priority: 'media',
-        timestamp: new Date().toISOString(),
-        isRead: false,
-      };
-      setNotifications((prev) => [notif, ...prev]);
+      setNotifications((prev) => [
+        {
+          id: `notif_resched_${Date.now()}`,
+          patientId: targetApt.patientId,
+          patientName: targetApt.patientName,
+          title: 'Consulta Reagendada',
+          message: `Novo horário: ${new Date(newDate + 'T00:00:00').toLocaleDateString('pt-BR')} às ${newTime}.`,
+          category: 'consulta',
+          targetRole: 'ambos',
+          priority: 'media',
+          timestamp: new Date().toISOString(),
+          isRead: false,
+        },
+        ...prev,
+      ]);
     }
   };
 
-  // Add new patient (always tagged with current doctorId)
-  const handleAddPatient = (newPatient: Patient) => {
+  // ── Add new patient ───────────────────────────────────────────────────────
+  const handleAddPatient = async (newPatient: Patient) => {
     setPatients((prev) => [newPatient, ...prev]);
     setSelectedPatientId(newPatient.id);
     setDoctorViewMode('patient-view');
@@ -222,45 +261,49 @@ function MainApp({ authSession, onLogout }: MainAppProps) {
     const newVaccs = getInitialVaccinesForPatient(newPatient.id, ageMonths);
     setVaccinesMap((prev) => ({ ...prev, [newPatient.id]: newVaccs }));
 
-    const welcomeNotif: PediatricNotification = {
-      id: `notif_welcome_${newPatient.id}`,
-      patientId: newPatient.id,
-      patientName: newPatient.name,
-      title: `Paciente Cadastrado: ${newPatient.name}`,
-      message: `Código de acesso gerado: ${newPatient.accessCode}. Prontuário pronto para atendimento.`,
-      category: 'orientacao',
-      targetRole: 'medico',
-      priority: 'media',
-      timestamp: new Date().toISOString(),
-      isRead: false,
-    };
-    setNotifications((prev) => [welcomeNotif, ...prev]);
+    // Persiste no Supabase
+    await insertPatient(newPatient).catch(console.error);
+    await insertInitialVaccines(newPatient.id, doctorId, newVaccs).catch(console.error);
+
+    setNotifications((prev) => [
+      {
+        id: `notif_welcome_${newPatient.id}`,
+        patientId: newPatient.id,
+        patientName: newPatient.name,
+        title: `Paciente Cadastrado: ${newPatient.name}`,
+        message: `Código de acesso gerado: ${newPatient.accessCode}. Prontuário pronto para atendimento.`,
+        category: 'orientacao',
+        targetRole: 'medico',
+        priority: 'media',
+        timestamp: new Date().toISOString(),
+        isRead: false,
+      },
+      ...prev,
+    ]);
   };
 
-  const handleUpdateVaccineStatus = (
+  // ── Vaccine handler ───────────────────────────────────────────────────────
+  const handleUpdateVaccineStatus = async (
     vaccineId: string,
     status: VaccineRecord['status'],
     date?: string,
     batch?: string
   ) => {
+    const clinicName = 'Clínica Ppueri Pediatria';
     setVaccinesMap((prev) => {
       const currentList = prev[selectedPatientId] || [];
       const updatedList = currentList.map((v) =>
         v.id === vaccineId
-          ? {
-              ...v,
-              status,
-              applicationDate: date || v.applicationDate || new Date().toISOString().split('T')[0],
-              batchNumber: batch || v.batchNumber || 'LOTE-2026-PNI',
-              clinicName: 'Clínica Ppueri Pediatria',
-            }
+          ? { ...v, status, applicationDate: date || v.applicationDate || new Date().toISOString().split('T')[0], batchNumber: batch || v.batchNumber || 'LOTE-2026-PNI', clinicName }
           : v
       );
       return { ...prev, [selectedPatientId]: updatedList };
     });
+    await updateVaccineRecord(vaccineId, status, date, batch, clinicName).catch(console.error);
   };
 
-  const handleRegenerateAccessCode = (patientId: string) => {
+  // ── Regenerate access code ────────────────────────────────────────────────
+  const handleRegenerateAccessCode = async (patientId: string) => {
     const randomNum = Math.floor(1000 + Math.random() * 9000);
     const target = patients.find((p) => p.id === patientId);
     const suffix = target ? target.name.substring(0, 3).toUpperCase() : 'PPU';
@@ -268,28 +311,35 @@ function MainApp({ authSession, onLogout }: MainAppProps) {
     setPatients((prev) =>
       prev.map((p) => (p.id === patientId ? { ...p, accessCode: newCode, accessCodeCreatedAt: new Date().toISOString() } : p))
     );
+    await updatePatientAccessCode(patientId, newCode).catch(console.error);
   };
 
-  const handleSaveConsultation = (newConsultation: Consultation) => {
+  // ── Save consultation ─────────────────────────────────────────────────────
+  const handleSaveConsultation = async (newConsultation: Consultation) => {
     setConsultations((prev) => [newConsultation, ...prev]);
     setDoctorViewMode('patient-view');
+    await insertConsultation(newConsultation).catch(console.error);
+
     const targetPatient = patients.find((p) => p.id === newConsultation.patientId);
-    const notif: PediatricNotification = {
-      id: `notif_cons_new_${Date.now()}`,
-      patientId: newConsultation.patientId,
-      patientName: targetPatient?.name,
-      title: 'Nova Consulta Registrada no Prontuário',
-      message: `Atendimento concluído por ${newConsultation.doctorName}. Prescrições e recomendações disponíveis.`,
-      category: 'orientacao',
-      targetRole: 'paciente',
-      priority: 'alta',
-      timestamp: new Date().toISOString(),
-      isRead: false,
-    };
-    setNotifications((prev) => [notif, ...prev]);
+    setNotifications((prev) => [
+      {
+        id: `notif_cons_new_${Date.now()}`,
+        patientId: newConsultation.patientId,
+        patientName: targetPatient?.name,
+        title: 'Nova Consulta Registrada no Prontuário',
+        message: `Atendimento concluído por ${newConsultation.doctorName}. Prescrições e recomendações disponíveis.`,
+        category: 'orientacao',
+        targetRole: 'paciente',
+        priority: 'alta',
+        timestamp: new Date().toISOString(),
+        isRead: false,
+      },
+      ...prev,
+    ]);
   };
 
-  const handleRestoreData = (
+  // ── Restore data (backup import) ──────────────────────────────────────────
+  const handleRestoreData = async (
     newPatients: Patient[],
     newConsultations: Consultation[],
     newAppointments: Appointment[],
@@ -304,21 +354,25 @@ function MainApp({ authSession, onLogout }: MainAppProps) {
     setNotifications(newNotifications);
   };
 
+  if (dataLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-sky-100/70 via-sky-50/90 to-cyan-100/60 flex items-center justify-center">
+        <div className="text-sky-700 text-sm font-semibold animate-pulse">Carregando prontuários...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen font-sans text-slate-900 selection:bg-sky-500 selection:text-white pb-12 bg-gradient-to-br from-sky-100/70 via-sky-50/90 to-cyan-100/60 backdrop-blur-3xl">
       <Header
         activeRole={activeRole}
-        onRoleChange={(role) => {
-          setActiveRole(role);
-        }}
+        onRoleChange={(role) => setActiveRole(role)}
         doctorName={doctorName}
         doctorCrm={doctorCrm}
         onLogout={onLogout}
         patients={patients}
         selectedPatientId={selectedPatientId}
-        onSelectPatient={(id) => {
-          setSelectedPatientId(id);
-        }}
+        onSelectPatient={(id) => setSelectedPatientId(id)}
         onOpenNewPatientModal={() => setIsNewPatientModalOpen(true)}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
@@ -343,14 +397,8 @@ function MainApp({ authSession, onLogout }: MainAppProps) {
               appointments={appointments}
               selectedPatientId={selectedPatientId}
               onSelectPatient={(id) => setSelectedPatientId(id)}
-              onViewPatient={(id) => {
-                setSelectedPatientId(id);
-                setDoctorViewMode('patient-view');
-              }}
-              onStartNewConsultation={(id) => {
-                setSelectedPatientId(id);
-                setDoctorViewMode('consultation');
-              }}
+              onViewPatient={(id) => { setSelectedPatientId(id); setDoctorViewMode('patient-view'); }}
+              onStartNewConsultation={(id) => { setSelectedPatientId(id); setDoctorViewMode('consultation'); }}
               onOpenNewPatientModal={() => setIsNewPatientModalOpen(true)}
               onAddAppointment={handleAddAppointment}
               onUpdateAppointmentStatus={handleUpdateAppointmentStatus}
@@ -384,27 +432,21 @@ function MainApp({ authSession, onLogout }: MainAppProps) {
               doctorCrm={doctorCrm}
             />
           )
+        ) : parentSessionReady && parentSession ? (
+          <PatientPortal
+            patient={patients.find((p) => p.id === parentSession.linkedPatientId) || ({} as Patient)}
+            consultations={consultations.filter((c) => c.patientId === parentSession.linkedPatientId)}
+            vaccines={vaccinesMap[parentSession.linkedPatientId] || []}
+            appointments={appointments.filter((a) => a.patientId === parentSession.linkedPatientId)}
+            onLogout={async () => {
+              await clearParentSession();
+              setParentSession(null);
+            }}
+          />
         ) : (
-          parentSession ? (
-            <PatientPortal
-              patient={patients.find((p) => p.id === parentSession.linkedPatientId) || ({} as Patient)}
-              consultations={consultations.filter((c) => c.patientId === parentSession.linkedPatientId)}
-              vaccines={vaccinesMap[parentSession.linkedPatientId] || []}
-              appointments={appointments.filter((a) => a.patientId === parentSession.linkedPatientId)}
-              onLogout={() => {
-                clearParentSession();
-                setParentSession(null);
-              }}
-            />
-          ) : (
-            <PatientLogin
-              patients={patients}
-              onLoginSuccess={(session) => {
-                saveParentSession(session);
-                setParentSession(session);
-              }}
-            />
-          )
+          <PatientLogin
+            onLoginSuccess={(session) => setParentSession(session)}
+          />
         )}
       </main>
 

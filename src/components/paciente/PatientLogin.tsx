@@ -1,17 +1,16 @@
 import React, { useState } from 'react';
-import { Patient, ParentSession } from '../../types/ppueri';
+import { ParentSession } from '../../types/ppueri';
 import { loginParent, registerParent } from '../../lib/auth';
 import { ShieldCheck, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import { PpueriAppIcon, PpueriBrand } from '../ui/PpueriLogo';
 
 interface PatientLoginProps {
-  patients: Patient[];
   onLoginSuccess: (session: ParentSession) => void;
 }
 
 type AuthTab = 'login' | 'register';
 
-export const PatientLogin: React.FC<PatientLoginProps> = ({ patients, onLoginSuccess }) => {
+export const PatientLogin: React.FC<PatientLoginProps> = ({ onLoginSuccess }) => {
   const [tab, setTab] = useState<AuthTab>('login');
 
   // Login fields
@@ -43,13 +42,18 @@ export const PatientLogin: React.FC<PatientLoginProps> = ({ patients, onLoginSuc
       return;
     }
     setIsLoading(true);
-    const session = await loginParent(loginEmail.trim(), loginPassword);
-    setIsLoading(false);
-    if (!session) {
-      setErrorMsg('E-mail ou senha incorretos. Verifique os dados e tente novamente.');
-      return;
+    try {
+      const session = await loginParent(loginEmail.trim(), loginPassword);
+      if (!session) {
+        setErrorMsg('E-mail ou senha incorretos. Verifique os dados e tente novamente.');
+        return;
+      }
+      onLoginSuccess(session);
+    } catch {
+      setErrorMsg('Erro ao fazer login. Tente novamente.');
+    } finally {
+      setIsLoading(false);
     }
-    onLoginSuccess(session);
   };
 
   const handleRegister = async (e: React.FormEvent) => {
@@ -67,20 +71,25 @@ export const PatientLogin: React.FC<PatientLoginProps> = ({ patients, onLoginSuc
       setErrorMsg('As senhas não coincidem. Verifique e tente novamente.');
       return;
     }
-    const cleanCode = regCode.trim().toUpperCase();
-    const matched = patients.find((p) => p.accessCode.toUpperCase() === cleanCode);
-    if (!matched) {
-      setErrorMsg('Código de acesso não localizado. Verifique o código fornecido pelo pediatra.');
-      return;
-    }
+
     setIsLoading(true);
-    const result = await registerParent(regName.trim(), regEmail.trim(), regPassword, matched.id);
-    setIsLoading(false);
-    if ('error' in result) {
-      setErrorMsg(result.error);
-      return;
+    try {
+      const result = await registerParent(
+        regName.trim(),
+        regEmail.trim(),
+        regPassword,
+        regCode.trim().toUpperCase()
+      );
+      if ('error' in result) {
+        setErrorMsg(result.error);
+        return;
+      }
+      onLoginSuccess(result.session);
+    } catch {
+      setErrorMsg('Erro ao criar conta. Tente novamente.');
+    } finally {
+      setIsLoading(false);
     }
-    onLoginSuccess(result.session);
   };
 
   const inputClass =
@@ -295,7 +304,7 @@ export const PatientLogin: React.FC<PatientLoginProps> = ({ patients, onLoginSuc
 
         <div className="pt-2 text-[11px] text-slate-500 flex items-center justify-center gap-1.5 border-t border-sky-100">
           <ShieldCheck className="w-3.5 h-3.5 text-sky-700" />
-          <span>Conexão Segura e Criptografada em Conformidade com a LGPD</span>
+          <span>Dados protegidos em nuvem criptografada. Conformidade com a LGPD.</span>
         </div>
       </div>
     </div>
