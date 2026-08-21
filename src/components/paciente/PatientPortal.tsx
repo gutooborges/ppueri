@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Patient, Consultation, VaccineRecord, Appointment } from '../../types/ppueri';
 import { formatPediatricAge } from '../../lib/pediatric-rules';
+import { createParentExamSignedUrl } from '../../lib/storage-sync';
 import { GrowthChart } from '../ui/GrowthChart';
 import { VaccineTracker } from '../ui/VaccineTracker';
 import { PatientAgendaTab } from './PatientAgendaTab';
@@ -13,9 +14,10 @@ import {
   ShieldAlert,
   ArrowLeft,
   Calendar,
-  Clock,
   CheckCircle,
   CalendarDays,
+  RefreshCw,
+  ExternalLink,
 } from 'lucide-react';
 
 interface PatientPortalProps {
@@ -34,6 +36,18 @@ export const PatientPortal: React.FC<PatientPortalProps> = ({
   onLogout,
 }) => {
   const [activeTab, setActiveTab] = useState<'resumo' | 'agenda' | 'crescimento' | 'vacinas' | 'documentos'>('resumo');
+  const [loadingUrlExamId, setLoadingUrlExamId] = useState<string | null>(null);
+
+  const handleDownloadExam = async (examId: string, storagePath?: string, fileName?: string) => {
+    if (!storagePath) return;
+    setLoadingUrlExamId(examId);
+    const url = await createParentExamSignedUrl(storagePath);
+    setLoadingUrlExamId(null);
+    if (url) {
+      // Abre o arquivo original em nova aba com URL assinada (1 hora de validade)
+      window.open(url, '_blank', 'noopener,noreferrer');
+    }
+  };
 
   const patientConsultations = consultations
     .filter((c) => c.patientId === patient.id)
@@ -378,16 +392,32 @@ export const PatientPortal: React.FC<PatientPortalProps> = ({
                       <div className="text-sky-800 font-medium">
                         Categoria: {exam.category} | Data: {new Date(exam.date).toLocaleDateString('pt-BR')}
                       </div>
+                      {exam.doctorInterpretation && (
+                        <p className="text-sky-700 italic mt-0.5 text-[11px] max-w-xs">
+                          Parecer: {exam.doctorInterpretation}
+                        </p>
+                      )}
                     </div>
                   </div>
 
-                  <button
-                    onClick={() => alert(`Iniciando download seguro de ${exam.fileName || 'laudo.pdf'}`)}
-                    className="flex items-center gap-1.5 bg-sky-600 hover:bg-sky-500 text-white font-bold px-4 py-2 rounded-xl transition-all shadow-sm shrink-0"
-                  >
-                    <Download className="w-3.5 h-3.5" />
-                    <span>Baixar PDF</span>
-                  </button>
+                  {exam.storagePath ? (
+                    <button
+                      onClick={() => handleDownloadExam(exam.id, exam.storagePath, exam.fileName)}
+                      disabled={loadingUrlExamId === exam.id}
+                      className="flex items-center gap-1.5 bg-sky-700 hover:bg-sky-600 disabled:opacity-60 text-white font-bold px-4 py-2 rounded-xl transition-all shadow-sm shrink-0"
+                    >
+                      {loadingUrlExamId === exam.id ? (
+                        <><RefreshCw className="w-3.5 h-3.5 animate-spin" /><span>Gerando link...</span></>
+                      ) : (
+                        <><ExternalLink className="w-3.5 h-3.5" /><span>Visualizar Arquivo</span></>
+                      )}
+                    </button>
+                  ) : (
+                    <div className="flex items-center gap-1.5 bg-slate-100 text-slate-500 font-semibold px-4 py-2 rounded-xl text-xs shrink-0 cursor-not-allowed">
+                      <Download className="w-3.5 h-3.5" />
+                      <span>Sem arquivo</span>
+                    </div>
+                  )}
                 </div>
               ))
             )}

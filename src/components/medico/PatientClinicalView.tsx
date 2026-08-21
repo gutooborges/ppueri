@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Patient, Consultation, VaccineRecord, Appointment, LabExam } from '../../types/ppueri';
 import { formatPediatricAge } from '../../lib/pediatric-rules';
+import { createExamSignedUrl } from '../../lib/storage-sync';
 import { GrowthChart } from '../ui/GrowthChart';
 import { VaccineTracker } from '../ui/VaccineTracker';
 import { AccessCodeGenerator } from '../ui/AccessCodeGenerator';
@@ -13,6 +14,9 @@ import {
   Microscope,
   CheckCircle,
   AlertTriangle,
+  ExternalLink,
+  Trash2,
+  RefreshCw,
 } from 'lucide-react';
 
 interface PatientClinicalViewProps {
@@ -24,6 +28,7 @@ interface PatientClinicalViewProps {
   onBack: () => void;
   onUpdateVaccineStatus: (vaccineId: string, status: VaccineRecord['status'], date?: string, batch?: string) => void;
   onRegenerateAccessCode: (patientId: string) => void;
+  onDeleteExam?: (examId: string, storagePath?: string) => void;
   doctorName: string;
   doctorCrm: string;
 }
@@ -70,11 +75,29 @@ export const PatientClinicalView: React.FC<PatientClinicalViewProps> = ({
   onBack,
   onUpdateVaccineStatus,
   onRegenerateAccessCode,
+  onDeleteExam,
   doctorName: _doctorName,
   doctorCrm: _doctorCrm,
 }) => {
   const [vaccinesExpanded, setVaccinesExpanded] = useState(false);
   const [examsExpanded, setExamsExpanded] = useState(false);
+  const [loadingUrlExamId, setLoadingUrlExamId] = useState<string | null>(null);
+
+  const handleViewOriginal = async (exam: LabExam) => {
+    if (!exam.storagePath) return;
+    setLoadingUrlExamId(exam.id);
+    const url = await createExamSignedUrl(exam.storagePath);
+    setLoadingUrlExamId(null);
+    if (url) {
+      window.open(url, '_blank', 'noopener,noreferrer');
+    }
+  };
+
+  const handleDeleteExam = (exam: LabExam) => {
+    if (!onDeleteExam) return;
+    if (!window.confirm(`Excluir o exame "${exam.title}"? O arquivo original também será removido do armazenamento seguro.`)) return;
+    onDeleteExam(exam.id, exam.storagePath);
+  };
 
   const patientConsultations = [...consultations]
     .filter((c) => c.patientId === patient.id)
@@ -376,9 +399,35 @@ export const PatientClinicalView: React.FC<PatientClinicalViewProps> = ({
                         {exam.category}
                       </span>
                     </div>
-                    <span className="text-xs text-sky-600 font-medium">
-                      {new Date(exam.date + 'T00:00:00').toLocaleDateString('pt-BR')}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-sky-600 font-medium">
+                        {new Date(exam.date + 'T00:00:00').toLocaleDateString('pt-BR')}
+                      </span>
+                      {exam.storagePath && (
+                        <button
+                          onClick={() => handleViewOriginal(exam)}
+                          disabled={loadingUrlExamId === exam.id}
+                          className="flex items-center gap-1 text-[11px] font-bold text-sky-700 bg-sky-100 hover:bg-sky-200 border border-sky-300 px-2.5 py-1 rounded-lg transition-colors disabled:opacity-50"
+                          title="Abrir arquivo original no Supabase Storage"
+                        >
+                          {loadingUrlExamId === exam.id ? (
+                            <RefreshCw className="w-3 h-3 animate-spin" />
+                          ) : (
+                            <ExternalLink className="w-3 h-3" />
+                          )}
+                          <span>Arquivo Original</span>
+                        </button>
+                      )}
+                      {onDeleteExam && (
+                        <button
+                          onClick={() => handleDeleteExam(exam)}
+                          className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          title="Excluir exame e arquivo do storage"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
                   </div>
 
                   <div className="overflow-x-auto">

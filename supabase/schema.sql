@@ -258,6 +258,71 @@ GRANT EXECUTE ON FUNCTION find_patient_by_access_code(TEXT) TO anon;
 GRANT EXECUTE ON FUNCTION find_patient_by_access_code(TEXT) TO authenticated;
 
 -- =============================================================================
+-- SUPABASE STORAGE — bucket exam-files + políticas RLS
+-- =============================================================================
+-- 1. Crie o bucket no Dashboard: Storage → New Bucket
+--    Nome: exam-files | Public: OFF (privado) | File size limit: 50 MB
+--    Ou via SQL:
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES (
+  'exam-files',
+  'exam-files',
+  false,
+  52428800,  -- 50 MB
+  ARRAY['application/pdf','image/jpeg','image/png','image/jpg']
+) ON CONFLICT (id) DO NOTHING;
+
+-- 2. Políticas RLS do storage
+-- Médicos: upload/download/delete de arquivos dos seus pacientes
+CREATE POLICY "doctors_exam_upload" ON storage.objects
+  FOR INSERT TO authenticated
+  WITH CHECK (
+    bucket_id = 'exam-files' AND
+    EXISTS (
+      SELECT 1 FROM profiles p
+      JOIN patients pat ON pat.doctor_id = p.id
+      WHERE p.id = auth.uid() AND p.role = 'doctor'
+        AND (storage.foldername(name))[1] = pat.id::text
+    )
+  );
+
+CREATE POLICY "doctors_exam_select" ON storage.objects
+  FOR SELECT TO authenticated
+  USING (
+    bucket_id = 'exam-files' AND
+    EXISTS (
+      SELECT 1 FROM profiles p
+      JOIN patients pat ON pat.doctor_id = p.id
+      WHERE p.id = auth.uid() AND p.role = 'doctor'
+        AND (storage.foldername(name))[1] = pat.id::text
+    )
+  );
+
+CREATE POLICY "doctors_exam_delete" ON storage.objects
+  FOR DELETE TO authenticated
+  USING (
+    bucket_id = 'exam-files' AND
+    EXISTS (
+      SELECT 1 FROM profiles p
+      JOIN patients pat ON pat.doctor_id = p.id
+      WHERE p.id = auth.uid() AND p.role = 'doctor'
+        AND (storage.foldername(name))[1] = pat.id::text
+    )
+  );
+
+-- Responsáveis (pais): somente download do arquivo do paciente vinculado
+CREATE POLICY "parents_exam_select" ON storage.objects
+  FOR SELECT TO authenticated
+  USING (
+    bucket_id = 'exam-files' AND
+    EXISTS (
+      SELECT 1 FROM profiles p
+      WHERE p.id = auth.uid() AND p.role = 'parent'
+        AND (storage.foldername(name))[1] = p.linked_patient_id::text
+    )
+  );
+
+-- =============================================================================
 -- CONTA DEMO (opcional)
 -- Execute após criar o usuário demo@ppueri.com.br no Supabase Auth Dashboard
 -- ou via Supabase CLI: supabase auth admin create-user

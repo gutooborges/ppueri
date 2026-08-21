@@ -21,6 +21,8 @@ import {
   insertInitialVaccines,
   exportClinicBackup,
   importClinicBackup,
+  updateConsultationExams,
+  deleteExamFile,
 } from './lib/storage-sync';
 import {
   loadAuthSession,
@@ -314,6 +316,19 @@ function MainApp({ authSession, onLogout }: MainAppProps) {
     await updatePatientAccessCode(patientId, newCode).catch(console.error);
   };
 
+  // ── Delete exam (remove from consultation JSONB + Storage) ───────────────
+  const handleDeleteExam = async (examId: string, storagePath?: string) => {
+    const parentConsultation = consultations.find((c) => c.exams?.some((e) => e.id === examId));
+    if (!parentConsultation) return;
+
+    const updatedExams = (parentConsultation.exams ?? []).filter((e) => e.id !== examId);
+    setConsultations((prev) =>
+      prev.map((c) => c.id === parentConsultation.id ? { ...c, exams: updatedExams } : c)
+    );
+    await updateConsultationExams(parentConsultation.id, updatedExams).catch(console.error);
+    if (storagePath) await deleteExamFile(storagePath).catch(console.error);
+  };
+
   // ── Save consultation ─────────────────────────────────────────────────────
   const handleSaveConsultation = async (newConsultation: Consultation) => {
     setConsultations((prev) => [newConsultation, ...prev]);
@@ -416,6 +431,7 @@ function MainApp({ authSession, onLogout }: MainAppProps) {
               onBack={() => setDoctorViewMode('dashboard')}
               onUpdateVaccineStatus={handleUpdateVaccineStatus}
               onRegenerateAccessCode={handleRegenerateAccessCode}
+              onDeleteExam={handleDeleteExam}
               doctorName={doctorName}
               doctorCrm={doctorCrm}
             />

@@ -129,6 +129,7 @@ export interface LabExam {
   date: string; // YYYY-MM-DD
   fileUrl?: string;
   fileName?: string;
+  storagePath?: string; // Caminho no bucket exam-files para URL assinada
   items: LabExamItem[];
   doctorInterpretation?: string;
   isOcrParsed?: boolean;

@@ -4,7 +4,7 @@
  * Todas as funções são assíncronas. O mapeamento camelCase ↔ snake_case
  * é feito localmente para manter compatibilidade com os tipos TypeScript.
  */
-import { supabase } from './supabase/client';
+import { supabase, parentSupabase } from './supabase/client';
 import {
   Patient,
   Consultation,
@@ -394,6 +394,88 @@ export async function updateVaccineRecord(
     })
     .eq('id', vaccineId);
   if (error) console.error('[Ppueri Storage] Erro ao atualizar vacina:', error.message);
+}
+
+// ─── Supabase Storage — exam-files bucket ────────────────────────────────────
+
+const EXAM_BUCKET = 'exam-files';
+
+/**
+ * Faz upload do arquivo bruto para o bucket exam-files.
+ * Caminho: {patientId}/{timestamp}_{nomeOriginal}
+ * Retorna o storage path ou null em caso de erro.
+ */
+export async function uploadExamFile(patientId: string, file: File): Promise<string | null> {
+  const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+  const path = `${patientId}/${Date.now()}_${safeName}`;
+
+  const { error } = await supabase.storage
+    .from(EXAM_BUCKET)
+    .upload(path, file, { contentType: file.type, upsert: false });
+
+  if (error) {
+    console.error('[Ppueri Storage] Erro ao fazer upload do exame:', error.message);
+    return null;
+  }
+  return path;
+}
+
+/**
+ * Gera uma URL assinada temporária (1 hora) para o médico visualizar/baixar o arquivo.
+ */
+export async function createExamSignedUrl(storagePath: string): Promise<string | null> {
+  const { data, error } = await supabase.storage
+    .from(EXAM_BUCKET)
+    .createSignedUrl(storagePath, 3600);
+
+  if (error) {
+    console.error('[Ppueri Storage] Erro ao gerar URL assinada (médico):', error.message);
+    return null;
+  }
+  return data.signedUrl;
+}
+
+/**
+ * Gera uma URL assinada temporária (1 hora) para o responsável visualizar/baixar o arquivo.
+ * Usa o cliente do responsável com sessão isolada.
+ */
+export async function createParentExamSignedUrl(storagePath: string): Promise<string | null> {
+  const { data, error } = await parentSupabase.storage
+    .from(EXAM_BUCKET)
+    .createSignedUrl(storagePath, 3600);
+
+  if (error) {
+    console.error('[Ppueri Storage] Erro ao gerar URL assinada (responsável):', error.message);
+    return null;
+  }
+  return data.signedUrl;
+}
+
+/**
+ * Remove o arquivo físico do bucket ao excluir um exame.
+ */
+export async function deleteExamFile(storagePath: string): Promise<void> {
+  const { error } = await supabase.storage
+    .from(EXAM_BUCKET)
+    .remove([storagePath]);
+
+  if (error) console.error('[Ppueri Storage] Erro ao excluir arquivo do exame:', error.message);
+}
+
+/**
+ * Atualiza o array de exames de uma consulta no Supabase (após exclusão de um exame).
+ */
+export async function updateConsultationExams(
+  consultationId: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  exams: any[]
+): Promise<void> {
+  const { error } = await supabase
+    .from('consultations')
+    .update({ exams })
+    .eq('id', consultationId);
+
+  if (error) console.error('[Ppueri Storage] Erro ao atualizar exames da consulta:', error.message);
 }
 
 // ─── Notifications (mantidas em localStorage — ephemeral) ─────────────────────

@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { LabExam, LabExamItem } from '../../types/ppueri';
-import { UploadCloud, FileText, Sparkles, CheckCircle, AlertTriangle, RefreshCw, X, Eye } from 'lucide-react';
+import { uploadExamFile } from '../../lib/storage-sync';
+import { UploadCloud, FileText, Sparkles, CheckCircle, AlertTriangle, RefreshCw, X, CloudUpload } from 'lucide-react';
 
 interface PdfOcrUploaderProps {
   patientId: string;
@@ -10,7 +11,9 @@ interface PdfOcrUploaderProps {
 export const PdfOcrUploader: React.FC<PdfOcrUploaderProps> = ({ patientId, onExamParsed }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [fileName, setFileName] = useState<string | null>(null);
+  const [rawFile, setRawFile] = useState<File | null>(null);
   const [parsedItems, setParsedItems] = useState<LabExamItem[]>([]);
   const [examTitle, setExamTitle] = useState('Exame Complementar Extraído');
   const [examCategory, setExamCategory] = useState<LabExam['category']>('Hemograma');
@@ -21,11 +24,11 @@ export const PdfOcrUploader: React.FC<PdfOcrUploaderProps> = ({ patientId, onExa
 
   const processFile = async (file: File) => {
     setFileName(file.name);
+    setRawFile(file);
     setIsAnalyzing(true);
     setErrorMsg(null);
 
     try {
-      // Converte o arquivo para Base64
       const reader = new FileReader();
       reader.onload = async () => {
         const base64Data = (reader.result as string).split(',')[1];
@@ -35,16 +38,10 @@ export const PdfOcrUploader: React.FC<PdfOcrUploaderProps> = ({ patientId, onExa
           const res = await fetch('/api/ocr-exam', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              mimeType,
-              base64Data,
-              fileName: file.name,
-            }),
+            body: JSON.stringify({ mimeType, base64Data, fileName: file.name }),
           });
 
-          if (!res.ok) {
-            throw new Error(`Erro na API (${res.status})`);
-          }
+          if (!res.ok) throw new Error(`Erro na API (${res.status})`);
 
           const data = await res.json();
           if (data.items && Array.isArray(data.items)) {
@@ -57,7 +54,6 @@ export const PdfOcrUploader: React.FC<PdfOcrUploaderProps> = ({ patientId, onExa
           }
         } catch (apiErr) {
           console.warn('Backend API OCR indisponível, usando fallback inteligente:', apiErr);
-          // Fallback para simulação local caso o backend não esteja conectado
           generateSampleOcrResults(file.name);
         } finally {
           setIsAnalyzing(false);
@@ -94,8 +90,18 @@ export const PdfOcrUploader: React.FC<PdfOcrUploaderProps> = ({ patientId, onExa
     }
   };
 
-  const handleSaveToRecord = () => {
+  const handleSaveToRecord = async () => {
     if (parsedItems.length === 0) return;
+
+    setIsUploading(true);
+    let storagePath: string | undefined;
+
+    // Faz upload do arquivo bruto para o Supabase Storage
+    if (rawFile) {
+      const path = await uploadExamFile(patientId, rawFile);
+      if (path) storagePath = path;
+    }
+    setIsUploading(false);
 
     const newExam: LabExam = {
       id: `exam_${Date.now()}`,
@@ -104,14 +110,15 @@ export const PdfOcrUploader: React.FC<PdfOcrUploaderProps> = ({ patientId, onExa
       category: examCategory,
       date: new Date().toISOString().split('T')[0],
       fileName: fileName || 'Exame_Importado.pdf',
+      storagePath,
       items: parsedItems,
       doctorInterpretation: doctorNotes,
       isOcrParsed: true,
     };
 
     onExamParsed(newExam);
-    // Reset state
     setFileName(null);
+    setRawFile(null);
     setParsedItems([]);
     setDoctorNotes('');
   };
@@ -128,11 +135,11 @@ export const PdfOcrUploader: React.FC<PdfOcrUploaderProps> = ({ patientId, onExa
               Leitor Inteligente de Exames Complementares (OCR & IA)
             </h3>
             <p className="text-xs text-slate-500">
-              Extração e resumo estruturado de laudos laboratoriais, imagens e relatórios clínicos via Gemini Vision
+              Extração e resumo estruturado de laudos via Gemini Vision — arquivo salvo de forma segura no Supabase Storage
             </p>
           </div>
         </div>
-        
+
         <button
           onClick={() => generateSampleOcrResults('Exame_Demonstracao.pdf')}
           className="flex items-center gap-1.5 text-xs font-semibold text-sky-700 bg-sky-50 hover:bg-sky-100 border border-sky-200 px-3 py-1.5 rounded-lg transition-colors"
@@ -142,13 +149,10 @@ export const PdfOcrUploader: React.FC<PdfOcrUploaderProps> = ({ patientId, onExa
         </button>
       </div>
 
-      {/* Dropzone Area */}
+      {/* Dropzone */}
       {parsedItems.length === 0 && (
         <div
-          onDragOver={(e) => {
-            e.preventDefault();
-            setIsDragging(true);
-          }}
+          onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
           onDragLeave={() => setIsDragging(false)}
           onDrop={handleDrop}
           onClick={() => fileInputRef.current?.click()}
@@ -164,9 +168,7 @@ export const PdfOcrUploader: React.FC<PdfOcrUploaderProps> = ({ patientId, onExa
             accept=".pdf,.png,.jpg,.jpeg"
             className="hidden"
             onChange={(e) => {
-              if (e.target.files && e.target.files[0]) {
-                processFile(e.target.files[0]);
-              }
+              if (e.target.files && e.target.files[0]) processFile(e.target.files[0]);
             }}
           />
 
@@ -221,8 +223,14 @@ export const PdfOcrUploader: React.FC<PdfOcrUploaderProps> = ({ patientId, onExa
                   onChange={(e) => setExamTitle(e.target.value)}
                   className="font-bold text-slate-900 text-sm bg-transparent border-b border-transparent hover:border-slate-300 focus:border-sky-500 focus:bg-white px-1 rounded transition-colors"
                 />
-                <div className="text-xs text-slate-500 font-medium">
-                  Arquivo: {fileName}
+                <div className="text-xs text-slate-500 font-medium flex items-center gap-1.5">
+                  <span>Arquivo: {fileName}</span>
+                  {rawFile && (
+                    <span className="inline-flex items-center gap-1 text-sky-700 font-semibold">
+                      <CloudUpload className="w-3 h-3" />
+                      Pronto para upload seguro
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
@@ -242,7 +250,7 @@ export const PdfOcrUploader: React.FC<PdfOcrUploaderProps> = ({ patientId, onExa
               </select>
 
               <button
-                onClick={() => setParsedItems([])}
+                onClick={() => { setParsedItems([]); setRawFile(null); }}
                 className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-200"
                 title="Limpar extração"
               >
@@ -268,11 +276,7 @@ export const PdfOcrUploader: React.FC<PdfOcrUploaderProps> = ({ patientId, onExa
                   return (
                     <tr
                       key={idx}
-                      className={
-                        isNormal
-                          ? 'hover:bg-slate-50'
-                          : 'bg-sky-50/70 font-semibold text-slate-900'
-                      }
+                      className={isNormal ? 'hover:bg-slate-50' : 'bg-sky-50/70 font-semibold text-slate-900'}
                     >
                       <td className="p-3 font-medium text-slate-900">{item.parameter}</td>
                       <td className="p-3 font-bold">{item.value}</td>
@@ -287,15 +291,9 @@ export const PdfOcrUploader: React.FC<PdfOcrUploaderProps> = ({ patientId, onExa
                           }`}
                         >
                           {isNormal ? (
-                            <>
-                              <CheckCircle className="w-3 h-3 text-sky-600" />
-                              Normal
-                            </>
+                            <><CheckCircle className="w-3 h-3 text-sky-600" />Normal</>
                           ) : (
-                            <>
-                              <AlertTriangle className="w-3 h-3 text-amber-600" />
-                              {item.status === 'alterado_alto' ? 'Elevado' : 'Abaixo'}
-                            </>
+                            <><AlertTriangle className="w-3 h-3 text-amber-600" />{item.status === 'alterado_alto' ? 'Elevado' : 'Abaixo'}</>
                           )}
                         </span>
                       </td>
@@ -321,17 +319,21 @@ export const PdfOcrUploader: React.FC<PdfOcrUploaderProps> = ({ patientId, onExa
 
           <div className="flex items-center justify-end gap-2 pt-2">
             <button
-              onClick={() => setParsedItems([])}
+              onClick={() => { setParsedItems([]); setRawFile(null); }}
               className="px-3 py-1.5 text-xs text-slate-600 font-semibold hover:text-slate-900"
             >
               Cancelar
             </button>
             <button
               onClick={handleSaveToRecord}
-              className="flex items-center gap-1.5 bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold px-4 py-2 rounded-xl transition-colors shadow-sm"
+              disabled={isUploading}
+              className="flex items-center gap-1.5 bg-sky-700 hover:bg-sky-600 disabled:opacity-60 text-white text-xs font-bold px-4 py-2 rounded-xl transition-colors shadow-sm"
             >
-              <CheckCircle className="w-4 h-4" />
-              <span>Vincular Exame ao Prontuário Pediátrico</span>
+              {isUploading ? (
+                <><RefreshCw className="w-4 h-4 animate-spin" /><span>Enviando ao Storage...</span></>
+              ) : (
+                <><CheckCircle className="w-4 h-4" /><span>Vincular Exame ao Prontuário Pediátrico</span></>
+              )}
             </button>
           </div>
         </div>
