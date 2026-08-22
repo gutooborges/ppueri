@@ -1,7 +1,5 @@
-const CACHE_NAME = 'ppueri-pwa-v2.5.0';
+const CACHE_NAME = 'ppueri-pwa-v2.6.0';
 const STATIC_ASSETS = [
-  '/',
-  '/index.html',
   '/manifest.json',
   '/icon.svg',
 ];
@@ -55,7 +53,15 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Assets estáticos e páginas SPA -> Stale-While-Revalidate
+  // Navegação SPA (ex: /reset-password) -> Network-First para garantir HTML atualizado
+  if (request.mode === 'navigate') {
+    event.respondWith(
+      fetch(request).catch(() => caches.match('/index.html'))
+    );
+    return;
+  }
+
+  // Assets estáticos (JS/CSS/imagens) -> Cache-First com atualização em background
   event.respondWith(
     caches.match(request).then((cachedResponse) => {
       const fetchPromise = fetch(request)
@@ -68,13 +74,7 @@ self.addEventListener('fetch', (event) => {
           }
           return networkResponse;
         })
-        .catch(() => {
-          // Fallback para index.html se for navegação
-          if (request.mode === 'navigate') {
-            return caches.match('/index.html') || cachedResponse;
-          }
-          return cachedResponse;
-        });
+        .catch(() => cachedResponse);
 
       return cachedResponse || fetchPromise;
     })
