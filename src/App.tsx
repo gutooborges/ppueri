@@ -55,25 +55,21 @@ export default function App() {
   const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
 
   useEffect(() => {
-    // Resolve sessão inicial do médico
+    // Resolve sessão inicial do médico (única chamada ao Supabase no carregamento)
     loadAuthSession().then((session) => {
       setAuthSession(session);
       setAuthReady(true);
     }).catch(() => setAuthReady(true));
 
-    // Escuta mudanças de sessão do Supabase
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event) => {
+    // Escuta apenas eventos que não exigem nova chamada ao Supabase
+    // SIGNED_IN dispara automaticamente no mount — não reatribuímos aqui para
+    // evitar duplicar chamadas e atingir o rate limit do Supabase.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'PASSWORD_RECOVERY') {
         setIsPasswordRecovery(true);
-        return;
-      }
-      if (event === 'SIGNED_OUT') {
+      } else if (event === 'SIGNED_OUT') {
         setAuthSession(null);
-      }
-      // Em caso de SIGNED_IN ou TOKEN_REFRESHED, recarrega a sessão
-      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-        const session = await loadAuthSession();
-        if (session) setAuthSession(session);
+        setAuthReady(true);
       }
     });
 
