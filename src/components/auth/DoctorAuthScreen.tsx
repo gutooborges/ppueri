@@ -6,8 +6,9 @@ import {
   DEMO_DOCTOR_EMAIL,
   DEMO_DOCTOR_PASSWORD,
 } from '../../lib/auth';
+import { supabase } from '../../lib/supabase/client';
 import { PpueriAppIcon, PpueriBrand } from '../ui/PpueriLogo';
-import { Stethoscope, Mail, Lock, User, CreditCard, Eye, EyeOff, ArrowRight, ShieldCheck, Sparkles, LogIn } from 'lucide-react';
+import { Stethoscope, Mail, Lock, User, CreditCard, Eye, EyeOff, ArrowRight, ShieldCheck, Sparkles, LogIn, CheckCircle } from 'lucide-react';
 
 interface DoctorAuthScreenProps {
   onLoginSuccess: (session: AuthSession) => void;
@@ -32,6 +33,13 @@ export const DoctorAuthScreen: React.FC<DoctorAuthScreenProps> = ({ onLoginSucce
   const [showRegPwd, setShowRegPwd] = useState(false);
   const [regError, setRegError] = useState<string | null>(null);
   const [regLoading, setRegLoading] = useState(false);
+
+  // Forgot password state
+  const [showForgot, setShowForgot] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [forgotLoading, setForgotLoading] = useState(false);
+  const [forgotSuccess, setForgotSuccess] = useState(false);
+  const [forgotError, setForgotError] = useState<string | null>(null);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -107,6 +115,26 @@ export const DoctorAuthScreen: React.FC<DoctorAuthScreenProps> = ({ onLoginSucce
     }
   };
 
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setForgotError(null);
+    if (!forgotEmail.trim()) {
+      setForgotError('Informe seu e-mail profissional.');
+      return;
+    }
+    setForgotLoading(true);
+    try {
+      await supabase.auth.resetPasswordForEmail(forgotEmail.trim(), {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      setForgotSuccess(true);
+    } catch {
+      setForgotError('Erro ao enviar o e-mail. Tente novamente.');
+    } finally {
+      setForgotLoading(false);
+    }
+  };
+
   const inputCls =
     'w-full p-3 bg-sky-50/70 border border-sky-200 rounded-xl focus:outline-none focus:border-sky-600 focus:bg-white text-slate-900 text-sm transition-all placeholder:text-slate-400';
 
@@ -123,6 +151,87 @@ export const DoctorAuthScreen: React.FC<DoctorAuthScreenProps> = ({ onLoginSucce
         </div>
 
         <div className="bg-white/85 backdrop-blur-md border border-sky-200/80 rounded-2xl shadow-xl overflow-hidden">
+          {/* ── Forgot Password view ── */}
+          {showForgot && (
+            <div className="p-6">
+              {forgotSuccess ? (
+                <div className="text-center space-y-4 py-4">
+                  <div className="flex justify-center">
+                    <div className="p-3 bg-sky-100 rounded-full">
+                      <CheckCircle className="w-8 h-8 text-sky-600" />
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-sm font-extrabold text-slate-900">E-mail Enviado</p>
+                    <p className="text-xs text-slate-500 mt-1 max-w-xs mx-auto">
+                      Se o e-mail estiver cadastrado, voce recebera as instrucoes para redefinir
+                      sua senha. Verifique sua caixa de entrada.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => { setShowForgot(false); setForgotSuccess(false); setForgotEmail(''); }}
+                    className="w-full text-xs font-bold text-sky-700 hover:underline py-1"
+                  >
+                    Voltar ao login
+                  </button>
+                </div>
+              ) : (
+                <form onSubmit={handleForgotPassword} className="space-y-4">
+                  <div>
+                    <p className="text-sm font-extrabold text-slate-900 mb-1">Recuperar Acesso</p>
+                    <p className="text-xs text-slate-500 mb-4">
+                      Informe o e-mail profissional da sua conta. Enviaremos um link para redefinir sua senha.
+                    </p>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="block text-xs font-bold text-slate-700">E-mail Profissional</label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                      <input
+                        type="email"
+                        required
+                        placeholder="seu@email.com.br"
+                        value={forgotEmail}
+                        onChange={(e) => setForgotEmail(e.target.value)}
+                        className={`${inputCls} pl-9`}
+                        autoFocus
+                      />
+                    </div>
+                  </div>
+                  {forgotError && (
+                    <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-800 font-medium">
+                      {forgotError}
+                    </div>
+                  )}
+                  <button
+                    type="submit"
+                    disabled={forgotLoading}
+                    className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-sky-600 to-sky-700 hover:from-sky-500 hover:to-sky-600 disabled:opacity-60 text-white font-extrabold py-3 rounded-xl transition-all shadow-md text-xs"
+                  >
+                    {forgotLoading ? (
+                      <span className="animate-pulse">Enviando...</span>
+                    ) : (
+                      <>
+                        <span>Enviar Link de Recuperacao</span>
+                        <ArrowRight className="w-4 h-4" />
+                      </>
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setShowForgot(false); setForgotError(null); }}
+                    className="w-full text-xs font-semibold text-slate-500 hover:text-slate-700 py-1"
+                  >
+                    Voltar ao login
+                  </button>
+                </form>
+              )}
+            </div>
+          )}
+
+          {/* ── Main Tabs (hidden while showForgot) ── */}
+          {!showForgot && (
+          <>
           {/* Tabs */}
           <div className="flex border-b border-sky-100">
             <button
@@ -199,6 +308,16 @@ export const DoctorAuthScreen: React.FC<DoctorAuthScreenProps> = ({ onLoginSucce
                     {loginError}
                   </div>
                 )}
+
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => { setShowForgot(true); setForgotEmail(loginEmail); setForgotError(null); setForgotSuccess(false); }}
+                    className="text-[11px] text-sky-700 hover:underline font-medium"
+                  >
+                    Esqueceu sua senha?
+                  </button>
+                </div>
 
                 <button
                   type="submit"
@@ -344,6 +463,8 @@ export const DoctorAuthScreen: React.FC<DoctorAuthScreenProps> = ({ onLoginSucce
               </form>
             )}
           </div>
+          </>
+          )}
         </div>
 
         {/* Footer notice */}

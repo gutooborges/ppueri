@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { ParentSession } from '../../types/ppueri';
 import { loginParent, registerParent } from '../../lib/auth';
-import { ShieldCheck, ArrowRight, Eye, EyeOff } from 'lucide-react';
+import { parentSupabase } from '../../lib/supabase/client';
+import { ShieldCheck, ArrowRight, Eye, EyeOff, CheckCircle, Mail } from 'lucide-react';
 import { PpueriAppIcon, PpueriBrand } from '../ui/PpueriLogo';
 
 interface PatientLoginProps {
@@ -29,9 +30,36 @@ export const PatientLogin: React.FC<PatientLoginProps> = ({ onLoginSuccess }) =>
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
+  // Forgot password state
+  const [showForgot, setShowForgot] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [forgotLoading, setForgotLoading] = useState(false);
+  const [forgotSuccess, setForgotSuccess] = useState(false);
+  const [forgotError, setForgotError] = useState<string | null>(null);
+
   const switchTab = (t: AuthTab) => {
     setTab(t);
     setErrorMsg(null);
+  };
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setForgotError(null);
+    if (!forgotEmail.trim()) {
+      setForgotError('Informe seu e-mail cadastrado.');
+      return;
+    }
+    setForgotLoading(true);
+    try {
+      await parentSupabase.auth.resetPasswordForEmail(forgotEmail.trim(), {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      setForgotSuccess(true);
+    } catch {
+      setForgotError('Erro ao enviar o e-mail. Tente novamente.');
+    } finally {
+      setForgotLoading(false);
+    }
   };
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -111,7 +139,80 @@ export const PatientLogin: React.FC<PatientLoginProps> = ({ onLoginSuccess }) =>
           </p>
         </div>
 
+        {/* ── Forgot Password view ── */}
+        {showForgot && (
+          <div className="space-y-4">
+            {forgotSuccess ? (
+              <div className="text-center space-y-4 py-2">
+                <div className="flex justify-center">
+                  <div className="p-3 bg-sky-100 rounded-full">
+                    <CheckCircle className="w-8 h-8 text-sky-600" />
+                  </div>
+                </div>
+                <div>
+                  <p className="text-sm font-extrabold text-slate-900">E-mail Enviado</p>
+                  <p className="text-xs text-slate-500 mt-1 max-w-xs mx-auto">
+                    Se o e-mail estiver cadastrado, voce recebera as instrucoes para redefinir
+                    sua senha. Verifique sua caixa de entrada.
+                  </p>
+                </div>
+                <button
+                  onClick={() => { setShowForgot(false); setForgotSuccess(false); setForgotEmail(''); }}
+                  className="w-full text-xs font-bold text-sky-700 hover:underline py-1"
+                >
+                  Voltar ao login
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={handleForgotPassword} className="space-y-4">
+                <div>
+                  <p className="text-sm font-extrabold text-slate-900 mb-1">Recuperar Acesso</p>
+                  <p className="text-xs text-slate-500 mb-2">
+                    Informe o e-mail da sua conta de responsavel. Enviaremos um link para redefinir sua senha.
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">E-mail</label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <input
+                      type="email"
+                      required
+                      placeholder="seu@email.com.br"
+                      value={forgotEmail}
+                      onChange={(e) => setForgotEmail(e.target.value)}
+                      className={`${inputClass} pl-9`}
+                      autoFocus
+                    />
+                  </div>
+                </div>
+                {forgotError && (
+                  <div className="p-3 bg-amber-50 border border-amber-300 rounded-xl text-xs text-amber-900 font-medium">
+                    {forgotError}
+                  </div>
+                )}
+                <button
+                  type="submit"
+                  disabled={forgotLoading}
+                  className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-sky-600 to-sky-700 hover:from-sky-500 hover:to-sky-600 disabled:opacity-60 text-white font-extrabold py-3.5 rounded-xl transition-all shadow-md text-xs"
+                >
+                  {forgotLoading ? 'Enviando...' : 'Enviar Link de Recuperacao'}
+                  {!forgotLoading && <ArrowRight className="w-4 h-4" />}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setShowForgot(false); setForgotError(null); }}
+                  className="w-full text-xs font-semibold text-slate-500 hover:text-slate-700 py-1"
+                >
+                  Voltar ao login
+                </button>
+              </form>
+            )}
+          </div>
+        )}
+
         {/* Tabs */}
+        {!showForgot && (<>
         <div className="grid grid-cols-2 gap-1 bg-sky-50 border border-sky-200 rounded-xl p-1">
           <button
             type="button"
@@ -188,16 +289,25 @@ export const PatientLogin: React.FC<PatientLoginProps> = ({ onLoginSuccess }) =>
               {!isLoading && <ArrowRight className="w-4 h-4" />}
             </button>
 
-            <p className="text-center text-[11px] text-slate-500">
-              Ainda sem conta?{' '}
+            <div className="flex items-center justify-between">
+              <p className="text-[11px] text-slate-500">
+                Ainda sem conta?{' '}
+                <button
+                  type="button"
+                  onClick={() => switchTab('register')}
+                  className="font-bold text-sky-700 hover:underline"
+                >
+                  Criar conta
+                </button>
+              </p>
               <button
                 type="button"
-                onClick={() => switchTab('register')}
-                className="font-bold text-sky-700 hover:underline"
+                onClick={() => { setShowForgot(true); setForgotEmail(loginEmail); setForgotError(null); setForgotSuccess(false); }}
+                className="text-[11px] text-sky-700 hover:underline font-medium"
               >
-                Criar conta gratuita
+                Esqueceu sua senha?
               </button>
-            </p>
+            </div>
           </form>
         )}
 
@@ -301,6 +411,8 @@ export const PatientLogin: React.FC<PatientLoginProps> = ({ onLoginSuccess }) =>
             </p>
           </form>
         )}
+
+        </>)}
 
         <div className="pt-2 text-[11px] text-slate-500 flex items-center justify-center gap-1.5 border-t border-sky-100">
           <ShieldCheck className="w-3.5 h-3.5 text-sky-700" />

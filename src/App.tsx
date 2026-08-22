@@ -43,6 +43,7 @@ import { NewPatientModal } from './components/medico/NewPatientModal';
 import { PatientLogin } from './components/paciente/PatientLogin';
 import { PatientPortal } from './components/paciente/PatientPortal';
 import { DoctorAuthScreen } from './components/auth/DoctorAuthScreen';
+import { ResetPasswordScreen } from './components/auth/ResetPasswordScreen';
 import { getAgeInMonths } from './lib/pediatric-rules';
 import { getInitialVaccinesForPatient } from './lib/mock-data';
 
@@ -51,6 +52,7 @@ import { getInitialVaccinesForPatient } from './lib/mock-data';
 export default function App() {
   const [authSession, setAuthSession] = useState<AuthSession | null>(null);
   const [authReady, setAuthReady] = useState(false);
+  const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
 
   useEffect(() => {
     // Resolve sessão inicial do médico
@@ -61,6 +63,10 @@ export default function App() {
 
     // Escuta mudanças de sessão do Supabase
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        setIsPasswordRecovery(true);
+        return;
+      }
       if (event === 'SIGNED_OUT') {
         setAuthSession(null);
       }
@@ -79,6 +85,18 @@ export default function App() {
       <div className="min-h-screen bg-gradient-to-br from-sky-100/70 via-sky-50/90 to-cyan-100/60 flex items-center justify-center">
         <div className="text-sky-700 text-sm font-semibold animate-pulse">Carregando Ppueri...</div>
       </div>
+    );
+  }
+
+  // Fluxo de recuperação de senha — sobrepõe qualquer outra tela
+  if (isPasswordRecovery) {
+    return (
+      <ResetPasswordScreen
+        onDone={() => {
+          setIsPasswordRecovery(false);
+          setAuthSession(null);
+        }}
+      />
     );
   }
 

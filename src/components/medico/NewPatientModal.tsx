@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Patient } from '../../types/ppueri';
 import { User, Plus, X, Key } from 'lucide-react';
+import { AccessCodeShareModal } from './AccessCodeShareModal';
 
 interface NewPatientModalProps {
   isOpen: boolean;
@@ -18,8 +19,24 @@ export const NewPatientModal: React.FC<NewPatientModalProps> = ({ isOpen, onClos
   const [cpf, setCpf] = useState('');
   const [bloodType, setBloodType] = useState<Patient['bloodType'] | ''>('' );
   const [allergiesText, setAllergiesText] = useState('');
+  const [responsiblePhone, setResponsiblePhone] = useState('');
 
-  if (!isOpen) return null;
+  // Share modal state
+  const [sharePatient, setSharePatient] = useState<Patient | null>(null);
+
+  if (!isOpen && !sharePatient) return null;
+
+  const resetForm = () => {
+    setName('');
+    setBirthDate('');
+    setGender('');
+    setMotherName('');
+    setFatherName('');
+    setCpf('');
+    setBloodType('');
+    setAllergiesText('');
+    setResponsiblePhone('');
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,19 +63,28 @@ export const NewPatientModal: React.FC<NewPatientModalProps> = ({ isOpen, onClos
     };
 
     onAddPatient(newPatient);
+    resetForm();
+    setSharePatient(newPatient);
+  };
+
+  const handleShareClose = () => {
+    setSharePatient(null);
     onClose();
-    // Reset form
-    setName('');
-    setBirthDate('');
-    setGender('');
-    setMotherName('');
-    setFatherName('');
-    setCpf('');
-    setBloodType('');
-    setAllergiesText('');
   };
 
   return (
+    <>
+    {sharePatient && (
+      <AccessCodeShareModal
+        isOpen={!!sharePatient}
+        patientName={sharePatient.name}
+        accessCode={sharePatient.accessCode}
+        initialPhone={responsiblePhone}
+        onClose={handleShareClose}
+      />
+    )}
+
+    {isOpen && (
     <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
       <div className="bg-white/85 backdrop-blur-xl border border-white/80 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5">
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
@@ -177,20 +203,32 @@ export const NewPatientModal: React.FC<NewPatientModalProps> = ({ isOpen, onClos
             </div>
           </div>
 
-          <div>
-            <label className="block font-bold text-slate-700 mb-1">Alergias Conhecidas (separadas por vírgula):</label>
-            <input
-              type="text"
-              placeholder="Ex: Leite de vaca, Ovo, Dipirona"
-              value={allergiesText}
-              onChange={(e) => setAllergiesText(e.target.value)}
-              className="w-full p-2.5 border border-slate-300 rounded-xl text-slate-800"
-            />
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block font-bold text-slate-700 mb-1">Alergias Conhecidas</label>
+              <input
+                type="text"
+                placeholder="Ex: Leite, Ovo, Dipirona"
+                value={allergiesText}
+                onChange={(e) => setAllergiesText(e.target.value)}
+                className="w-full p-2.5 border border-slate-300 rounded-xl text-slate-800"
+              />
+            </div>
+            <div>
+              <label className="block font-bold text-slate-700 mb-1">WhatsApp do Responsavel</label>
+              <input
+                type="tel"
+                placeholder="(11) 99999-0000"
+                value={responsiblePhone}
+                onChange={(e) => setResponsiblePhone(e.target.value)}
+                className="w-full p-2.5 border border-slate-300 rounded-xl text-slate-800"
+              />
+            </div>
           </div>
 
           <div className="p-3 bg-sky-50 border border-sky-200 rounded-xl text-[11px] text-sky-900 flex items-center gap-2">
             <Key className="w-4 h-4 text-sky-600 shrink-0" />
-            <span>Um Código de Acesso do tipo PPUERI-XXXX-ABC será gerado automaticamente para vinculação dos pais.</span>
+            <span>Um Código de Acesso do tipo PPUERI-XXXX-ABC será gerado automaticamente. Voce podera compartilha-lo com os responsaveis logo apos o cadastro.</span>
           </div>
 
           <div className="flex items-center justify-end gap-2 pt-2">
@@ -212,5 +250,7 @@ export const NewPatientModal: React.FC<NewPatientModalProps> = ({ isOpen, onClos
         </form>
       </div>
     </div>
+    )}
+    </>
   );
 };
