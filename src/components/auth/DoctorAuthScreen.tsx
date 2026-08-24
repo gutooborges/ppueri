@@ -32,6 +32,7 @@ export const DoctorAuthScreen: React.FC<DoctorAuthScreenProps> = ({ onLoginSucce
   const [regConfirm, setRegConfirm] = useState('');
   const [showRegPwd, setShowRegPwd] = useState(false);
   const [regError, setRegError] = useState<string | null>(null);
+  const [regSuccess, setRegSuccess] = useState<string | null>(null);
   const [regLoading, setRegLoading] = useState(false);
 
   // Forgot password state
@@ -47,13 +48,9 @@ export const DoctorAuthScreen: React.FC<DoctorAuthScreenProps> = ({ onLoginSucce
     setLoginLoading(true);
     try {
       const session = await loginDoctor(loginEmail.trim(), loginPassword);
-      if (session) {
-        onLoginSuccess(session);
-      } else {
-        setLoginError('E-mail ou senha incorretos. Verifique suas credenciais e tente novamente.');
-      }
-    } catch {
-      setLoginError('Erro ao tentar fazer login. Tente novamente.');
+      onLoginSuccess(session);
+    } catch (e: unknown) {
+      setLoginError(e instanceof Error ? e.message : 'Erro ao tentar fazer login. Tente novamente.');
     } finally {
       setLoginLoading(false);
     }
@@ -64,13 +61,13 @@ export const DoctorAuthScreen: React.FC<DoctorAuthScreenProps> = ({ onLoginSucce
     setLoginLoading(true);
     try {
       const session = await loginDoctor(DEMO_DOCTOR_EMAIL, DEMO_DOCTOR_PASSWORD);
-      if (session) {
-        onLoginSuccess(session);
-      } else {
-        setLoginError('Conta de demonstração não encontrada. Crie-a no Supabase Dashboard ou cadastre-se com este e-mail.');
-      }
-    } catch {
-      setLoginError('Erro ao acessar conta demo.');
+      onLoginSuccess(session);
+    } catch (e: unknown) {
+      setLoginError(
+        e instanceof Error
+          ? e.message
+          : 'Conta de demonstração não encontrada. Cadastre-se com o e-mail demo@ppueri.com.br para criá-la.',
+      );
     } finally {
       setLoginLoading(false);
     }
@@ -79,6 +76,7 @@ export const DoctorAuthScreen: React.FC<DoctorAuthScreenProps> = ({ onLoginSucce
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setRegError(null);
+    setRegSuccess(null);
 
     if (!regName.trim() || !regEmail.trim() || !regCrm.trim() || !regPassword) {
       setRegError('Preencha todos os campos obrigatórios.');
@@ -98,18 +96,17 @@ export const DoctorAuthScreen: React.FC<DoctorAuthScreenProps> = ({ onLoginSucce
       const result = await registerDoctor(regName, regEmail, regCrm, regPassword);
       if ('error' in result) {
         setRegError(result.error);
+      } else if ('needsConfirmation' in result) {
+        // Conta criada, confirmação de e-mail necessária
+        setRegSuccess(
+          'Conta criada com sucesso! Verifique sua caixa de entrada e clique no link de confirmação para ativar o acesso.',
+        );
       } else {
-        // Auto-login após cadastro
-        const session = await loginDoctor(regEmail, regPassword);
-        if (session) {
-          onLoginSuccess(session);
-        } else {
-          setRegError('Conta criada! Verifique seu e-mail para confirmar o cadastro e faça login.');
-          setActiveTab('login');
-        }
+        // signUp retornou sessão — login automático imediato
+        onLoginSuccess(result.session);
       }
-    } catch {
-      setRegError('Erro ao criar conta. Tente novamente.');
+    } catch (e: unknown) {
+      setRegError(e instanceof Error ? e.message : 'Erro ao criar conta. Tente novamente.');
     } finally {
       setRegLoading(false);
     }
@@ -235,7 +232,7 @@ export const DoctorAuthScreen: React.FC<DoctorAuthScreenProps> = ({ onLoginSucce
           {/* Tabs */}
           <div className="flex border-b border-sky-100">
             <button
-              onClick={() => { setActiveTab('login'); setLoginError(null); }}
+              onClick={() => { setActiveTab('login'); setLoginError(null); setRegError(null); setRegSuccess(null); }}
               className={`flex-1 py-3.5 text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
                 activeTab === 'login'
                   ? 'bg-white text-sky-700 border-b-2 border-sky-600'
@@ -246,7 +243,7 @@ export const DoctorAuthScreen: React.FC<DoctorAuthScreenProps> = ({ onLoginSucce
               Entrar na Conta
             </button>
             <button
-              onClick={() => { setActiveTab('register'); setRegError(null); }}
+              onClick={() => { setActiveTab('register'); setRegError(null); setRegSuccess(null); setLoginError(null); }}
               className={`flex-1 py-3.5 text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
                 activeTab === 'register'
                   ? 'bg-white text-sky-700 border-b-2 border-sky-600'
@@ -443,6 +440,13 @@ export const DoctorAuthScreen: React.FC<DoctorAuthScreenProps> = ({ onLoginSucce
                 {regError && (
                   <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-800 font-medium">
                     {regError}
+                  </div>
+                )}
+
+                {regSuccess && (
+                  <div className="p-3 bg-green-50 border border-green-200 rounded-xl text-xs text-green-800 font-medium flex items-start gap-2">
+                    <CheckCircle className="w-4 h-4 mt-0.5 shrink-0 text-green-600" />
+                    <span>{regSuccess}</span>
                   </div>
                 )}
 

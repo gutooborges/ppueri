@@ -9,41 +9,133 @@ import { AuthSession, ParentSession } from '../types/ppueri';
 export const DEMO_DOCTOR_EMAIL = 'demo@ppueri.com.br';
 export const DEMO_DOCTOR_PASSWORD = 'ppueri2026';
 
+// ─── Error Translation ─────────────────────────────────────────────────────────
+
+function translateSupabaseError(message: string): string {
+  const msg = message.toLowerCase();
+  if (
+    msg.includes('user already registered') ||
+    msg.includes('already been registered') ||
+    msg.includes('already registered')
+  ) {
+    return 'E-mail já cadastrado. Faça login ou use "Esqueceu a senha" para recuperar o acesso.';
+  }
+  if (msg.includes('invalid login credentials') || msg.includes('invalid credentials')) {
+    return 'E-mail ou senha incorretos. Verifique suas credenciais e tente novamente.';
+  }
+  if (msg.includes('email not confirmed')) {
+    return 'Seu e-mail ainda não foi confirmado. Verifique sua caixa de entrada e clique no link de confirmação.';
+  }
+  if (msg.includes('password should be at least') || msg.includes('weak password')) {
+    return 'A senha deve ter pelo menos 6 caracteres.';
+  }
+  if (msg.includes('rate limit') || msg.includes('too many requests') || msg.includes('over_email_send_rate_limit')) {
+    return 'Muitas tentativas. Aguarde alguns minutos e tente novamente.';
+  }
+  if (msg.includes('signup is disabled') || msg.includes('signups not allowed')) {
+    return 'Cadastro desativado. Entre em contato com o administrador do sistema.';
+  }
+  if (msg.includes('invalid email') || msg.includes('unable to validate email')) {
+    return 'Formato de e-mail inválido. Verifique e tente novamente.';
+  }
+  if (
+    msg.includes('network') ||
+    msg.includes('failed to fetch') ||
+    msg.includes('networkerror') ||
+    msg.includes('fetch failed')
+  ) {
+    return 'Erro de conexão. Verifique sua internet e tente novamente.';
+  }
+  return message;
+}
+
 // ─── Doctor Auth ──────────────────────────────────────────────────────────────
 
+/**
+ * Cria conta do médico. Retorna:
+ * - `{ session }` quando o Supabase não exige confirmação de e-mail (login automático)
+ * - `{ needsConfirmation: true }` quando o e-mail precisa ser confirmado antes do login
+ * - `{ error }` em caso de falha
+ */
 export async function registerDoctor(
   name: string,
   email: string,
   crm: string,
-  password: string
-): Promise<{ account: { id: string; name: string; email: string; crm: string } } | { error: string }> {
-  const { data, error } = await supabase.auth.signUp({ email, password });
+  password: string,
+): Promise<{ session: AuthSession } | { needsConfirmation: true } | { error: string }> {
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      data: {
+        full_name: name.trim(),
+        role: 'doctor',
+        crm: crm.trim(),
+      },
+    },
+  });
 
-  if (error) return { error: error.message };
+  if (error) return { error: translateSupabaseError(error.message) };
   if (!data.user) return { error: 'Erro ao criar conta. Tente novamente.' };
 
   const { error: profileError } = await supabase
     .from('profiles')
-    .insert({ id: data.user.id, email: email.toLowerCase().trim(), role: 'doctor', name: name.trim(), crm: crm.trim() });
+    .insert({
+      id: data.user.id,
+      email: email.toLowerCase().trim(),
+      role: 'doctor',
+      name: name.trim(),
+      crm: crm.trim(),
+    });
 
-  if (profileError) return { error: profileError.message };
+  if (profileError) return { error: translateSupabaseError(profileError.message) };
 
-  return { account: { id: data.user.id, name: name.trim(), email: email.toLowerCase().trim(), crm: crm.trim() } };
+  // signUp retornou sessão → confirmação de e-mail desativada, login automático possível
+  if (data.session) {
+    return {
+      session: {
+        doctorId: data.user.id,
+        doctorName: name.trim(),
+        doctorCrm: crm.trim(),
+        email: data.user.email ?? email,
+        expiresAt: new Date(data.session.expires_at! * 1000).toISOString(),
+      },
+    };
+  }
+
+  // Conta criada, mas confirmação de e-mail necessária
+  return { needsConfirmation: true };
 }
 
-export async function loginDoctor(email: string, password: string): Promise<AuthSession | null> {
+/**
+ * Autentica o médico. Lança um Error com mensagem em português se falhar.
+ */
+export async function loginDoctor(email: string, password: string): Promise<AuthSession> {
   const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error || !data.user || !data.session) return null;
 
-  const { data: profile } = await supabase
+  if (error) throw new Error(translateSupabaseError(error.message));
+  if (!data.user || !data.session) {
+    throw new Error('E-mail ou senha incorretos. Verifique suas credenciais e tente novamente.');
+  }
+
+  const { data: profile, error: profileError } = await supabase
     .from('profiles')
     .select('name, crm, role')
     .eq('id', data.user.id)
     .single();
 
-  if (!profile || profile.role !== 'doctor') {
+  if (profileError || !profile) {
     await supabase.auth.signOut();
-    return null;
+    throw new Error(
+      'Perfil médico não encontrado. Crie uma conta ou verifique suas credenciais.',
+    );
+  }
+
+  if (profile.role !== 'doctor') {
+    await supabase.auth.signOut();
+    throw new Error(
+      'Acesso restrito a médicos. Use o Portal do Responsável para acessar como familiar.',
+    );
   }
 
   return {
@@ -94,7 +186,7 @@ export async function registerParent(
   name: string,
   email: string,
   password: string,
-  accessCode: string
+  accessCode: string,
 ): Promise<{ session: ParentSession } | { error: string }> {
   // 1. Busca o paciente pelo código de acesso via RPC pública
   const { data: found, error: rpcError } = await supabase.rpc('find_patient_by_access_code', {
@@ -110,7 +202,7 @@ export async function registerParent(
 
   // 2. Cria conta no Supabase Auth (cliente separado para o responsável)
   const { data, error } = await parentSupabase.auth.signUp({ email, password });
-  if (error) return { error: error.message };
+  if (error) return { error: translateSupabaseError(error.message) };
   if (!data.user) return { error: 'Erro ao criar conta. Tente novamente.' };
 
   // 3. Cria o perfil do responsável
@@ -124,7 +216,7 @@ export async function registerParent(
       linked_patient_id: patientId,
     });
 
-  if (profileError) return { error: profileError.message };
+  if (profileError) return { error: translateSupabaseError(profileError.message) };
 
   const expiresAt = data.session
     ? new Date(data.session.expires_at! * 1000).toISOString()
@@ -156,7 +248,6 @@ export async function loginParent(email: string, password: string): Promise<Pare
     return null;
   }
 
-  // Busca o nome do paciente vinculado
   let patientName = '';
   if (profile.linked_patient_id) {
     const { data: patient } = await parentSupabase

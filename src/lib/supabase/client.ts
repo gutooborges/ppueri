@@ -9,7 +9,14 @@ if (!supabaseUrl || !supabaseAnonKey) {
 }
 
 /** Client principal — sessão do médico */
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true,   // necessário para capturar o token do link de reset de senha
+    storageKey: 'ppueri_doctor_supabase_auth_v1',
+  },
+});
 
 /**
  * Client separado para sessão do responsável (pai/mãe).
@@ -18,6 +25,9 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
  */
 export const parentSupabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: false,  // o client do médico é quem lida com tokens na URL
     storageKey: 'ppueri_parent_supabase_auth_v1',
   },
 });
