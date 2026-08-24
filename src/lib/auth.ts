@@ -78,17 +78,25 @@ export async function registerDoctor(
   if (error) return { error: translateSupabaseError(error.message) };
   if (!data.user) return { error: 'Erro ao criar conta. Tente novamente.' };
 
+  // upsert evita conflito de chave primária (profiles_pkey) quando um trigger
+  // do banco já criou o perfil durante o signUp. Se ainda assim houver erro,
+  // apenas logamos — não bloqueamos o fluxo de autenticação.
   const { error: profileError } = await supabase
     .from('profiles')
-    .insert({
-      id: data.user.id,
-      email: email.toLowerCase().trim(),
-      role: 'doctor',
-      name: name.trim(),
-      crm: crm.trim(),
-    });
+    .upsert(
+      {
+        id: data.user.id,
+        email: email.toLowerCase().trim(),
+        role: 'doctor',
+        name: name.trim(),
+        crm: crm.trim(),
+      },
+      { onConflict: 'id' },
+    );
 
-  if (profileError) return { error: translateSupabaseError(profileError.message) };
+  if (profileError) {
+    console.warn('[Ppueri] Aviso ao salvar perfil do médico (não bloqueante):', profileError.message);
+  }
 
   // signUp retornou sessão → confirmação de e-mail desativada, login automático possível
   if (data.session) {
@@ -205,18 +213,23 @@ export async function registerParent(
   if (error) return { error: translateSupabaseError(error.message) };
   if (!data.user) return { error: 'Erro ao criar conta. Tente novamente.' };
 
-  // 3. Cria o perfil do responsável
+  // 3. Salva o perfil do responsável (upsert para não colidir com trigger do banco)
   const { error: profileError } = await parentSupabase
     .from('profiles')
-    .insert({
-      id: data.user.id,
-      email: email.toLowerCase().trim(),
-      role: 'parent',
-      name: name.trim(),
-      linked_patient_id: patientId,
-    });
+    .upsert(
+      {
+        id: data.user.id,
+        email: email.toLowerCase().trim(),
+        role: 'parent',
+        name: name.trim(),
+        linked_patient_id: patientId,
+      },
+      { onConflict: 'id' },
+    );
 
-  if (profileError) return { error: translateSupabaseError(profileError.message) };
+  if (profileError) {
+    console.warn('[Ppueri] Aviso ao salvar perfil do responsável (não bloqueante):', profileError.message);
+  }
 
   const expiresAt = data.session
     ? new Date(data.session.expires_at! * 1000).toISOString()
