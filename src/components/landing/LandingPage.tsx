@@ -127,12 +127,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
         <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 grid grid-cols-1 lg:grid-cols-2 gap-14 items-center w-full">
           {/* Left column */}
           <div className="space-y-8">
-            {/* Pill */}
-            <div className="inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200/60 shadow-sm">
-              <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
-              Plataforma Pediátrica Avançada
-            </div>
-
             {/* Headline */}
             <div className="space-y-4">
               <h1 className="text-4xl sm:text-5xl lg:text-[3.4rem] font-extrabold text-slate-900 leading-[1.1] tracking-tight">
@@ -220,7 +214,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
             </div>
 
             {/* CDSS AI card (dark, bottom-right) */}
-            <div className="absolute bottom-20 right-0 w-60 bg-slate-900/97 backdrop-blur-xl text-white rounded-2xl p-4 shadow-2xl border border-blue-500/25">
+            <div className="absolute bottom-4 right-0 w-60 bg-slate-900/97 backdrop-blur-xl text-white rounded-2xl p-4 shadow-2xl border border-blue-500/25">
               <div className="flex items-center gap-2 mb-2">
                 <Brain className="w-4 h-4 text-blue-400" strokeWidth={1.75} />
                 <span className="text-[11px] font-bold text-blue-300 tracking-wide">CDSS Pediátrico</span>
@@ -361,17 +355,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
               </p>
             </div>
 
-            {/* Emissão de Receitas */}
-            <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-blue-500/10 hover:border-blue-200 transition-all duration-300 group">
-              <div className="p-2.5 bg-blue-50 border border-blue-100 rounded-xl w-fit mb-4 group-hover:bg-blue-100 transition-colors">
-                <FileText className="w-5 h-5 text-blue-600" strokeWidth={1.75} />
-              </div>
-              <h3 className="text-base font-extrabold text-slate-900 mb-2">Receitas e PDF Digital</h3>
-              <p className="text-sm text-slate-500 leading-relaxed">
-                Prescrições com ajuste automático por peso, posologia pediátrica e exportação em PDF com cabeçalho do consultório.
-              </p>
-            </div>
-
             {/* Carteira Vacinal */}
             <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-blue-500/10 hover:border-blue-200 transition-all duration-300 group">
               <div className="p-2.5 bg-amber-50 border border-amber-100 rounded-xl w-fit mb-4 group-hover:bg-amber-100 transition-colors">
@@ -412,28 +395,32 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Plano Essencial */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-7 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col">
-              <div className="mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
+
+            {/* Plano Essencial — Gratuito */}
+            <div className="bg-white border border-slate-200 rounded-2xl p-7 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col h-full">
+              <div className="mb-5">
                 <div className="flex items-center gap-2 mb-3">
-                  <Building2 className="w-5 h-5 text-slate-600" strokeWidth={1.75} />
+                  <Building2 className="w-5 h-5 text-slate-500" strokeWidth={1.75} />
                   <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Consultório Essencial</span>
                 </div>
                 <div className="flex items-end gap-1 mb-1">
-                  <span className="text-4xl font-extrabold text-slate-900 tracking-tight">Grátis</span>
+                  <span className="text-4xl font-extrabold text-slate-900 tracking-tight">R$&nbsp;0</span>
+                  <span className="text-sm text-slate-500 pb-1.5">/mês</span>
                 </div>
-                <p className="text-sm text-slate-500">Para começar e avaliar a plataforma.</p>
+                <p className="text-sm text-slate-500">Ideal para testar a plataforma.</p>
+              </div>
+
+              <div className="mb-5 px-3 py-2.5 bg-slate-50 border border-slate-100 rounded-xl">
+                <span className="text-xs font-bold text-slate-600">Até 10 pacientes cadastrados</span>
               </div>
 
               <ul className="space-y-3 flex-1 mb-7">
                 {[
-                  'Até 30 pacientes ativos',
-                  'Prontuário eletrônico completo',
+                  'Prontuário pediátrico básico',
                   'Curvas de crescimento OMS',
                   'Carteira vacinal digital',
                   'Portal básico para os pais',
-                  'Suporte por e-mail',
                 ].map((f) => (
                   <li key={f} className="flex items-center gap-2.5 text-sm text-slate-600">
                     <Check className="w-4 h-4 text-emerald-500 shrink-0" strokeWidth={2} />
@@ -444,16 +431,56 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
 
               <button
                 onClick={onLogin}
-                className="w-full py-3 text-sm font-bold text-slate-700 bg-white border border-slate-200 rounded-2xl hover:bg-slate-50 hover:border-slate-300 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200"
+                className="w-full py-3 text-sm font-bold text-slate-700 bg-white border border-slate-200 rounded-2xl hover:bg-slate-50 hover:border-slate-300 hover:scale-[1.02] active:scale-[0.98] hover:shadow-md transition-all duration-200"
               >
-                Criar conta gratuita
+                Começar Grátis
               </button>
             </div>
 
-            {/* Plano Avançado — highlighted */}
-            <div className="relative bg-white border-2 border-blue-500/80 rounded-2xl p-7 shadow-[0_8px_40px_rgb(37,99,235,0.12)] flex flex-col overflow-hidden">
-              {/* Top accent */}
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-sky-400 rounded-t-2xl" />
+            {/* Plano Pró — R$99 */}
+            <div className="bg-white border border-slate-200 rounded-2xl p-7 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col h-full">
+              <div className="mb-5">
+                <div className="flex items-center gap-2 mb-3">
+                  <Stethoscope className="w-5 h-5 text-blue-500" strokeWidth={1.75} />
+                  <span className="text-xs font-bold text-blue-500 uppercase tracking-wider">Consultório Pró</span>
+                </div>
+                <div className="flex items-end gap-1 mb-1">
+                  <span className="text-sm text-slate-500 pb-1.5">R$</span>
+                  <span className="text-4xl font-extrabold text-slate-900 tracking-tight">99</span>
+                  <span className="text-sm text-slate-500 pb-1.5">/mês</span>
+                </div>
+                <p className="text-sm text-slate-500">Para pediatras em fase de expansão.</p>
+              </div>
+
+              <div className="mb-5 px-3 py-2.5 bg-blue-50 border border-blue-100 rounded-xl">
+                <span className="text-xs font-bold text-blue-700">Até 35 pacientes cadastrados</span>
+              </div>
+
+              <ul className="space-y-3 flex-1 mb-7">
+                {[
+                  'Tudo do Essencial',
+                  'CDSS com IA Pediátrica',
+                  'Suporte prioritário',
+                ].map((f) => (
+                  <li key={f} className="flex items-center gap-2.5 text-sm text-slate-600">
+                    <Check className="w-4 h-4 text-blue-500 shrink-0" strokeWidth={2} />
+                    {f}
+                  </li>
+                ))}
+              </ul>
+
+              <button
+                onClick={onLogin}
+                className="w-full py-3 text-sm font-bold text-white bg-gradient-to-r from-blue-700 via-blue-600 to-sky-600 rounded-2xl hover:from-blue-800 hover:via-blue-700 hover:to-sky-700 shadow-md shadow-blue-500/20 hover:shadow-lg hover:shadow-blue-500/30 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
+              >
+                Assinar Pró
+              </button>
+            </div>
+
+            {/* Plano Avançada — Destaque principal */}
+            <div className="relative bg-white border-2 border-blue-500/80 rounded-2xl p-7 shadow-[0_8px_40px_rgb(37,99,235,0.12)] flex flex-col h-full overflow-hidden">
+              {/* Top accent stripe */}
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-600 to-sky-400 rounded-t-2xl" />
 
               <div className="absolute top-4 right-4">
                 <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-extrabold bg-blue-600 text-white uppercase tracking-wider">
@@ -462,28 +489,30 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
                 </span>
               </div>
 
-              <div className="mb-6 mt-1">
+              <div className="mb-5 mt-1">
                 <div className="flex items-center gap-2 mb-3">
                   <Stethoscope className="w-5 h-5 text-blue-600" strokeWidth={1.75} />
                   <span className="text-xs font-bold text-blue-600 uppercase tracking-wider">Clínica Avançada</span>
                 </div>
                 <div className="flex items-end gap-1 mb-1">
-                  <span className="text-4xl font-extrabold text-slate-900 tracking-tight">R$&nbsp;149</span>
+                  <span className="text-sm text-slate-500 pb-1.5">R$</span>
+                  <span className="text-4xl font-extrabold text-slate-900 tracking-tight">189</span>
                   <span className="text-sm text-slate-500 pb-1.5">/mês</span>
                 </div>
-                <p className="text-sm text-slate-500">Tudo do Essencial, mais recursos avançados.</p>
+                <p className="text-sm text-slate-500">Para alta demanda. Sem limites.</p>
+              </div>
+
+              <div className="mb-5 px-3 py-2.5 bg-blue-50 border border-blue-100 rounded-xl">
+                <span className="text-xs font-bold text-blue-700">Pacientes ilimitados</span>
               </div>
 
               <ul className="space-y-3 flex-1 mb-7">
                 {[
-                  'Pacientes ilimitados',
-                  'CDSS com IA Pediátrica',
-                  'Leitura de exames com OCR',
-                  'Emissão de receitas em PDF',
-                  'Agenda integrada ao prontuário',
+                  'Tudo do Pró',
+                  'Leitura de exames com IA multimodal',
+                  'Histórico completo sem restrições',
                   'Backup e exportação completos',
                   'Conformidade CFM 1.821/07',
-                  'Suporte prioritário',
                 ].map((f) => (
                   <li key={f} className="flex items-center gap-2.5 text-sm text-slate-700 font-medium">
                     <Check className="w-4 h-4 text-blue-500 shrink-0" strokeWidth={2} />
@@ -494,12 +523,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
 
               <button
                 onClick={onLogin}
-                className="w-full py-3 text-sm font-bold text-white bg-gradient-to-r from-blue-600 to-sky-500 rounded-2xl hover:from-blue-500 hover:to-sky-400 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-blue-500/30 transition-all duration-200"
+                className="w-full py-3 text-sm font-bold text-white bg-gradient-to-r from-blue-700 via-blue-600 to-sky-600 rounded-2xl hover:from-blue-800 hover:via-blue-700 hover:to-sky-700 shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/35 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
               >
-                Começar agora
+                Assinar Ilimitado
                 <span className="ml-1.5 opacity-70">→</span>
               </button>
             </div>
+
           </div>
 
           <p className="text-center text-xs text-slate-400 mt-6">
