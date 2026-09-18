@@ -77,9 +77,9 @@ export const AccessCodeShareModal: React.FC<AccessCodeShareModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-[60] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-white border border-sky-200 rounded-2xl max-w-md w-full shadow-2xl">
+      <div className="bg-white/85 backdrop-blur-sm border border-slate-200/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-2xl max-w-md w-full shadow-2xl">
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-sky-100">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
           <div>
             <p className="text-sm font-extrabold text-slate-900">Prontuario Criado com Sucesso</p>
             <p className="text-xs text-slate-500 mt-0.5">
@@ -90,19 +90,19 @@ export const AccessCodeShareModal: React.FC<AccessCodeShareModalProps> = ({
             onClick={onClose}
             className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition-colors"
           >
-            <X className="w-5 h-5" />
+            <X strokeWidth={1.75} className="w-5 h-5" />
           </button>
         </div>
 
         <div className="p-5 space-y-4">
           {/* Access Code display */}
-          <div className="p-4 bg-gradient-to-br from-sky-50 to-blue-50 border border-sky-200 rounded-xl text-center">
-            <p className="text-[10px] font-bold text-sky-700 uppercase tracking-wider mb-0.5">Paciente</p>
+          <div className="p-4 bg-gradient-to-br from-slate-50 to-blue-50 border border-slate-200 rounded-xl text-center">
+            <p className="text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-0.5">Paciente</p>
             <p className="text-base font-extrabold text-slate-900 mb-3">{patientName}</p>
-            <p className="text-[10px] font-bold text-sky-700 uppercase tracking-wider mb-1">
+            <p className="text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-1">
               Codigo de Acesso
             </p>
-            <p className="text-2xl font-extrabold text-sky-700 font-mono tracking-widest">
+            <p className="text-2xl font-extrabold text-blue-600 font-mono tracking-widest">
               {accessCode}
             </p>
           </div>
@@ -116,14 +116,14 @@ export const AccessCodeShareModal: React.FC<AccessCodeShareModalProps> = ({
                 placeholder="(11) 99999-0000"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                className="flex-1 p-2.5 text-xs border border-slate-300 rounded-xl focus:outline-none focus:border-sky-500 text-slate-800 placeholder-slate-400 transition-colors"
+                className="flex-1 p-2.5 text-xs border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 text-slate-800 placeholder-slate-400 transition-colors"
               />
               <button
                 onClick={handleWhatsApp}
                 disabled={!phone.replace(/\D/g, '')}
                 className="flex items-center gap-1.5 px-3 py-2 bg-[#25D366] hover:bg-[#1ebe59] disabled:opacity-40 text-white font-bold rounded-xl text-xs transition-all active:scale-95"
               >
-                <MessageCircle className="w-4 h-4" />
+                <MessageCircle strokeWidth={1.75} className="w-4 h-4" />
                 Enviar
               </button>
             </div>
@@ -133,8 +133,8 @@ export const AccessCodeShareModal: React.FC<AccessCodeShareModalProps> = ({
           <div className="space-y-2">
             <p className="text-xs font-bold text-slate-700">Enviar por E-mail</p>
             {emailSent ? (
-              <div className="p-2.5 bg-sky-50 border border-sky-200 rounded-xl text-xs text-sky-800 font-medium flex items-center gap-2">
-                <CheckCheck className="w-4 h-4 text-sky-600 shrink-0" />
+              <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 font-medium flex items-center gap-2">
+                <CheckCheck strokeWidth={1.75} className="w-4 h-4 text-blue-600 shrink-0" />
                 E-mail enviado com sucesso.
               </div>
             ) : (
@@ -145,14 +145,14 @@ export const AccessCodeShareModal: React.FC<AccessCodeShareModalProps> = ({
                     placeholder="email@responsavel.com.br"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="flex-1 p-2.5 text-xs border border-slate-300 rounded-xl focus:outline-none focus:border-sky-500 text-slate-800 placeholder-slate-400 transition-colors"
+                    className="flex-1 p-2.5 text-xs border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 text-slate-800 placeholder-slate-400 transition-colors"
                   />
                   <button
                     onClick={handleSendEmail}
                     disabled={!email.trim() || emailSending}
-                    className="flex items-center gap-1.5 px-3 py-2 bg-sky-600 hover:bg-sky-500 disabled:opacity-40 text-white font-bold rounded-xl text-xs transition-all active:scale-95"
+                    className="flex items-center gap-1.5 px-3 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-40 text-white font-bold rounded-xl text-xs transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-blue-500/20 active:scale-95"
                   >
-                    <Send className="w-4 h-4" />
+                    <Send strokeWidth={1.75} className="w-4 h-4" />
                     {emailSending ? '...' : 'Enviar'}
                   </button>
                 </div>
@@ -168,11 +168,11 @@ export const AccessCodeShareModal: React.FC<AccessCodeShareModalProps> = ({
             onClick={handleCopy}
             className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border text-xs font-bold transition-all active:scale-98 ${
               copied
-                ? 'bg-sky-50 border-sky-400 text-sky-700'
-                : 'bg-white border-slate-300 text-slate-700 hover:border-sky-400 hover:text-sky-700'
+                ? 'bg-slate-50 border-blue-400 text-blue-600'
+                : 'bg-white border-slate-300 text-slate-700 hover:border-blue-400 hover:text-blue-600'
             }`}
           >
-            {copied ? <CheckCheck className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+            {copied ? <CheckCheck strokeWidth={1.75} className="w-4 h-4" /> : <Copy strokeWidth={1.75} className="w-4 h-4" />}
             {copied ? 'Copiado!' : 'Copiar Codigo e Link'}
           </button>
 

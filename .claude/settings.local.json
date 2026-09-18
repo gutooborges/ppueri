@@ -2,7 +2,27 @@
   "permissions": {
     "allow": [
       "Bash(npm install:*)",
-      "Bash(taskkill:*)"
+      "Bash(taskkill:*)",
+      "Bash(cd:*)",
+      "Bash(git commit:*)",
+      "Bash(npx plugins add:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npm run build:*)",
+      "Bash(curl:*)",
+      "Bash(git add:*)",
+      "Bash(git push:*)",
+      "Bash(vercel:*)",
+      "Bash(npm i:*)",
+      "Bash(xargs:*)",
+      "Bash(npm run lint:*)",
+      "Bash(node -e:*)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(npm ls:*)",
+      "Bash(python:*)",
+      "Bash(npx vite build)",
+      "Bash(grep:*)",
+      "Bash(ls:*)",
+      "Bash(npx supabase:*)"
     ]
   }
 }

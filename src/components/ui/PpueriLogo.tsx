@@ -83,9 +83,9 @@ export const PpueriAppIcon: React.FC<PpueriAppIconProps> = ({
   };
 
   const variantClasses = {
-    white: 'bg-white border border-sky-100 shadow-sm ring-1 ring-sky-200/50',
-    light: 'bg-gradient-to-b from-sky-50 to-sky-100/90 border border-sky-200 shadow-sm',
-    dark: 'bg-slate-900 border border-sky-900/80 shadow-md',
+    white: 'bg-white border border-slate-100 shadow-sm ring-1 ring-slate-200/50',
+    light: 'bg-gradient-to-b from-slate-50 to-slate-100/90 border border-slate-200 shadow-sm',
+    dark: 'bg-slate-900 border border-slate-700/80 shadow-md',
   };
 
   return (
@@ -160,7 +160,7 @@ export const PpueriBrand: React.FC<PpueriBrandProps> = ({
         </div>
 
         {showSubtitle && (
-          <span className="text-[10px] uppercase font-sans font-extrabold tracking-wider text-sky-700 mt-1">
+          <span className="text-[10px] uppercase font-sans font-extrabold tracking-wider text-blue-600 mt-1">
             Prontuário Pediátrico
           </span>
         )}

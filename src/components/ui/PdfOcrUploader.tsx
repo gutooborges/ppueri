@@ -127,8 +127,8 @@ export const PdfOcrUploader: React.FC<PdfOcrUploaderProps> = ({ patientId, onExa
     <div className="bg-white/70 backdrop-blur-md border border-white/60 rounded-2xl p-5 shadow-sm space-y-4">
       <div className="flex items-center justify-between border-b border-slate-100 pb-3">
         <div className="flex items-center gap-2.5">
-          <div className="p-2 bg-sky-100 text-sky-700 rounded-xl">
-            <Sparkles className="w-5 h-5 text-sky-600" />
+          <div className="p-2 bg-slate-100 text-slate-600 rounded-xl">
+            <Sparkles strokeWidth={1.75} className="w-5 h-5 text-slate-600" />
           </div>
           <div>
             <h3 className="text-sm font-bold text-slate-900">
@@ -142,9 +142,9 @@ export const PdfOcrUploader: React.FC<PdfOcrUploaderProps> = ({ patientId, onExa
 
         <button
           onClick={() => generateSampleOcrResults('Exame_Demonstracao.pdf')}
-          className="flex items-center gap-1.5 text-xs font-semibold text-sky-700 bg-sky-50 hover:bg-sky-100 border border-sky-200 px-3 py-1.5 rounded-lg transition-colors"
+          className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 bg-slate-50 hover:bg-slate-100 border border-slate-200 px-3 py-1.5 rounded-lg transition-colors"
         >
-          <FileText className="w-3.5 h-3.5 text-sky-600" />
+          <FileText strokeWidth={1.75} className="w-3.5 h-3.5 text-slate-600" />
           <span>Carregar Exame de Exemplo</span>
         </button>
       </div>
@@ -158,8 +158,8 @@ export const PdfOcrUploader: React.FC<PdfOcrUploaderProps> = ({ patientId, onExa
           onClick={() => fileInputRef.current?.click()}
           className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all ${
             isDragging
-              ? 'border-sky-500 bg-sky-50/80 scale-[0.99]'
-              : 'border-slate-300 bg-slate-50/50 hover:bg-sky-50/40 hover:border-sky-400'
+              ? 'border-blue-500 bg-slate-50/80 scale-[0.99]'
+              : 'border-slate-300 bg-slate-50/50 hover:bg-slate-50/80 hover:border-blue-400'
           }`}
         >
           <input
@@ -174,7 +174,7 @@ export const PdfOcrUploader: React.FC<PdfOcrUploaderProps> = ({ patientId, onExa
 
           {isAnalyzing ? (
             <div className="py-4 space-y-3">
-              <RefreshCw className="w-8 h-8 text-sky-600 animate-spin mx-auto" />
+              <RefreshCw strokeWidth={1.75} className="w-8 h-8 text-blue-500 animate-spin mx-auto" />
               <div className="text-sm font-semibold text-slate-800">
                 Analisando laudo com Gemini Vision...
               </div>
@@ -184,8 +184,8 @@ export const PdfOcrUploader: React.FC<PdfOcrUploaderProps> = ({ patientId, onExa
             </div>
           ) : (
             <div className="space-y-2">
-              <div className="w-12 h-12 bg-sky-100 rounded-full flex items-center justify-center mx-auto text-sky-600">
-                <UploadCloud className="w-6 h-6" />
+              <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center mx-auto text-slate-600">
+                <UploadCloud strokeWidth={1.75} className="w-6 h-6" />
               </div>
               <div className="text-sm font-bold text-slate-800">
                 Arraste o arquivo do exame complementar (PDF ou Imagem)
@@ -215,19 +215,19 @@ export const PdfOcrUploader: React.FC<PdfOcrUploaderProps> = ({ patientId, onExa
         <div className="space-y-4 pt-2">
           <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2.5">
-              <FileText className="w-5 h-5 text-sky-600" />
+              <FileText strokeWidth={1.75} className="w-5 h-5 text-blue-600" />
               <div>
                 <input
                   type="text"
                   value={examTitle}
                   onChange={(e) => setExamTitle(e.target.value)}
-                  className="font-bold text-slate-900 text-sm bg-transparent border-b border-transparent hover:border-slate-300 focus:border-sky-500 focus:bg-white px-1 rounded transition-colors"
+                  className="font-bold text-slate-900 text-sm bg-transparent border-b border-transparent hover:border-slate-300 focus:border-blue-500 focus:bg-white px-1 rounded transition-colors"
                 />
                 <div className="text-xs text-slate-500 font-medium flex items-center gap-1.5">
                   <span>Arquivo: {fileName}</span>
                   {rawFile && (
-                    <span className="inline-flex items-center gap-1 text-sky-700 font-semibold">
-                      <CloudUpload className="w-3 h-3" />
+                    <span className="inline-flex items-center gap-1 text-blue-600 font-semibold">
+                      <CloudUpload strokeWidth={1.75} className="w-3 h-3" />
                       Pronto para upload seguro
                     </span>
                   )}
@@ -254,7 +254,7 @@ export const PdfOcrUploader: React.FC<PdfOcrUploaderProps> = ({ patientId, onExa
                 className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-200"
                 title="Limpar extração"
               >
-                <X className="w-4 h-4" />
+                <X strokeWidth={1.75} className="w-4 h-4" />
               </button>
             </div>
           </div>
@@ -276,7 +276,7 @@ export const PdfOcrUploader: React.FC<PdfOcrUploaderProps> = ({ patientId, onExa
                   return (
                     <tr
                       key={idx}
-                      className={isNormal ? 'hover:bg-slate-50' : 'bg-sky-50/70 font-semibold text-slate-900'}
+                      className={isNormal ? 'hover:bg-slate-50' : 'bg-slate-50/80 font-semibold text-slate-900'}
                     >
                       <td className="p-3 font-medium text-slate-900">{item.parameter}</td>
                       <td className="p-3 font-bold">{item.value}</td>
@@ -286,14 +286,14 @@ export const PdfOcrUploader: React.FC<PdfOcrUploaderProps> = ({ patientId, onExa
                         <span
                           className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold ${
                             isNormal
-                              ? 'bg-sky-100 text-sky-800'
+                              ? 'bg-slate-100 text-slate-700'
                               : 'bg-amber-100 text-amber-900 border border-amber-300'
                           }`}
                         >
                           {isNormal ? (
-                            <><CheckCircle className="w-3 h-3 text-sky-600" />Normal</>
+                            <><CheckCircle strokeWidth={1.75} className="w-3 h-3 text-blue-500" />Normal</>
                           ) : (
-                            <><AlertTriangle className="w-3 h-3 text-amber-600" />{item.status === 'alterado_alto' ? 'Elevado' : 'Abaixo'}</>
+                            <><AlertTriangle strokeWidth={1.75} className="w-3 h-3 text-amber-600" />{item.status === 'alterado_alto' ? 'Elevado' : 'Abaixo'}</>
                           )}
                         </span>
                       </td>
@@ -313,7 +313,7 @@ export const PdfOcrUploader: React.FC<PdfOcrUploaderProps> = ({ patientId, onExa
               value={doctorNotes}
               onChange={(e) => setDoctorNotes(e.target.value)}
               placeholder="Digite aqui o parecer clínico para ser visualizado pelos pais no portal do paciente..."
-              className="w-full text-xs p-2.5 border border-slate-300 rounded-xl focus:outline-none focus:border-sky-500"
+              className="w-full text-xs p-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500"
             />
           </div>
 
@@ -327,12 +327,12 @@ export const PdfOcrUploader: React.FC<PdfOcrUploaderProps> = ({ patientId, onExa
             <button
               onClick={handleSaveToRecord}
               disabled={isUploading}
-              className="flex items-center gap-1.5 bg-sky-700 hover:bg-sky-600 disabled:opacity-60 text-white text-xs font-bold px-4 py-2 rounded-xl transition-colors shadow-sm"
+              className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white text-xs font-bold px-4 py-2 rounded-xl transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-blue-500/20 shadow-sm"
             >
               {isUploading ? (
-                <><RefreshCw className="w-4 h-4 animate-spin" /><span>Enviando ao Storage...</span></>
+                <><RefreshCw strokeWidth={1.75} className="w-4 h-4 animate-spin" /><span>Enviando ao Storage...</span></>
               ) : (
-                <><CheckCircle className="w-4 h-4" /><span>Vincular Exame ao Prontuário Pediátrico</span></>
+                <><CheckCircle strokeWidth={1.75} className="w-4 h-4" /><span>Vincular Exame ao Prontuário Pediátrico</span></>
               )}
             </button>
           </div>

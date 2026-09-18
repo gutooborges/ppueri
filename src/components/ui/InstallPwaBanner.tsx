@@ -105,10 +105,10 @@ export const InstallPwaBanner: React.FC<InstallPwaBannerProps> = ({ variant = 'b
       <>
         <button
           onClick={handleInstallClick}
-          className="flex items-center gap-1.5 bg-gradient-to-r from-sky-500 to-cyan-400 hover:from-sky-400 hover:to-cyan-300 text-slate-950 text-xs font-extrabold px-3 py-1.5 rounded-xl transition-all shadow-sm active:scale-95 border border-cyan-300/40 shrink-0"
+          className="flex items-center gap-1.5 bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-400 hover:to-cyan-300 text-slate-950 text-xs font-extrabold px-3 py-1.5 rounded-xl transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-blue-500/20 shadow-sm active:scale-95 border border-cyan-300/40 shrink-0"
           title="Instalar aplicativo Ppueri no seu dispositivo"
         >
-          <Download className="w-3.5 h-3.5 stroke-[2.5]" />
+          <Download strokeWidth={1.75} className="w-3.5 h-3.5 stroke-[2.5]" />
           <span className="hidden sm:inline">Instalar App</span>
         </button>
 
@@ -126,9 +126,9 @@ export const InstallPwaBanner: React.FC<InstallPwaBannerProps> = ({ variant = 'b
 
   return (
     <>
-      <div className="bg-slate-900/95 backdrop-blur-md text-white border border-sky-800/80 rounded-2xl p-4 shadow-xl mb-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="bg-slate-900/95 backdrop-blur-md text-white border border-slate-700/80 rounded-2xl p-4 shadow-xl mb-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
-          <PpueriAppIcon size="md" variant="white" className="ring-2 ring-sky-400/40 shrink-0" />
+          <PpueriAppIcon size="md" variant="white" className="ring-2 ring-blue-400/40 shrink-0" />
           <div>
             <div className="flex items-center gap-2">
               <h3 className="font-extrabold text-sm text-white">Instale o Aplicativo Ppueri</h3>
@@ -136,7 +136,7 @@ export const InstallPwaBanner: React.FC<InstallPwaBannerProps> = ({ variant = 'b
                 PWA
               </span>
             </div>
-            <p className="text-xs text-sky-200/80 mt-0.5">
+            <p className="text-xs text-blue-200/80 mt-0.5">
               Acesso instantâneo com suporte offline para médicos no consultório e pais em casa.
             </p>
           </div>
@@ -145,18 +145,18 @@ export const InstallPwaBanner: React.FC<InstallPwaBannerProps> = ({ variant = 'b
         <div className="flex items-center gap-2 self-end sm:self-auto shrink-0 w-full sm:w-auto">
           <button
             onClick={handleInstallClick}
-            className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-gradient-to-r from-sky-500 to-cyan-400 hover:from-sky-400 hover:to-cyan-300 text-slate-950 text-xs font-extrabold px-4 py-2.5 rounded-xl transition-all shadow-md active:scale-95 border border-cyan-300/40"
+            className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-400 hover:to-cyan-300 text-slate-950 text-xs font-extrabold px-4 py-2.5 rounded-xl transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-blue-500/20 shadow-md active:scale-95 border border-cyan-300/40"
           >
-            <Download className="w-4 h-4 stroke-[2.5]" />
+            <Download strokeWidth={1.75} className="w-4 h-4 stroke-[2.5]" />
             <span>Instalar Agora</span>
           </button>
 
           <button
             onClick={handleDismiss}
-            className="p-2 text-sky-300 hover:text-white hover:bg-sky-950 rounded-xl transition-all border border-transparent hover:border-sky-800"
+            className="p-2 text-blue-300 hover:text-white hover:bg-slate-800 rounded-xl transition-all border border-transparent hover:border-slate-700"
             title="Lembrar mais tarde"
           >
-            <X className="w-4 h-4" />
+            <X strokeWidth={1.75} className="w-4 h-4" />
           </button>
         </div>
       </div>
@@ -176,10 +176,10 @@ interface InstallInstructionsModalProps {
 export const InstallInstructionsModal: React.FC<InstallInstructionsModalProps> = ({ onClose, isIOS }) => {
   return (
     <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-sky-200 space-y-5 animate-in fade-in zoom-in-95 duration-150">
+      <div className="bg-white/85 backdrop-blur-sm border border-slate-200/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-5 animate-in fade-in zoom-in-95 duration-150">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3">
-            <PpueriAppIcon size="md" variant="white" className="ring-1 ring-sky-200" />
+            <PpueriAppIcon size="md" variant="white" className="ring-1 ring-slate-200" />
             <div>
               <h2 className="font-extrabold text-slate-900 text-base">Instalar Ppueri no Dispositivo</h2>
               <p className="text-xs text-slate-500">Acesso rápido em tela cheia com ícone próprio</p>
@@ -189,36 +189,36 @@ export const InstallInstructionsModal: React.FC<InstallInstructionsModalProps> =
             onClick={onClose}
             className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-all"
           >
-            <X className="w-4 h-4" />
+            <X strokeWidth={1.75} className="w-4 h-4" />
           </button>
         </div>
 
         {isIOS ? (
           <div className="space-y-3 text-xs text-slate-700">
-            <div className="p-3 bg-sky-50 border border-sky-200 rounded-xl flex items-center gap-2.5 font-bold text-sky-950">
-              <Smartphone className="w-4 h-4 text-sky-700 shrink-0" />
+            <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center gap-2.5 font-bold text-slate-900">
+              <Smartphone strokeWidth={1.75} className="w-4 h-4 text-slate-600 shrink-0" />
               <span>Instruções para iPhone & iPad (Safari):</span>
             </div>
 
             <ol className="space-y-2.5 pl-1 text-slate-600 font-medium">
               <li className="flex items-start gap-2">
-                <span className="w-5 h-5 rounded-full bg-sky-100 text-sky-800 font-bold text-[11px] flex items-center justify-center shrink-0 mt-0.5">
+                <span className="w-5 h-5 rounded-full bg-slate-100 text-slate-700 font-bold text-[11px] flex items-center justify-center shrink-0 mt-0.5">
                   1
                 </span>
                 <span>
-                  No navegador <strong>Safari</strong>, toque no botão <strong>Compartilhar</strong> (<Share2 className="w-3.5 h-3.5 inline text-sky-700 mx-0.5" />) na barra inferior.
+                  No navegador <strong>Safari</strong>, toque no botão <strong>Compartilhar</strong> (<Share2 strokeWidth={1.75} className="w-3.5 h-3.5 inline text-slate-600 mx-0.5" />) na barra inferior.
                 </span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="w-5 h-5 rounded-full bg-sky-100 text-sky-800 font-bold text-[11px] flex items-center justify-center shrink-0 mt-0.5">
+                <span className="w-5 h-5 rounded-full bg-slate-100 text-slate-700 font-bold text-[11px] flex items-center justify-center shrink-0 mt-0.5">
                   2
                 </span>
                 <span>
-                  Role a lista para baixo e toque em <strong>"Adicionar à Tela de Início"</strong> (<PlusSquare className="w-3.5 h-3.5 inline text-sky-700 mx-0.5" />).
+                  Role a lista para baixo e toque em <strong>"Adicionar à Tela de Início"</strong> (<PlusSquare strokeWidth={1.75} className="w-3.5 h-3.5 inline text-slate-600 mx-0.5" />).
                 </span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="w-5 h-5 rounded-full bg-sky-100 text-sky-800 font-bold text-[11px] flex items-center justify-center shrink-0 mt-0.5">
+                <span className="w-5 h-5 rounded-full bg-slate-100 text-slate-700 font-bold text-[11px] flex items-center justify-center shrink-0 mt-0.5">
                   3
                 </span>
                 <span>
@@ -229,22 +229,22 @@ export const InstallInstructionsModal: React.FC<InstallInstructionsModalProps> =
           </div>
         ) : (
           <div className="space-y-3 text-xs text-slate-700">
-            <div className="p-3 bg-sky-50 border border-sky-200 rounded-xl flex items-center gap-2.5 font-bold text-sky-950">
-              <Laptop className="w-4 h-4 text-sky-700 shrink-0" />
+            <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center gap-2.5 font-bold text-slate-900">
+              <Laptop strokeWidth={1.75} className="w-4 h-4 text-slate-600 shrink-0" />
               <span>Instruções para Android, Windows, Mac ou Linux:</span>
             </div>
 
             <ol className="space-y-2.5 pl-1 text-slate-600 font-medium">
               <li className="flex items-start gap-2">
-                <span className="w-5 h-5 rounded-full bg-sky-100 text-sky-800 font-bold text-[11px] flex items-center justify-center shrink-0 mt-0.5">
+                <span className="w-5 h-5 rounded-full bg-slate-100 text-slate-700 font-bold text-[11px] flex items-center justify-center shrink-0 mt-0.5">
                   1
                 </span>
                 <span>
-                  No Chrome ou Edge, clique no ícone de <strong>Instalar</strong> (<Download className="w-3.5 h-3.5 inline text-sky-700 mx-0.5" />) na barra de endereços (lado direito).
+                  No Chrome ou Edge, clique no ícone de <strong>Instalar</strong> (<Download strokeWidth={1.75} className="w-3.5 h-3.5 inline text-slate-600 mx-0.5" />) na barra de endereços (lado direito).
                 </span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="w-5 h-5 rounded-full bg-sky-100 text-sky-800 font-bold text-[11px] flex items-center justify-center shrink-0 mt-0.5">
+                <span className="w-5 h-5 rounded-full bg-slate-100 text-slate-700 font-bold text-[11px] flex items-center justify-center shrink-0 mt-0.5">
                   2
                 </span>
                 <span>
@@ -255,9 +255,9 @@ export const InstallInstructionsModal: React.FC<InstallInstructionsModalProps> =
           </div>
         )}
 
-        <div className="pt-2 border-t border-sky-100 flex items-center justify-between">
+        <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
           <div className="flex items-center gap-1 text-[11px] text-slate-500 font-medium">
-            <ShieldCheck className="w-3.5 h-3.5 text-sky-700" />
+            <ShieldCheck strokeWidth={1.75} className="w-3.5 h-3.5 text-slate-600" />
             <span>Sem necessidade de loja de aplicativos</span>
           </div>
 

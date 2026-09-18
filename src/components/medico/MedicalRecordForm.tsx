@@ -169,26 +169,26 @@ export const MedicalRecordForm: React.FC<MedicalRecordFormProps> = ({
             className="p-2 bg-white/80 hover:bg-white rounded-xl text-slate-700 transition-colors border border-slate-200/60 shadow-sm"
             title="Voltar ao Painel"
           >
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft strokeWidth={1.75} className="w-5 h-5" />
           </button>
           <div>
             <div className="flex items-center gap-2">
               <span className="text-lg font-extrabold text-slate-900">{patient.name}</span>
-              <span className="bg-sky-100/80 text-sky-800 text-xs font-bold px-2.5 py-0.5 rounded-full border border-sky-200/80">
+              <span className="bg-slate-100/80 text-slate-700 text-xs font-bold px-2.5 py-0.5 rounded-full border border-slate-200/80">
                 {formatPediatricAge(patient.birthDate)}
               </span>
             </div>
             <p className="text-xs text-slate-500">
-              Mãe: {patient.motherName} | CPF: {patient.cpf || 'Não informado'} | Código: <span className="font-mono font-bold text-sky-800">{patient.accessCode}</span>
+              Mãe: {patient.motherName} | CPF: {patient.cpf || 'Não informado'} | Código: <span className="font-mono font-bold text-slate-700">{patient.accessCode}</span>
             </p>
           </div>
         </div>
 
         <button
           onClick={handleSaveAll}
-          className="flex items-center gap-2 bg-sky-600 hover:bg-sky-500 text-white font-extrabold text-xs px-5 py-2.5 rounded-xl transition-all shadow-md active:scale-95"
+          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs px-5 py-2.5 rounded-xl transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-blue-500/20 shadow-md active:scale-95"
         >
-          <CheckCircle className="w-4 h-4" />
+          <CheckCircle strokeWidth={1.75} className="w-4 h-4" />
           <span>Finalizar Atendimento e Salvar Prontuário</span>
         </button>
       </div>
@@ -206,7 +206,7 @@ export const MedicalRecordForm: React.FC<MedicalRecordFormProps> = ({
               : 'text-slate-700 hover:text-slate-900 hover:bg-white/60'
           }`}
         >
-          <FileText className="w-4 h-4" />
+          <FileText strokeWidth={1.75} className="w-4 h-4" />
           <span>1. Anamnese Pediátrica</span>
         </button>
         <button
@@ -217,7 +217,7 @@ export const MedicalRecordForm: React.FC<MedicalRecordFormProps> = ({
               : 'text-slate-700 hover:text-slate-900 hover:bg-white/60'
           }`}
         >
-          <Activity className="w-4 h-4" />
+          <Activity strokeWidth={1.75} className="w-4 h-4" />
           <span>2. Antropometria & Sinais Vitais</span>
         </button>
         <button
@@ -228,7 +228,7 @@ export const MedicalRecordForm: React.FC<MedicalRecordFormProps> = ({
               : 'text-slate-700 hover:text-slate-900 hover:bg-white/60'
           }`}
         >
-          <Stethoscope className="w-4 h-4" />
+          <Stethoscope strokeWidth={1.75} className="w-4 h-4" />
           <span>3. Leitor OCR de Exames</span>
         </button>
         <button
@@ -239,7 +239,7 @@ export const MedicalRecordForm: React.FC<MedicalRecordFormProps> = ({
               : 'text-slate-700 hover:text-slate-900 hover:bg-white/60'
           }`}
         >
-          <Syringe className="w-4 h-4" />
+          <Syringe strokeWidth={1.75} className="w-4 h-4" />
           <span>4. Vacinação PNI</span>
         </button>
         <button
@@ -250,20 +250,20 @@ export const MedicalRecordForm: React.FC<MedicalRecordFormProps> = ({
               : 'text-slate-700 hover:text-slate-900 hover:bg-white/60'
           }`}
         >
-          <ClipboardList className="w-4 h-4" />
+          <ClipboardList strokeWidth={1.75} className="w-4 h-4" />
           <span>5. Plano de Cuidado & Prescrição</span>
         </button>
         <button
           onClick={() => setActiveTab('cdss_ia')}
           className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all shrink-0 ${
             activeTab === 'cdss_ia'
-              ? 'bg-sky-600 text-white shadow-md font-bold'
-              : 'text-sky-900 hover:text-sky-950 bg-sky-100/70 hover:bg-sky-100 font-extrabold border border-sky-300/80'
+              ? 'bg-blue-600 text-white shadow-md font-bold'
+              : 'text-slate-900 hover:text-slate-900 bg-slate-100/70 hover:bg-slate-100 font-extrabold border border-slate-300/80'
           }`}
         >
-          <Brain className="w-4 h-4 text-sky-600" />
+          <Brain strokeWidth={1.75} className="w-4 h-4 text-blue-500" />
           <span>Suporte IA (CDSS)</span>
-          <span className="bg-sky-500 text-white text-[9px] px-1.5 py-0.2 rounded-full font-black">IA</span>
+          <span className="bg-blue-500 text-white text-[9px] px-1.5 py-0.2 rounded-full font-black">IA</span>
         </button>
       </div>
 
@@ -283,7 +283,7 @@ export const MedicalRecordForm: React.FC<MedicalRecordFormProps> = ({
                 rows={2}
                 value={chiefComplaint}
                 onChange={(e) => setChiefComplaint(e.target.value)}
-                className="w-full p-2.5 border border-slate-300 rounded-xl focus:outline-none focus:border-sky-500"
+                className="w-full p-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500"
               />
             </div>
 
@@ -293,7 +293,7 @@ export const MedicalRecordForm: React.FC<MedicalRecordFormProps> = ({
                 rows={2}
                 value={historyOfPresentIllness}
                 onChange={(e) => setHistoryOfPresentIllness(e.target.value)}
-                className="w-full p-2.5 border border-slate-300 rounded-xl focus:outline-none focus:border-sky-500"
+                className="w-full p-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500"
               />
             </div>
           </div>
@@ -405,7 +405,7 @@ export const MedicalRecordForm: React.FC<MedicalRecordFormProps> = ({
                 value={allergiesInput}
                 onChange={(e) => setAllergiesInput(e.target.value)}
                 placeholder="Ex: Leite de vaca, Dipirona, Nenhuma"
-                className="w-full p-2.5 border border-slate-300 rounded-xl focus:outline-none focus:border-sky-500 font-medium"
+                className="w-full p-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 font-medium"
               />
             </div>
 
@@ -416,7 +416,7 @@ export const MedicalRecordForm: React.FC<MedicalRecordFormProps> = ({
                 value={medicationsInput}
                 onChange={(e) => setMedicationsInput(e.target.value)}
                 placeholder="Ex: Vitamina D 400 UI/dia, Ferro Quelato"
-                className="w-full p-2.5 border border-slate-300 rounded-xl focus:outline-none focus:border-sky-500 font-medium"
+                className="w-full p-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 font-medium"
               />
             </div>
 
@@ -427,7 +427,7 @@ export const MedicalRecordForm: React.FC<MedicalRecordFormProps> = ({
                 value={familyHistory}
                 onChange={(e) => setFamilyHistory(e.target.value)}
                 placeholder="Ex: Pai asmático, Mãe com rinite"
-                className="w-full p-2.5 border border-slate-300 rounded-xl focus:outline-none focus:border-sky-500 font-medium"
+                className="w-full p-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 font-medium"
               />
             </div>
           </div>
@@ -454,7 +454,7 @@ export const MedicalRecordForm: React.FC<MedicalRecordFormProps> = ({
                   onChange={(e) => setWeightKg(parseFloat(e.target.value) || 0)}
                   className="w-full bg-white border border-slate-300 rounded-xl p-2.5 font-bold text-base text-slate-900"
                 />
-                <div className="text-[11px] font-semibold text-sky-800 bg-sky-100 p-2 rounded-lg">
+                <div className="text-[11px] font-semibold text-slate-700 bg-slate-100 p-2 rounded-lg">
                   Percentil: P{antropometry.weightPercentile} | Z-Score: {antropometry.weightZScore}
                   <div className="text-[10px] text-slate-700 mt-0.5">
                     {getZScoreClassification('peso', antropometry.weightZScore || 0).label}
@@ -471,7 +471,7 @@ export const MedicalRecordForm: React.FC<MedicalRecordFormProps> = ({
                   onChange={(e) => setHeightCm(parseFloat(e.target.value) || 0)}
                   className="w-full bg-white border border-slate-300 rounded-xl p-2.5 font-bold text-base text-slate-900"
                 />
-                <div className="text-[11px] font-semibold text-sky-800 bg-sky-100 p-2 rounded-lg">
+                <div className="text-[11px] font-semibold text-slate-700 bg-slate-100 p-2 rounded-lg">
                   Percentil: P{antropometry.heightPercentile} | Z-Score: {antropometry.heightZScore}
                   <div className="text-[10px] text-slate-700 mt-0.5">
                     {getZScoreClassification('estatura', antropometry.heightZScore || 0).label}
@@ -488,7 +488,7 @@ export const MedicalRecordForm: React.FC<MedicalRecordFormProps> = ({
                   onChange={(e) => setHeadCircumferenceCm(parseFloat(e.target.value) || 0)}
                   className="w-full bg-white border border-slate-300 rounded-xl p-2.5 font-bold text-base text-slate-900"
                 />
-                <div className="text-[11px] font-semibold text-sky-800 bg-sky-100 p-2 rounded-lg">
+                <div className="text-[11px] font-semibold text-slate-700 bg-slate-100 p-2 rounded-lg">
                   {antropometry.headCircumferencePercentile !== undefined ? (
                     <>
                       Percentil: P{antropometry.headCircumferencePercentile} | Z-Score: {antropometry.headCircumferenceZScore}
@@ -660,7 +660,7 @@ export const MedicalRecordForm: React.FC<MedicalRecordFormProps> = ({
                 <div key={ex.id} className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs space-y-1">
                   <div className="flex justify-between font-bold text-slate-900">
                     <span>{ex.title}</span>
-                    <span className="text-sky-700">{ex.category}</span>
+                    <span className="text-blue-600">{ex.category}</span>
                   </div>
                   <p className="text-slate-600">{ex.items.length} itens extraídos via OCR. Parecer: {ex.doctorInterpretation}</p>
                 </div>
@@ -697,7 +697,7 @@ export const MedicalRecordForm: React.FC<MedicalRecordFormProps> = ({
               type="text"
               value={diagnosisText}
               onChange={(e) => setDiagnosisText(e.target.value)}
-              className="w-full p-2.5 text-xs border border-slate-300 rounded-xl font-bold text-slate-900 focus:outline-none focus:border-sky-500"
+              className="w-full p-2.5 text-xs border border-slate-300 rounded-xl font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500"
             />
           </div>
 
@@ -709,9 +709,9 @@ export const MedicalRecordForm: React.FC<MedicalRecordFormProps> = ({
               </h3>
               <button
                 onClick={handleAddPrescription}
-                className="flex items-center gap-1 text-xs bg-sky-600 hover:bg-sky-500 text-white font-bold px-3 py-1.5 rounded-lg shadow-sm"
+                className="flex items-center gap-1 text-xs bg-blue-600 hover:bg-blue-700 text-white font-bold px-3 py-1.5 rounded-lg shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-blue-500/20"
               >
-                <Plus className="w-3.5 h-3.5" />
+                <Plus strokeWidth={1.75} className="w-3.5 h-3.5" />
                 <span>Adicionar Medicamento</span>
               </button>
             </div>
@@ -726,7 +726,7 @@ export const MedicalRecordForm: React.FC<MedicalRecordFormProps> = ({
                       className="text-slate-400 hover:text-red-600"
                       title="Remover medicamento"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <Trash2 strokeWidth={1.75} className="w-4 h-4" />
                     </button>
                   </div>
 
@@ -780,7 +780,7 @@ export const MedicalRecordForm: React.FC<MedicalRecordFormProps> = ({
                 rows={3}
                 value={feedingInstructions}
                 onChange={(e) => setFeedingInstructions(e.target.value)}
-                className="w-full p-2.5 border border-slate-300 rounded-xl focus:outline-none focus:border-sky-500"
+                className="w-full p-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500"
               />
             </div>
 
@@ -790,7 +790,7 @@ export const MedicalRecordForm: React.FC<MedicalRecordFormProps> = ({
                 rows={3}
                 value={generalCareInstructions}
                 onChange={(e) => setGeneralCareInstructions(e.target.value)}
-                className="w-full p-2.5 border border-slate-300 rounded-xl focus:outline-none focus:border-sky-500"
+                className="w-full p-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500"
               />
             </div>
           </div>
@@ -798,7 +798,7 @@ export const MedicalRecordForm: React.FC<MedicalRecordFormProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
             <div className="sm:col-span-2">
               <label className="block font-bold text-amber-900 mb-1 flex items-center gap-1">
-                <ShieldAlert className="w-4 h-4 text-amber-600" />
+                <ShieldAlert strokeWidth={1.75} className="w-4 h-4 text-amber-600" />
                 Sinais de Alerta para Retorno Imediato (separados por ponto e vírgula):
               </label>
               <input
@@ -816,7 +816,7 @@ export const MedicalRecordForm: React.FC<MedicalRecordFormProps> = ({
                 value={nextAppointment}
                 onChange={(e) => setNextAppointment(e.target.value)}
                 placeholder="Ex: 30 dias"
-                className="w-full p-2.5 border border-slate-300 rounded-xl focus:outline-none focus:border-sky-500 font-bold"
+                className="w-full p-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 font-bold"
               />
             </div>
           </div>
@@ -824,9 +824,9 @@ export const MedicalRecordForm: React.FC<MedicalRecordFormProps> = ({
           <div className="pt-4 border-t border-slate-100 flex items-center justify-end">
             <button
               onClick={handleSaveAll}
-              className="flex items-center gap-2 bg-sky-600 hover:bg-sky-500 text-white font-extrabold text-xs px-6 py-3 rounded-xl transition-all shadow-md active:scale-95"
+              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs px-6 py-3 rounded-xl transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-blue-500/20 shadow-md active:scale-95"
             >
-              <CheckCircle className="w-4 h-4" />
+              <CheckCircle strokeWidth={1.75} className="w-4 h-4" />
               <span>Finalizar Atendimento e Salvar Prontuário</span>
             </button>
           </div>

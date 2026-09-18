@@ -16,18 +16,18 @@ export const ClinicalFlag: React.FC<ClinicalFlagProps> = ({ evaluation, compact 
       <div
         className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium border ${
           isNormal
-            ? 'bg-sky-50 text-sky-900 border-sky-200'
+            ? 'bg-slate-50 text-slate-900 border-slate-200'
             : isAlert
             ? 'bg-amber-50 text-amber-900 border-amber-300'
-            : 'bg-sky-50 text-sky-900 border-amber-300'
+            : 'bg-slate-50 text-slate-900 border-amber-300'
         }`}
       >
         {isNormal ? (
-          <CheckCircle className="w-3.5 h-3.5 text-sky-600" />
+          <CheckCircle strokeWidth={1.75} className="w-3.5 h-3.5 text-blue-500" />
         ) : isAlert ? (
-          <ShieldAlert className="w-3.5 h-3.5 text-amber-600" />
+          <ShieldAlert strokeWidth={1.75} className="w-3.5 h-3.5 text-amber-600" />
         ) : (
-          <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
+          <AlertTriangle strokeWidth={1.75} className="w-3.5 h-3.5 text-amber-600" />
         )}
         <span>{evaluation.parameterName}: {evaluation.value} {evaluation.unit}</span>
       </div>
@@ -38,8 +38,8 @@ export const ClinicalFlag: React.FC<ClinicalFlagProps> = ({ evaluation, compact 
     <div
       className={`p-3.5 rounded-xl border transition-all ${
         isNormal
-          ? 'bg-slate-50/70 border-slate-200 hover:border-sky-300'
-          : 'bg-sky-50/90 border-amber-400 shadow-sm'
+          ? 'bg-slate-50/70 border-slate-200 hover:border-slate-300'
+          : 'bg-slate-50/90 border-amber-400 shadow-sm'
       }`}
     >
       <div className="flex items-start justify-between gap-3">
@@ -47,18 +47,18 @@ export const ClinicalFlag: React.FC<ClinicalFlagProps> = ({ evaluation, compact 
           <div
             className={`p-2 rounded-lg ${
               isNormal
-                ? 'bg-sky-100 text-sky-700'
+                ? 'bg-slate-100 text-slate-600'
                 : isAlert
                 ? 'bg-amber-100 text-amber-700'
-                : 'bg-sky-100 text-sky-800'
+                : 'bg-slate-100 text-slate-700'
             }`}
           >
             {isNormal ? (
-              <Activity className="w-4 h-4 text-sky-700" />
+              <Activity strokeWidth={1.75} className="w-4 h-4 text-slate-600" />
             ) : isAlert ? (
-              <ShieldAlert className="w-4 h-4 text-amber-700" />
+              <ShieldAlert strokeWidth={1.75} className="w-4 h-4 text-amber-700" />
             ) : (
-              <AlertTriangle className="w-4 h-4 text-sky-800" />
+              <AlertTriangle strokeWidth={1.75} className="w-4 h-4 text-slate-700" />
             )}
           </div>
           <div>
@@ -78,18 +78,18 @@ export const ClinicalFlag: React.FC<ClinicalFlagProps> = ({ evaluation, compact 
           <span
             className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold ${
               isNormal
-                ? 'bg-sky-100 text-sky-800 border border-sky-200'
+                ? 'bg-slate-100 text-slate-700 border border-slate-200'
                 : 'bg-amber-100 text-amber-900 border border-amber-300'
             }`}
           >
             {isNormal ? (
               <>
-                <CheckCircle className="w-3 h-3 text-sky-600" />
+                <CheckCircle strokeWidth={1.75} className="w-3 h-3 text-blue-500" />
                 Normal
               </>
             ) : (
               <>
-                <AlertTriangle className="w-3 h-3 text-amber-600" />
+                <AlertTriangle strokeWidth={1.75} className="w-3 h-3 text-amber-600" />
                 Alterado
               </>
             )}

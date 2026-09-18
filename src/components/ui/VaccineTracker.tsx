@@ -45,8 +45,8 @@ export const VaccineTracker: React.FC<VaccineTrackerProps> = ({
       {/* Header & Metrics */}
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 pb-4">
         <div className="flex items-center gap-2.5">
-          <div className="p-2.5 bg-sky-100 text-sky-700 rounded-xl">
-            <Syringe className="w-5 h-5 text-sky-600" />
+          <div className="p-2.5 bg-slate-100 text-slate-600 rounded-xl">
+            <Syringe strokeWidth={1.75} className="w-5 h-5 text-slate-600" />
           </div>
           <div>
             <h3 className="text-base font-bold text-slate-900">
@@ -60,13 +60,13 @@ export const VaccineTracker: React.FC<VaccineTrackerProps> = ({
 
         {/* Counter Pills */}
         <div className="flex items-center gap-2 text-xs font-semibold">
-          <div className="bg-sky-50 text-sky-900 border border-sky-200 px-3 py-1 rounded-lg flex items-center gap-1.5">
-            <CheckCircle className="w-3.5 h-3.5 text-sky-600" />
+          <div className="bg-slate-50 text-slate-900 border border-slate-200 px-3 py-1 rounded-lg flex items-center gap-1.5">
+            <CheckCircle strokeWidth={1.75} className="w-3.5 h-3.5 text-blue-500" />
             <span>{appliedCount} Aplicadas</span>
           </div>
           {overdueCount > 0 && (
             <div className="bg-amber-50 text-amber-900 border border-amber-300 px-3 py-1 rounded-lg flex items-center gap-1.5 animate-pulse">
-              <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
+              <AlertTriangle strokeWidth={1.75} className="w-3.5 h-3.5 text-amber-600" />
               <span>{overdueCount} Atrasadas</span>
             </div>
           )}
@@ -81,13 +81,13 @@ export const VaccineTracker: React.FC<VaccineTrackerProps> = ({
       <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
         {/* Search */}
         <div className="relative w-full sm:w-64">
-          <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <Search strokeWidth={1.75} className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
             placeholder="Buscar vacina ou doença..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-sky-500"
+            className="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500"
           />
         </div>
 
@@ -104,7 +104,7 @@ export const VaccineTracker: React.FC<VaccineTrackerProps> = ({
           <button
             onClick={() => setFilter('aplicadas')}
             className={`px-3 py-1 rounded-lg whitespace-nowrap transition-all ${
-              filter === 'aplicadas' ? 'bg-white text-sky-900 shadow-sm font-bold' : 'text-slate-600 hover:text-slate-900'
+              filter === 'aplicadas' ? 'bg-white text-slate-900 shadow-sm font-bold' : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             Aplicadas
@@ -150,7 +150,7 @@ export const VaccineTracker: React.FC<VaccineTrackerProps> = ({
                     ? 'bg-amber-50/80 border-amber-300 shadow-sm'
                     : isUpcoming
                     ? 'bg-cyan-50/50 border-cyan-200'
-                    : 'bg-white border-slate-200 hover:border-sky-300'
+                    : 'bg-white border-slate-200 hover:border-blue-300'
                 }`}
               >
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -169,20 +169,20 @@ export const VaccineTracker: React.FC<VaccineTrackerProps> = ({
                     </div>
 
                     {isApplied && (
-                      <div className="flex items-center gap-3 text-[11px] text-sky-800 pt-1 font-medium">
+                      <div className="flex items-center gap-3 text-[11px] text-slate-700 pt-1 font-medium">
                         <span className="flex items-center gap-1">
-                          <Calendar className="w-3 h-3 text-sky-600" />
+                          <Calendar strokeWidth={1.75} className="w-3 h-3 text-slate-600" />
                           Aplicada em: {v.applicationDate ? new Date(v.applicationDate).toLocaleDateString('pt-BR') : 'Data informada'}
                         </span>
                         {v.batchNumber && (
                           <span className="flex items-center gap-1">
-                            <Tag className="w-3 h-3 text-sky-600" />
+                            <Tag strokeWidth={1.75} className="w-3 h-3 text-slate-600" />
                             Lote: {v.batchNumber}
                           </span>
                         )}
                         {v.clinicName && (
                           <span className="flex items-center gap-1 hidden md:flex">
-                            <Building className="w-3 h-3 text-sky-600" />
+                            <Building strokeWidth={1.75} className="w-3 h-3 text-slate-600" />
                             {v.clinicName}
                           </span>
                         )}
@@ -194,7 +194,7 @@ export const VaccineTracker: React.FC<VaccineTrackerProps> = ({
                     <span
                       className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${
                         isApplied
-                          ? 'bg-sky-100 text-sky-800 border border-sky-300'
+                          ? 'bg-slate-100 text-slate-700 border border-slate-300'
                           : isOverdue
                           ? 'bg-amber-100 text-amber-900 border border-amber-300'
                           : isUpcoming
@@ -204,12 +204,12 @@ export const VaccineTracker: React.FC<VaccineTrackerProps> = ({
                     >
                       {isApplied ? (
                         <>
-                          <CheckCircle className="w-3.5 h-3.5 text-sky-600" />
+                          <CheckCircle strokeWidth={1.75} className="w-3.5 h-3.5 text-blue-500" />
                           Aplicada
                         </>
                       ) : isOverdue ? (
                         <>
-                          <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
+                          <AlertTriangle strokeWidth={1.75} className="w-3.5 h-3.5 text-amber-600" />
                           Atrasada
                         </>
                       ) : isUpcoming ? (
@@ -226,7 +226,7 @@ export const VaccineTracker: React.FC<VaccineTrackerProps> = ({
                     {isDoctorView && !isApplied && editingId !== v.id && (
                       <button
                         onClick={() => setEditingId(v.id)}
-                        className="text-xs bg-slate-900 hover:bg-sky-700 text-white font-semibold px-3 py-1 rounded-lg transition-colors"
+                        className="text-xs bg-slate-900 hover:bg-blue-600 text-white font-semibold px-3 py-1 rounded-lg transition-all hover:-translate-y-0.5 hover:shadow-md hover:shadow-blue-500/20"
                       >
                         Registrar
                       </button>
@@ -265,7 +265,7 @@ export const VaccineTracker: React.FC<VaccineTrackerProps> = ({
                       </button>
                       <button
                         onClick={() => handleApply(v.id)}
-                        className="bg-sky-600 text-white font-bold px-3 py-1 rounded-lg hover:bg-sky-500 shadow-sm"
+                        className="bg-blue-600 text-white font-bold px-3 py-1 rounded-lg hover:bg-blue-700 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-blue-500/20"
                       >
                         Confirmar Aplicação
                       </button>
