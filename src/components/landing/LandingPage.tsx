@@ -37,7 +37,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const primaryBtn =
-    'inline-flex items-center gap-2 px-5 py-3 text-sm font-bold text-white bg-gradient-to-r from-slate-900 to-blue-900 rounded-2xl hover:from-slate-800 hover:to-blue-800 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-blue-900/20 transition-all duration-200';
+    'inline-flex items-center gap-2 px-5 py-3 text-sm font-bold text-white bg-gradient-to-r from-blue-700 via-blue-600 to-sky-600 rounded-2xl hover:from-blue-800 hover:via-blue-700 hover:to-sky-700 shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/35 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200';
   const secondaryBtn =
     'inline-flex items-center gap-2 px-5 py-3 text-sm font-semibold text-slate-700 bg-white border border-slate-200 rounded-2xl hover:bg-slate-50 hover:border-slate-300 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200';
 
@@ -108,7 +108,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
               <button onClick={onLogin} className="w-full text-sm font-semibold text-slate-700 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 transition-all">
                 Entrar
               </button>
-              <button onClick={onLogin} className="w-full text-sm font-bold text-white py-2.5 rounded-xl bg-gradient-to-r from-slate-900 to-blue-900 hover:from-slate-800 hover:to-blue-800 transition-all">
+              <button onClick={onLogin} className="w-full text-sm font-bold text-white py-2.5 rounded-xl bg-gradient-to-r from-blue-700 via-blue-600 to-sky-600 hover:from-blue-800 hover:via-blue-700 hover:to-sky-700 shadow-md shadow-blue-500/25 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200">
                 Começar grátis
               </button>
             </div>
@@ -363,8 +363,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
 
             {/* Emissão de Receitas */}
             <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-blue-500/10 hover:border-blue-200 transition-all duration-300 group">
-              <div className="p-2.5 bg-violet-50 border border-violet-100 rounded-xl w-fit mb-4 group-hover:bg-violet-100 transition-colors">
-                <FileText className="w-5 h-5 text-violet-600" strokeWidth={1.75} />
+              <div className="p-2.5 bg-blue-50 border border-blue-100 rounded-xl w-fit mb-4 group-hover:bg-blue-100 transition-colors">
+                <FileText className="w-5 h-5 text-blue-600" strokeWidth={1.75} />
               </div>
               <h3 className="text-base font-extrabold text-slate-900 mb-2">Receitas e PDF Digital</h3>
               <p className="text-sm text-slate-500 leading-relaxed">
