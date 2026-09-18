@@ -23,8 +23,9 @@ import {
   DiagnosticHypothesis,
   ClinicalAlert,
   ClinicalAiAnalysis,
+  Consultation,
 } from '../../types/ppueri';
-import { runPediatricCdssAnalysis } from '../../lib/clinical-ai';
+import { runClaudeCdssAnalysis, ClinicalAiAnalysisWithMeta } from '../../lib/clinical-ai';
 
 interface ClinicalAiAssistantProps {
   patient: Patient;
@@ -33,6 +34,7 @@ interface ClinicalAiAssistantProps {
   vitals: ClinicalVitals;
   vitalsEvaluations: VitalsEvaluation[];
   exams: LabExam[];
+  consultationHistory?: Consultation[];
   onApplyDiagnosis?: (diagnosisText: string) => void;
   onApplyPrescriptionSuggestion?: (medicationText: string) => void;
 }
@@ -44,28 +46,31 @@ export const ClinicalAiAssistant: React.FC<ClinicalAiAssistantProps> = ({
   vitals,
   vitalsEvaluations,
   exams,
+  consultationHistory,
   onApplyDiagnosis,
   onApplyPrescriptionSuggestion,
 }) => {
   const [isExpanded, setIsExpanded] = useState(true);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   // Starts null — no pre-analysis on mount. User must trigger explicitly.
-  const [analysis, setAnalysis] = useState<ClinicalAiAnalysis | null>(null);
+  const [analysis, setAnalysis] = useState<ClinicalAiAnalysisWithMeta | null>(null);
+  const [usedFallback, setUsedFallback] = useState(false);
 
-  const handleRunAnalysis = () => {
+  const handleRunAnalysis = async () => {
     setIsAnalyzing(true);
-    setTimeout(() => {
-      const result = runPediatricCdssAnalysis(
-        patient,
-        anamnesis,
-        antropometry,
-        vitals,
-        vitalsEvaluations,
-        exams
-      );
-      setAnalysis(result);
-      setIsAnalyzing(false);
-    }, 600);
+    setUsedFallback(false);
+    const result = await runClaudeCdssAnalysis(
+      patient,
+      anamnesis,
+      antropometry,
+      vitals,
+      vitalsEvaluations,
+      exams,
+      consultationHistory
+    );
+    setAnalysis(result);
+    setUsedFallback(result.usedFallback ?? false);
+    setIsAnalyzing(false);
   };
 
   const getLikelihoodBadge = (likelihood: DiagnosticHypothesis['likelihood']) => {
@@ -116,9 +121,15 @@ export const ClinicalAiAssistant: React.FC<ClinicalAiAssistantProps> = ({
                 Suporte à Decisão Clínica (CDSS Pediátrico)
               </span>
               {analysis ? (
-                <span className="bg-gradient-to-r from-blue-500 to-cyan-400 text-slate-950 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider flex items-center gap-1 shadow-sm">
-                  <Sparkles strokeWidth={1.75} className="w-3 h-3 fill-slate-950" /> IA Ativa
-                </span>
+                usedFallback ? (
+                  <span className="bg-slate-700 text-slate-300 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
+                    Modo Local
+                  </span>
+                ) : (
+                  <span className="bg-gradient-to-r from-blue-500 to-cyan-400 text-slate-950 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider flex items-center gap-1 shadow-sm">
+                    <Sparkles strokeWidth={1.75} className="w-3 h-3 fill-slate-950" /> Claude Sonnet
+                  </span>
+                )
               ) : (
                 <span className="bg-slate-700 text-slate-300 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
                   Sob Demanda
@@ -183,6 +194,14 @@ export const ClinicalAiAssistant: React.FC<ClinicalAiAssistantProps> = ({
           {/* Results — only shown after explicit trigger */}
           {analysis && (
             <div className="p-5 space-y-5 bg-slate-950/60 text-slate-200 text-xs">
+              {/* Fallback info banner */}
+              {usedFallback && (
+                <div className="p-2.5 bg-amber-950/60 border border-amber-700/50 rounded-xl flex items-center gap-2 text-amber-300 text-[11px]">
+                  <AlertTriangle strokeWidth={1.75} className="w-3.5 h-3.5 shrink-0" />
+                  <span>Análise local ativa. Configure <strong>ANTHROPIC_API_KEY</strong> na Vercel para raciocínio clínico com Claude Sonnet.</span>
+                </div>
+              )}
+
               {/* Growth Summary Pill */}
               <div className="p-3 bg-blue-950/60 border border-blue-800/50 rounded-xl flex items-center gap-2.5 text-blue-200">
                 <Activity strokeWidth={1.75} className="w-4 h-4 text-blue-400 shrink-0" />

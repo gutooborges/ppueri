@@ -1,4 +1,4 @@
-import { Patient, Anamnesis, AntropometricParams, ClinicalVitals, VitalsEvaluation, LabExam, ClinicalAiAnalysis, DiagnosticHypothesis, ClinicalAlert } from '../types/ppueri';
+import { Patient, Anamnesis, AntropometricParams, ClinicalVitals, VitalsEvaluation, LabExam, ClinicalAiAnalysis, DiagnosticHypothesis, ClinicalAlert, Consultation } from '../types/ppueri';
 import { getAgeInMonths } from './pediatric-rules';
 
 export function runPediatricCdssAnalysis(
@@ -180,4 +180,52 @@ export function runPediatricCdssAnalysis(
     disclaimer:
       'Aviso legal: As sugestões deste módulo de IA são geradas algoritmicamente como suporte ao raciocínio clínico baseado em diretrizes da Sociedade Brasileira de Pediatria (SBP) e Ministério da Saúde. O julgamento, diagnóstico e conduta terapêutica são de responsabilidade exclusiva do médico pediatra.',
   };
+}
+
+// ── Claude Sonnet CDSS — async wrapper com fallback ────────────────────────────
+
+export type ClinicalAiAnalysisWithMeta = ClinicalAiAnalysis & { usedFallback?: boolean };
+
+/**
+ * Envia os dados clínicos para api/clinical-reasoning (Claude Sonnet 4.6).
+ * Se a API key não estiver configurada ou ocorrer qualquer erro, cai silenciosamente
+ * no motor de regras local `runPediatricCdssAnalysis` e retorna `usedFallback: true`.
+ */
+export async function runClaudeCdssAnalysis(
+  patient: Patient,
+  anamnesis: Anamnesis,
+  antropometry: AntropometricParams,
+  vitals: ClinicalVitals,
+  vitalsEvaluations: VitalsEvaluation[],
+  exams: LabExam[],
+  consultationHistory?: Consultation[]
+): Promise<ClinicalAiAnalysisWithMeta> {
+  try {
+    const response = await fetch('/api/clinical-reasoning', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        patient,
+        anamnesis,
+        antropometry,
+        vitals,
+        vitalsEvaluations,
+        exams,
+        consultationHistory: consultationHistory?.slice(0, 5) ?? [],
+      }),
+    });
+
+    const data = await response.json();
+
+    // Server signalled to use fallback (missing API key or parse error)
+    if (!response.ok || data.fallback) {
+      console.warn('[Ppueri CDSS] Fallback para análise local:', data.error ?? response.status);
+      return { ...runPediatricCdssAnalysis(patient, anamnesis, antropometry, vitals, vitalsEvaluations, exams), usedFallback: true };
+    }
+
+    return data as ClinicalAiAnalysisWithMeta;
+  } catch (err) {
+    console.warn('[Ppueri CDSS] Erro de rede, usando análise local:', err);
+    return { ...runPediatricCdssAnalysis(patient, anamnesis, antropometry, vitals, vitalsEvaluations, exams), usedFallback: true };
+  }
 }

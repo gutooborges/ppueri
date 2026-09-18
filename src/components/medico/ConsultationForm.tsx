@@ -615,6 +615,7 @@ export const ConsultationForm: React.FC<ConsultationFormProps> = ({
           vitals={currentVitals}
           vitalsEvaluations={vitalsEvaluations}
           exams={linkedExams}
+          consultationHistory={consultations}
           onApplyDiagnosis={handleApplyDiagnosis}
           onApplyPrescriptionSuggestion={handleApplyPrescriptionSuggestion}
         />
