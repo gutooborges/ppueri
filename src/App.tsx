@@ -48,6 +48,7 @@ import { PatientLogin } from './components/paciente/PatientLogin';
 import { PatientPortal } from './components/paciente/PatientPortal';
 import { DoctorAuthScreen } from './components/auth/DoctorAuthScreen';
 import { ResetPasswordScreen } from './components/auth/ResetPasswordScreen';
+import { LandingPage } from './components/landing/LandingPage';
 import { getAgeInMonths } from './lib/pediatric-rules';
 import { getInitialVaccinesForPatient } from './lib/mock-data';
 
@@ -57,6 +58,7 @@ export default function App() {
   const [authSession, setAuthSession] = useState<AuthSession | null>(null);
   const [authReady, setAuthReady] = useState(false);
   const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
+  const [showLogin, setShowLogin] = useState(false);
 
   useEffect(() => {
     // Resolve sessão inicial do médico (única chamada ao Supabase no carregamento)
@@ -101,9 +103,13 @@ export default function App() {
   }
 
   if (!authSession) {
+    if (!showLogin) {
+      return <LandingPage onLogin={() => setShowLogin(true)} />;
+    }
     return (
       <DoctorAuthScreen
         onLoginSuccess={(session) => setAuthSession(session)}
+        onBack={() => setShowLogin(false)}
       />
     );
   }

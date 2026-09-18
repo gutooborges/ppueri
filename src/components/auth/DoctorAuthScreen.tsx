@@ -12,9 +12,10 @@ import { Stethoscope, Mail, Lock, User, CreditCard, Eye, EyeOff, ArrowRight, Shi
 
 interface DoctorAuthScreenProps {
   onLoginSuccess: (session: AuthSession) => void;
+  onBack?: () => void;
 }
 
-export const DoctorAuthScreen: React.FC<DoctorAuthScreenProps> = ({ onLoginSuccess }) => {
+export const DoctorAuthScreen: React.FC<DoctorAuthScreenProps> = ({ onLoginSuccess, onBack }) => {
   const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
 
   // Login state
@@ -137,6 +138,17 @@ export const DoctorAuthScreen: React.FC<DoctorAuthScreenProps> = ({ onLoginSucce
 
   return (
     <div className="min-h-screen font-sans bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-100/40 via-slate-50 to-slate-100 flex flex-col items-center justify-center px-4 py-10">
+      {onBack && (
+        <div className="w-full max-w-md mb-2">
+          <button
+            onClick={onBack}
+            className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-blue-600 transition-colors"
+          >
+            <ArrowRight className="w-3.5 h-3.5 rotate-180" strokeWidth={1.75} />
+            Voltar ao início
+          </button>
+        </div>
+      )}
       <div className="w-full max-w-md space-y-4">
         {/* Logo & Branding */}
         <div className="flex flex-col items-center gap-3 mb-2">
