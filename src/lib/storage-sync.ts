@@ -12,6 +12,7 @@ import {
   AppointmentStatus,
   VaccineRecord,
   PediatricNotification,
+  ConsultationAmendment,
 } from '../types/ppueri';
 import { getInitialVaccinesForPatient } from './mock-data';
 import { getAgeInMonths } from './pediatric-rules';
@@ -69,6 +70,21 @@ function rowToConsultation(r: any): Consultation {
     exams: r.exams ?? [],
     vaccineUpdates: r.vaccine_updates ?? [],
     carePlan: r.care_plan,
+    status: r.status ?? 'draft',
+    finalizedAt: r.finalized_at ?? undefined,
+  };
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function rowToAmendment(r: any): ConsultationAmendment {
+  return {
+    id: r.id,
+    consultationId: r.consultation_id,
+    doctorId: r.doctor_id,
+    doctorName: r.doctor_name,
+    doctorCrm: r.doctor_crm,
+    amendmentText: r.amendment_text,
+    createdAt: r.created_at,
   };
 }
 
@@ -212,8 +228,121 @@ export async function insertConsultation(consultation: Consultation): Promise<vo
     exams: consultation.exams,
     vaccine_updates: consultation.vaccineUpdates ?? [],
     care_plan: consultation.carePlan,
+    status: 'draft',
   });
   if (error) console.error('[Ppueri Storage] Erro ao inserir consulta:', error.message);
+}
+
+// ─── Finalization (CFM 1.821/07 — imutabilidade) ─────────────────────────────
+
+export async function finalizeConsultation(consultationId: string): Promise<void> {
+  const { error } = await supabase
+    .from('consultations')
+    .update({ status: 'finalized', finalized_at: new Date().toISOString() })
+    .eq('id', consultationId);
+  if (error) console.error('[Ppueri Storage] Erro ao finalizar consulta:', error.message);
+}
+
+// ─── Consultation Amendments (CFM 1.821/07 — adendos) ────────────────────────
+
+export async function loadConsultationAmendments(consultationIds: string[]): Promise<ConsultationAmendment[]> {
+  if (consultationIds.length === 0) return [];
+  const { data, error } = await supabase
+    .from('consultation_amendments')
+    .select('*')
+    .in('consultation_id', consultationIds)
+    .order('created_at', { ascending: true });
+
+  if (error) {
+    console.error('[Ppueri Storage] Erro ao carregar adendos:', error.message);
+    return [];
+  }
+  return (data ?? []).map(rowToAmendment);
+}
+
+export async function insertConsultationAmendment(input: {
+  consultationId: string;
+  doctorId: string;
+  doctorName: string;
+  doctorCrm: string;
+  amendmentText: string;
+}): Promise<ConsultationAmendment | null> {
+  const { data, error } = await supabase
+    .from('consultation_amendments')
+    .insert({
+      consultation_id: input.consultationId,
+      doctor_id: input.doctorId,
+      doctor_name: input.doctorName,
+      doctor_crm: input.doctorCrm,
+      amendment_text: input.amendmentText,
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error('[Ppueri Storage] Erro ao inserir adendo:', error.message);
+    return null;
+  }
+  return rowToAmendment(data);
+}
+
+// ─── Access Audit Logs (CFM 1.821/07 — trilha de auditoria) ──────────────────
+
+export async function logAccessAudit(userId: string, patientId: string, action: string): Promise<void> {
+  const { error } = await supabase.from('access_audit_logs').insert({
+    user_id: userId,
+    patient_id: patientId,
+    action,
+  });
+  // Falha silenciosa: não interrompe o fluxo do usuário
+  if (error) console.warn('[Ppueri Audit] Falha ao registrar log:', error.message);
+}
+
+export async function logParentAccessAudit(userId: string, patientId: string, action: string): Promise<void> {
+  const { error } = await parentSupabase.from('access_audit_logs').insert({
+    user_id: userId,
+    patient_id: patientId,
+    action,
+  });
+  if (error) console.warn('[Ppueri Audit] Falha ao registrar log (responsável):', error.message);
+}
+
+// ─── Legal Consents (LGPD — consentimento pediátrico) ────────────────────────
+
+export async function checkParentLegalConsent(userId: string, patientId: string): Promise<boolean> {
+  const { data, error } = await parentSupabase
+    .from('legal_consents')
+    .select('id')
+    .eq('user_id', userId)
+    .eq('patient_id', patientId)
+    .eq('consent_type', 'tcle_pediatric')
+    .limit(1);
+
+  if (error) {
+    console.error('[Ppueri Storage] Erro ao verificar consentimento LGPD:', error.message);
+    return false;
+  }
+  return (data ?? []).length > 0;
+}
+
+export async function insertParentLegalConsent(input: {
+  userId: string;
+  patientId: string;
+  guardianName: string;
+  guardianCpf: string;
+  consentType: 'tcle_pediatric' | 'privacy_policy';
+  termVersion: string;
+}): Promise<void> {
+  const { error } = await parentSupabase.from('legal_consents').insert({
+    user_id: input.userId,
+    patient_id: input.patientId,
+    consent_type: input.consentType,
+    guardian_name: input.guardianName,
+    guardian_cpf: input.guardianCpf,
+    term_version: input.termVersion,
+    accepted_at: new Date().toISOString(),
+  });
+  if (error) console.error('[Ppueri Storage] Erro ao registrar consentimento LGPD:', error.message);
 }
 
 export async function saveStoredConsultations(doctorId: string, consultations: Consultation[]): Promise<void> {

@@ -1,10 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Patient, Consultation, VaccineRecord, Appointment } from '../../types/ppueri';
 import { formatPediatricAge } from '../../lib/pediatric-rules';
-import { createParentExamSignedUrl } from '../../lib/storage-sync';
+import {
+  createParentExamSignedUrl,
+  checkParentLegalConsent,
+  insertParentLegalConsent,
+  logParentAccessAudit,
+} from '../../lib/storage-sync';
 import { GrowthChart } from '../ui/GrowthChart';
 import { VaccineTracker } from '../ui/VaccineTracker';
 import { PatientAgendaTab } from './PatientAgendaTab';
+import { LgpdConsentModal } from '../ui/LgpdConsentModal';
 import {
   Stethoscope,
   Activity,
@@ -20,7 +26,10 @@ import {
   ExternalLink,
 } from 'lucide-react';
 
+const TERM_VERSION = '1.0';
+
 interface PatientPortalProps {
+  parentId: string;
   patient: Patient;
   consultations: Consultation[];
   vaccines: VaccineRecord[];
@@ -29,6 +38,7 @@ interface PatientPortalProps {
 }
 
 export const PatientPortal: React.FC<PatientPortalProps> = ({
+  parentId,
   patient,
   consultations,
   vaccines,
@@ -38,16 +48,84 @@ export const PatientPortal: React.FC<PatientPortalProps> = ({
   const [activeTab, setActiveTab] = useState<'resumo' | 'agenda' | 'crescimento' | 'vacinas' | 'documentos'>('resumo');
   const [loadingUrlExamId, setLoadingUrlExamId] = useState<string | null>(null);
 
-  const handleDownloadExam = async (examId: string, storagePath?: string, fileName?: string) => {
+  // LGPD consent state
+  const [consentChecking, setConsentChecking] = useState(true);
+  const [consentAccepted, setConsentAccepted] = useState(false);
+
+  // Check if parent has already given consent for this patient
+  useEffect(() => {
+    if (!parentId || !patient?.id) {
+      setConsentChecking(false);
+      return;
+    }
+    checkParentLegalConsent(parentId, patient.id).then((hasConsent) => {
+      setConsentAccepted(hasConsent);
+      if (hasConsent) {
+        // CFM 1.821/07 — Log access on every portal open when consent already exists
+        logParentAccessAudit(parentId, patient.id, 'parent_view_patient_portal');
+      }
+      setConsentChecking(false);
+    }).catch(() => {
+      setConsentAccepted(false);
+      setConsentChecking(false);
+    });
+  }, [parentId, patient?.id]);
+
+  const handleConsentAccepted = async (guardianName: string, guardianCpf: string) => {
+    // Insert both consent records (TCLE + Privacy Policy) atomically
+    await Promise.all([
+      insertParentLegalConsent({
+        userId: parentId,
+        patientId: patient.id,
+        guardianName,
+        guardianCpf,
+        consentType: 'tcle_pediatric',
+        termVersion: TERM_VERSION,
+      }),
+      insertParentLegalConsent({
+        userId: parentId,
+        patientId: patient.id,
+        guardianName,
+        guardianCpf,
+        consentType: 'privacy_policy',
+        termVersion: TERM_VERSION,
+      }),
+    ]);
+    // CFM 1.821/07 — Log first access after consent
+    await logParentAccessAudit(parentId, patient.id, 'parent_first_consent_and_access');
+    setConsentAccepted(true);
+  };
+
+  const handleDownloadExam = async (examId: string, storagePath?: string) => {
     if (!storagePath) return;
     setLoadingUrlExamId(examId);
     const url = await createParentExamSignedUrl(storagePath);
     setLoadingUrlExamId(null);
     if (url) {
-      // Abre o arquivo original em nova aba com URL assinada (1 hora de validade)
       window.open(url, '_blank', 'noopener,noreferrer');
     }
   };
+
+  // Loading state while checking consent
+  if (consentChecking) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <div className="text-sky-700 text-sm font-semibold animate-pulse">
+          Verificando autorizacao de acesso...
+        </div>
+      </div>
+    );
+  }
+
+  // LGPD blocking modal — first access or no consent on record
+  if (!consentAccepted) {
+    return (
+      <LgpdConsentModal
+        patientName={patient?.name ?? 'Paciente'}
+        onAccept={handleConsentAccepted}
+      />
+    );
+  }
 
   const patientConsultations = consultations
     .filter((c) => c.patientId === patient.id)
@@ -78,7 +156,7 @@ export const PatientPortal: React.FC<PatientPortalProps> = ({
                 </span>
               </div>
               <p className="text-xs text-sky-200/80 mt-0.5">
-                Mãe: {patient.motherName} | Código: <span className="font-mono font-bold text-sky-300">{patient.accessCode}</span>
+                Mae: {patient.motherName} | Codigo: <span className="font-mono font-bold text-sky-300">{patient.accessCode}</span>
               </p>
             </div>
           </div>
@@ -104,7 +182,7 @@ export const PatientPortal: React.FC<PatientPortalProps> = ({
           }`}
         >
           <Stethoscope className="w-4 h-4" />
-          <span>Visão Geral & Consulta</span>
+          <span>Visao Geral & Consulta</span>
         </button>
         <button
           onClick={() => setActiveTab('agenda')}
@@ -129,7 +207,7 @@ export const PatientPortal: React.FC<PatientPortalProps> = ({
           }`}
         >
           <Activity className="w-4 h-4" />
-          <span>Evolução de Crescimento</span>
+          <span>Evolucao de Crescimento</span>
         </button>
         <button
           onClick={() => setActiveTab('vacinas')}
@@ -155,10 +233,9 @@ export const PatientPortal: React.FC<PatientPortalProps> = ({
         </button>
       </div>
 
-      {/* TAB 1: RESUMO DA ÚLTIMA CONSULTA & PRÓXIMA CONSULTA HERO */}
+      {/* TAB 1: RESUMO DA ULTIMA CONSULTA */}
       {activeTab === 'resumo' && (
         <div className="space-y-6">
-          {/* Próxima Consulta Hero Card */}
           {nextUpcomingAppointment && (
             <div className="bg-gradient-to-r from-sky-900 to-slate-900 text-white rounded-2xl p-5 shadow-md border border-sky-700/60 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
               <div className="flex items-start gap-3.5">
@@ -168,14 +245,14 @@ export const PatientPortal: React.FC<PatientPortalProps> = ({
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
                     <span className="bg-cyan-400 text-slate-950 text-[10px] font-black px-2.5 py-0.5 rounded-md uppercase tracking-wider">
-                      Próxima Consulta Agendada
+                      Proxima Consulta Agendada
                     </span>
                     <span className="text-sky-300 text-xs font-bold">
                       {nextUpcomingAppointment.type === 'rotina'
                         ? 'Puericultura de Rotina'
                         : nextUpcomingAppointment.type === 'retorno'
-                        ? 'Retorno Clínico'
-                        : 'Atendimento Pediátrico'}
+                        ? 'Retorno Clinico'
+                        : 'Atendimento Pediatrico'}
                     </span>
                   </div>
                   <h3 className="text-base font-extrabold text-white">
@@ -184,14 +261,13 @@ export const PatientPortal: React.FC<PatientPortalProps> = ({
                       day: 'numeric',
                       month: 'long',
                     })}{' '}
-                    às <span className="font-mono text-cyan-300 font-black">{nextUpcomingAppointment.time}</span>
+                    as <span className="font-mono text-cyan-300 font-black">{nextUpcomingAppointment.time}</span>
                   </h3>
                   <p className="text-xs text-sky-200/90">
                     Com {nextUpcomingAppointment.doctorName} ({nextUpcomingAppointment.doctorCrm})
                   </p>
                 </div>
               </div>
-
               <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end">
                 <button
                   onClick={() => setActiveTab('agenda')}
@@ -242,14 +318,15 @@ export const PatientPortal: React.FC<PatientPortalProps> = ({
                     <Activity className="w-6 h-6" />
                   </div>
                   <div>
-                    <span className="text-xs text-sky-800 font-medium">Perímetro Cefálico</span>
+                    <span className="text-xs text-sky-800 font-medium">Perimetro Cefalico</span>
                     <div className="text-xl font-extrabold text-sky-950">
-                      {lastConsultation.antropometry.headCircumferenceCm || 'N/A'} {lastConsultation.antropometry.headCircumferenceCm ? 'cm' : ''}
+                      {lastConsultation.antropometry.headCircumferenceCm || 'N/A'}{' '}
+                      {lastConsultation.antropometry.headCircumferenceCm ? 'cm' : ''}
                     </div>
                     <span className="text-[11px] text-sky-800 font-bold">
                       {lastConsultation.antropometry.headCircumferencePercentile
                         ? `Percentil P${lastConsultation.antropometry.headCircumferencePercentile}`
-                        : 'Acompanhamento até 3 anos'}
+                        : 'Acompanhamento ate 3 anos'}
                     </span>
                   </div>
                 </div>
@@ -260,10 +337,10 @@ export const PatientPortal: React.FC<PatientPortalProps> = ({
                 <div className="flex items-center justify-between border-b border-sky-100 pb-3">
                   <div>
                     <span className="text-xs font-extrabold text-sky-700 uppercase tracking-wider">
-                      Último Atendimento em {new Date(lastConsultation.date).toLocaleDateString('pt-BR')}
+                      Ultimo Atendimento em {new Date(lastConsultation.date).toLocaleDateString('pt-BR')}
                     </span>
                     <h2 className="text-base font-bold text-sky-950 mt-0.5">
-                      Avaliação Pediátrica do Médico
+                      Avaliacao Pediatrica do Medico
                     </h2>
                   </div>
                   <div className="text-right text-xs">
@@ -272,17 +349,15 @@ export const PatientPortal: React.FC<PatientPortalProps> = ({
                   </div>
                 </div>
 
-                {/* Diagnostic Summary */}
                 <div className="bg-sky-50 border border-sky-200 rounded-xl p-4 text-xs text-sky-950 font-medium">
-                  <div className="font-bold text-sky-900 mb-1">Parecer Sintético do Pediatra:</div>
+                  <div className="font-bold text-sky-900 mb-1">Parecer Sintetico do Pediatra:</div>
                   {lastConsultation.carePlan.diagnosisText}
                 </div>
 
-                {/* Prescriptions */}
                 {lastConsultation.carePlan.prescriptions.length > 0 && (
                   <div className="space-y-3">
                     <h3 className="text-xs font-extrabold text-sky-900 uppercase tracking-wider">
-                      Prescrição Médica e Medicamentos:
+                      Prescricao Medica e Medicamentos:
                     </h3>
                     <div className="space-y-2">
                       {lastConsultation.carePlan.prescriptions.map((rx) => (
@@ -290,8 +365,8 @@ export const PatientPortal: React.FC<PatientPortalProps> = ({
                           <div className="font-extrabold text-sky-950 text-sm">{rx.medication}</div>
                           <div className="text-sky-900 flex flex-wrap gap-x-4">
                             <span>Dose: <strong>{rx.dosage}</strong></span>
-                            <span>Frequência: <strong>{rx.frequency}</strong></span>
-                            <span>Duração: <strong>{rx.duration}</strong></span>
+                            <span>Frequencia: <strong>{rx.frequency}</strong></span>
+                            <span>Duracao: <strong>{rx.duration}</strong></span>
                           </div>
                           {rx.instructions && (
                             <p className="text-sky-800 italic pt-1 border-t border-sky-200/60">
@@ -304,20 +379,17 @@ export const PatientPortal: React.FC<PatientPortalProps> = ({
                   </div>
                 )}
 
-                {/* Feeding & Care Instructions */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                   <div className="bg-sky-50/70 p-4 rounded-xl border border-sky-200 space-y-1">
-                    <div className="font-bold text-sky-950">Orientações de Alimentação:</div>
+                    <div className="font-bold text-sky-950">Orientacoes de Alimentacao:</div>
                     <p className="text-sky-900 leading-relaxed">{lastConsultation.carePlan.feedingInstructions}</p>
                   </div>
-
                   <div className="bg-sky-50/70 p-4 rounded-xl border border-sky-200 space-y-1">
-                    <div className="font-bold text-sky-950">Cuidados Gerais e Estimulação:</div>
+                    <div className="font-bold text-sky-950">Cuidados Gerais e Estimulacao:</div>
                     <p className="text-sky-900 leading-relaxed">{lastConsultation.carePlan.generalCareInstructions}</p>
                   </div>
                 </div>
 
-                {/* Warning Signs */}
                 {lastConsultation.carePlan.warningSignsToReturn.length > 0 && (
                   <div className="bg-sky-100/80 border border-sky-300/80 rounded-xl p-4 text-xs text-sky-950 space-y-2">
                     <div className="font-extrabold text-sky-950 flex items-center gap-1.5">
@@ -335,13 +407,13 @@ export const PatientPortal: React.FC<PatientPortalProps> = ({
             </div>
           ) : (
             <div className="bg-white/80 border border-sky-200 rounded-2xl p-8 text-center text-xs text-sky-800 font-bold">
-              Nenhuma consulta registrada para este paciente até o momento.
+              Nenhuma consulta registrada para este paciente ate o momento.
             </div>
           )}
         </div>
       )}
 
-      {/* TAB 2: AGENDA & HISTÓRICO DE CONSULTAS */}
+      {/* TAB 2: AGENDA */}
       {activeTab === 'agenda' && (
         <PatientAgendaTab
           patient={patient}
@@ -350,12 +422,12 @@ export const PatientPortal: React.FC<PatientPortalProps> = ({
         />
       )}
 
-      {/* TAB 3: EVOLUÇÃO DE CRESCIMENTO */}
+      {/* TAB 3: CRESCIMENTO */}
       {activeTab === 'crescimento' && (
         <GrowthChart patient={patient} consultations={consultations} />
       )}
 
-      {/* TAB 4: CARTEIRA VACINAL */}
+      {/* TAB 4: VACINAS */}
       {activeTab === 'vacinas' && (
         <VaccineTracker
           vaccines={vaccines}
@@ -364,18 +436,18 @@ export const PatientPortal: React.FC<PatientPortalProps> = ({
         />
       )}
 
-      {/* TAB 5: CENTRAL DE DOCUMENTOS */}
+      {/* TAB 5: DOCUMENTOS */}
       {activeTab === 'documentos' && (
         <div className="bg-white/80 border border-sky-200/80 rounded-2xl p-6 shadow-sm space-y-5">
           <div className="border-b border-sky-100 pb-3">
-            <h2 className="text-base font-bold text-sky-950">Central de Exames e Receitas Médicas</h2>
+            <h2 className="text-base font-bold text-sky-950">Central de Exames e Receitas Medicas</h2>
             <p className="text-xs text-sky-800">Documentos digitais validados e laudos em formato PDF</p>
           </div>
 
           <div className="space-y-3">
             {patientConsultations.flatMap((c) => c.exams).length === 0 ? (
               <div className="py-8 text-center text-xs text-sky-800 font-semibold">
-                Nenhum laudo de exame disponível para download no momento.
+                Nenhum laudo de exame disponivel para download no momento.
               </div>
             ) : (
               patientConsultations.flatMap((c) => c.exams).map((exam) => (
@@ -402,7 +474,7 @@ export const PatientPortal: React.FC<PatientPortalProps> = ({
 
                   {exam.storagePath ? (
                     <button
-                      onClick={() => handleDownloadExam(exam.id, exam.storagePath, exam.fileName)}
+                      onClick={() => handleDownloadExam(exam.id, exam.storagePath)}
                       disabled={loadingUrlExamId === exam.id}
                       className="flex items-center gap-1.5 bg-sky-700 hover:bg-sky-600 disabled:opacity-60 text-white font-bold px-4 py-2 rounded-xl transition-all shadow-sm shrink-0"
                     >
@@ -427,4 +499,3 @@ export const PatientPortal: React.FC<PatientPortalProps> = ({
     </div>
   );
 };
-

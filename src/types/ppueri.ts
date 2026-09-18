@@ -171,6 +171,8 @@ export interface CarePlan {
   nextAppointmentRecommended: string; // e.g. "30 dias" ou data
 }
 
+export type ConsultationStatus = 'draft' | 'finalized';
+
 export interface Consultation {
   id: string;
   doctorId: string;
@@ -185,6 +187,30 @@ export interface Consultation {
   exams: LabExam[];
   vaccineUpdates?: VaccineRecord[];
   carePlan: CarePlan;
+  status?: ConsultationStatus;  // CFM 1.821/07 — imutabilidade
+  finalizedAt?: string;
+}
+
+export interface ConsultationAmendment {
+  id: string;
+  consultationId: string;
+  doctorId: string;
+  doctorName: string;
+  doctorCrm: string;
+  amendmentText: string;
+  createdAt: string;
+}
+
+export interface LegalConsent {
+  id?: string;
+  userId: string;
+  patientId: string;
+  consentType: 'tcle_pediatric' | 'privacy_policy';
+  acceptedAt?: string;
+  ipAddress?: string;
+  guardianName: string;
+  guardianCpf: string;
+  termVersion: string;
 }
 
 export interface User {

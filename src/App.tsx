@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   Role, Patient, Consultation, VaccineRecord, PediatricNotification,
   NotificationPreferences, Appointment, AppointmentStatus, AuthSession, ParentSession,
+  ConsultationAmendment,
 } from './types/ppueri';
 import { DEFAULT_NOTIFICATION_PREFERENCES } from './lib/notifications';
 import {
@@ -23,6 +24,9 @@ import {
   importClinicBackup,
   updateConsultationExams,
   deleteExamFile,
+  finalizeConsultation,
+  loadConsultationAmendments,
+  insertConsultationAmendment,
 } from './lib/storage-sync';
 import {
   loadAuthSession,
@@ -134,6 +138,7 @@ function MainApp({ authSession, onLogout }: MainAppProps) {
   const [consultations, setConsultations] = useState<Consultation[]>([]);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [vaccinesMap, setVaccinesMap] = useState<Record<string, VaccineRecord[]>>({});
+  const [amendments, setAmendments] = useState<ConsultationAmendment[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
 
   // Doctor View Mode
@@ -159,13 +164,18 @@ function MainApp({ authSession, onLogout }: MainAppProps) {
         loadStoredAppointments(doctorId),
       ]);
 
-      const vmap = await loadStoredVaccinesMap(pts);
+      const consIds = cons.map((c) => c.id);
+      const [vmap, amends] = await Promise.all([
+        loadStoredVaccinesMap(pts),
+        loadConsultationAmendments(consIds),
+      ]);
       const notifs = loadStoredNotifications(doctorId, pts, vmap, cons);
 
       setPatients(pts);
       setConsultations(cons);
       setAppointments(apts);
       setVaccinesMap(vmap);
+      setAmendments(amends);
       setNotifications(notifs);
       if (pts.length > 0) setSelectedPatientId(pts[0].id);
     } catch (err) {
@@ -343,6 +353,32 @@ function MainApp({ authSession, onLogout }: MainAppProps) {
     if (storagePath) await deleteExamFile(storagePath).catch(console.error);
   };
 
+  // ── Finalize consultation (CFM 1.821/07) ─────────────────────────────────
+  const handleFinalizeConsultation = async (consultationId: string) => {
+    await finalizeConsultation(consultationId).catch(console.error);
+    setConsultations((prev) =>
+      prev.map((c) =>
+        c.id === consultationId
+          ? { ...c, status: 'finalized' as const, finalizedAt: new Date().toISOString() }
+          : c
+      )
+    );
+  };
+
+  // ── Add amendment (CFM 1.821/07 — adendo clinico) ─────────────────────────
+  const handleAddAmendment = async (consultationId: string, text: string) => {
+    const amendment = await insertConsultationAmendment({
+      consultationId,
+      doctorId,
+      doctorName,
+      doctorCrm,
+      amendmentText: text,
+    }).catch(console.error);
+    if (amendment) {
+      setAmendments((prev) => [...prev, amendment]);
+    }
+  };
+
   // ── Save consultation ─────────────────────────────────────────────────────
   const handleSaveConsultation = async (newConsultation: Consultation) => {
     setConsultations((prev) => [newConsultation, ...prev]);
@@ -441,11 +477,15 @@ function MainApp({ authSession, onLogout }: MainAppProps) {
               consultations={consultations}
               vaccines={activeVaccines}
               appointments={appointments}
+              amendments={amendments}
               onStartNewConsultation={() => setDoctorViewMode('consultation')}
               onBack={() => setDoctorViewMode('dashboard')}
               onUpdateVaccineStatus={handleUpdateVaccineStatus}
               onRegenerateAccessCode={handleRegenerateAccessCode}
               onDeleteExam={handleDeleteExam}
+              onFinalizeConsultation={handleFinalizeConsultation}
+              onAddAmendment={handleAddAmendment}
+              doctorId={doctorId}
               doctorName={doctorName}
               doctorCrm={doctorCrm}
             />
@@ -464,6 +504,7 @@ function MainApp({ authSession, onLogout }: MainAppProps) {
           )
         ) : parentSessionReady && parentSession ? (
           <PatientPortal
+            parentId={parentSession.parentId}
             patient={patients.find((p) => p.id === parentSession.linkedPatientId) || ({} as Patient)}
             consultations={consultations.filter((c) => c.patientId === parentSession.linkedPatientId)}
             vaccines={vaccinesMap[parentSession.linkedPatientId] || []}
