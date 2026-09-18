@@ -75,6 +75,7 @@ export default function App() {
         setIsPasswordRecovery(true);
       } else if (event === 'SIGNED_OUT') {
         setAuthSession(null);
+        setShowLogin(false); // always return to landing page on logout
         setAuthReady(true);
       }
     });
