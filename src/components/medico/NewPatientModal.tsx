@@ -86,11 +86,11 @@ export const NewPatientModal: React.FC<NewPatientModalProps> = ({ isOpen, onClos
 
     {isOpen && (
     <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-white/85 backdrop-blur-xl border border-white/80 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5">
+      <div className="bg-white/95 backdrop-blur-xl border border-slate-200/60 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5">
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 bg-sky-100 text-sky-700 rounded-xl">
-              <User className="w-5 h-5 text-sky-600" />
+            <div className="p-2 bg-blue-100 text-blue-700 rounded-xl">
+              <User strokeWidth={1.75} className="w-5 h-5 text-blue-600" />
             </div>
             <div>
               <h3 className="text-base font-bold text-slate-900">Cadastrar Novo Paciente Pediátrico</h3>
@@ -102,7 +102,7 @@ export const NewPatientModal: React.FC<NewPatientModalProps> = ({ isOpen, onClos
             onClick={onClose}
             className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100"
           >
-            <X className="w-5 h-5" />
+            <X strokeWidth={1.75} className="w-5 h-5" />
           </button>
         </div>
 
@@ -115,7 +115,7 @@ export const NewPatientModal: React.FC<NewPatientModalProps> = ({ isOpen, onClos
               placeholder="Ex: Lucas Gabriel da Silva"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full p-2.5 border border-slate-300 rounded-xl font-bold text-slate-900 focus:outline-none focus:border-sky-500"
+              className="w-full p-2.5 bg-slate-50/80 border border-slate-200 rounded-xl font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all"
             />
           </div>
 
@@ -127,7 +127,7 @@ export const NewPatientModal: React.FC<NewPatientModalProps> = ({ isOpen, onClos
                 required
                 value={birthDate}
                 onChange={(e) => setBirthDate(e.target.value)}
-                className="w-full p-2.5 border border-slate-300 rounded-xl font-semibold text-slate-800"
+                className="w-full p-2.5 bg-slate-50/80 border border-slate-200 rounded-xl font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all"
               />
             </div>
 
@@ -137,7 +137,7 @@ export const NewPatientModal: React.FC<NewPatientModalProps> = ({ isOpen, onClos
                 required
                 value={gender}
                 onChange={(e) => setGender(e.target.value)}
-                className="w-full p-2.5 border border-slate-300 rounded-xl font-semibold text-slate-800 bg-white"
+                className="w-full p-2.5 bg-slate-50/80 border border-slate-200 rounded-xl font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all"
               >
                 <option value="" disabled>Selecione</option>
                 <option value="masculino">Masculino (Menino)</option>
@@ -155,7 +155,7 @@ export const NewPatientModal: React.FC<NewPatientModalProps> = ({ isOpen, onClos
                 placeholder="Nome completo da mãe"
                 value={motherName}
                 onChange={(e) => setMotherName(e.target.value)}
-                className="w-full p-2.5 border border-slate-300 rounded-xl font-semibold text-slate-800"
+                className="w-full p-2.5 bg-slate-50/80 border border-slate-200 rounded-xl font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all"
               />
             </div>
 
@@ -166,7 +166,7 @@ export const NewPatientModal: React.FC<NewPatientModalProps> = ({ isOpen, onClos
                 placeholder="Nome completo do pai"
                 value={fatherName}
                 onChange={(e) => setFatherName(e.target.value)}
-                className="w-full p-2.5 border border-slate-300 rounded-xl text-slate-800"
+                className="w-full p-2.5 bg-slate-50/80 border border-slate-200 rounded-xl text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all"
               />
             </div>
           </div>
@@ -179,7 +179,7 @@ export const NewPatientModal: React.FC<NewPatientModalProps> = ({ isOpen, onClos
                 placeholder="000.000.000-00"
                 value={cpf}
                 onChange={(e) => setCpf(e.target.value)}
-                className="w-full p-2.5 border border-slate-300 rounded-xl text-slate-800"
+                className="w-full p-2.5 bg-slate-50/80 border border-slate-200 rounded-xl text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all"
               />
             </div>
 
@@ -188,7 +188,7 @@ export const NewPatientModal: React.FC<NewPatientModalProps> = ({ isOpen, onClos
               <select
                 value={bloodType}
                 onChange={(e) => setBloodType(e.target.value as any)}
-                className="w-full p-2.5 border border-slate-300 rounded-xl font-semibold text-slate-800 bg-white"
+                className="w-full p-2.5 bg-slate-50/80 border border-slate-200 rounded-xl font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all"
               >
                 <option value="">Não informado</option>
                 <option value="O+">O+</option>
@@ -211,7 +211,7 @@ export const NewPatientModal: React.FC<NewPatientModalProps> = ({ isOpen, onClos
                 placeholder="Ex: Leite, Ovo, Dipirona"
                 value={allergiesText}
                 onChange={(e) => setAllergiesText(e.target.value)}
-                className="w-full p-2.5 border border-slate-300 rounded-xl text-slate-800"
+                className="w-full p-2.5 bg-slate-50/80 border border-slate-200 rounded-xl text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all"
               />
             </div>
             <div>
@@ -221,13 +221,13 @@ export const NewPatientModal: React.FC<NewPatientModalProps> = ({ isOpen, onClos
                 placeholder="(11) 99999-0000"
                 value={responsiblePhone}
                 onChange={(e) => setResponsiblePhone(e.target.value)}
-                className="w-full p-2.5 border border-slate-300 rounded-xl text-slate-800"
+                className="w-full p-2.5 bg-slate-50/80 border border-slate-200 rounded-xl text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all"
               />
             </div>
           </div>
 
-          <div className="p-3 bg-sky-50 border border-sky-200 rounded-xl text-[11px] text-sky-900 flex items-center gap-2">
-            <Key className="w-4 h-4 text-sky-600 shrink-0" />
+          <div className="p-3 bg-blue-50 border border-blue-200 rounded-xl text-[11px] text-blue-900 flex items-center gap-2">
+            <Key strokeWidth={1.75} className="w-4 h-4 text-blue-600 shrink-0" />
             <span>Um Código de Acesso do tipo PPUERI-XXXX-ABC será gerado automaticamente. Voce podera compartilha-lo com os responsaveis logo apos o cadastro.</span>
           </div>
 
@@ -241,9 +241,9 @@ export const NewPatientModal: React.FC<NewPatientModalProps> = ({ isOpen, onClos
             </button>
             <button
               type="submit"
-              className="flex items-center gap-1.5 bg-sky-600 hover:bg-sky-500 text-white font-extrabold px-5 py-2.5 rounded-xl transition-all shadow-md active:scale-95"
+              className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-500 text-white font-extrabold px-5 py-2.5 rounded-xl transition-all shadow-md hover:-translate-y-0.5 hover:shadow-lg hover:shadow-blue-500/20 active:scale-95"
             >
-              <Plus className="w-4 h-4" />
+              <Plus strokeWidth={1.75} className="w-4 h-4" />
               <span>Criar Prontuário</span>
             </button>
           </div>

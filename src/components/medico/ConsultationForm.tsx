@@ -41,16 +41,16 @@ interface ConsultationFormProps {
 const todayStr = new Date().toISOString().split('T')[0];
 
 const inputCls =
-  'w-full px-3 py-2 text-xs bg-sky-50/70 border border-sky-200 rounded-xl font-medium text-sky-950 placeholder-sky-400 focus:outline-none focus:border-sky-500 focus:bg-white transition-all';
+  'w-full px-3 py-2 text-xs bg-slate-50/80 border border-slate-200 rounded-xl font-medium text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all';
 const textareaCls =
-  'w-full px-3 py-2 text-xs bg-sky-50/70 border border-sky-200 rounded-xl font-medium text-sky-950 placeholder-sky-400 focus:outline-none focus:border-sky-500 focus:bg-white transition-all resize-none';
+  'w-full px-3 py-2 text-xs bg-slate-50/80 border border-slate-200 rounded-xl font-medium text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all resize-none';
 const sectionHeadCls =
-  'text-xs font-extrabold text-sky-950 uppercase tracking-wider mb-3 pb-2 border-b border-sky-200';
-const labelCls = 'block text-xs font-bold text-sky-800 mb-1';
+  'text-xs font-extrabold text-slate-800 uppercase tracking-wider mb-3 pb-2 border-b border-slate-200';
+const labelCls = 'block text-xs font-bold text-slate-700 mb-1';
 const sectionCardCls =
-  'bg-white/80 border border-sky-200 rounded-2xl p-5 shadow-sm space-y-4';
+  'bg-white/85 border border-slate-200/60 rounded-2xl p-5 shadow-sm space-y-4';
 const zBadgeCls = (status: 'normal' | 'alerta' | 'critico') => {
-  if (status === 'normal') return 'bg-sky-100 text-sky-800 border-sky-300';
+  if (status === 'normal') return 'bg-slate-100 text-slate-800 border-slate-300';
   if (status === 'alerta') return 'bg-amber-100 text-amber-900 border-amber-300';
   return 'bg-red-100 text-red-900 border-red-300';
 };
@@ -304,24 +304,24 @@ export const ConsultationForm: React.FC<ConsultationFormProps> = ({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-slate-900 text-white rounded-2xl p-5 shadow-xl border border-sky-900/80">
+      <div className="bg-slate-900 text-white rounded-2xl p-5 shadow-xl border border-blue-900/80">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <button
               onClick={onBack}
-              className="p-2 rounded-xl bg-sky-950/80 hover:bg-sky-900 text-sky-300 hover:text-white transition-all border border-sky-800"
+              className="p-2 rounded-xl bg-blue-950/80 hover:bg-blue-900 text-blue-300 hover:text-white transition-all border border-blue-800"
               title="Voltar ao prontuário"
             >
-              <ArrowLeft className="w-5 h-5" />
+              <ArrowLeft strokeWidth={1.75} className="w-5 h-5" />
             </button>
             <div>
               <div className="flex flex-wrap items-center gap-2.5">
                 <h1 className="text-lg font-bold text-white">Nova Consulta — {patient.name}</h1>
-                <span className="bg-sky-500/20 text-sky-300 text-xs font-bold px-2.5 py-0.5 rounded-full border border-sky-500/30">
+                <span className="bg-blue-500/20 text-blue-300 text-xs font-bold px-2.5 py-0.5 rounded-full border border-blue-500/30">
                   {formatPediatricAge(patient.birthDate)}
                 </span>
               </div>
-              <p className="text-xs text-sky-400 mt-0.5">
+              <p className="text-xs text-blue-400 mt-0.5">
                 {patient.gender === 'masculino' ? 'Menino' : 'Menina'} ·{' '}
                 {ageMonths} meses de vida
               </p>
@@ -329,19 +329,19 @@ export const ConsultationForm: React.FC<ConsultationFormProps> = ({
           </div>
           <div className="flex items-center gap-3 shrink-0">
             <div className="flex flex-col items-end gap-1">
-              <label className="text-xs text-sky-400 font-medium">Data da Consulta</label>
+              <label className="text-xs text-blue-400 font-medium">Data da Consulta</label>
               <input
                 type="date"
                 value={consultationDate}
                 onChange={(e) => setConsultationDate(e.target.value)}
-                className="bg-sky-950/80 border border-sky-800 text-sky-200 text-xs font-bold px-3 py-1.5 rounded-xl focus:outline-none focus:border-sky-500"
+                className="bg-blue-950/80 border border-blue-800 text-blue-200 text-xs font-bold px-3 py-1.5 rounded-xl focus:outline-none focus:border-blue-500"
               />
             </div>
             <button
               onClick={handleSaveAll}
-              className="flex items-center gap-2 bg-sky-600 hover:bg-sky-500 text-white text-sm font-bold px-5 py-2.5 rounded-xl transition-all shadow-md border border-sky-500/40"
+              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold px-5 py-2.5 rounded-xl transition-all shadow-md hover:-translate-y-0.5 hover:shadow-lg hover:shadow-blue-500/20 border border-blue-500/40"
             >
-              <CheckCircle className="w-4 h-4" />
+              <CheckCircle strokeWidth={1.75} className="w-4 h-4" />
               Finalizar Consulta
             </button>
           </div>
@@ -572,20 +572,20 @@ export const ConsultationForm: React.FC<ConsultationFormProps> = ({
         {/* Linked exams list */}
         {linkedExams.length > 0 && (
           <div className="space-y-2 pt-1">
-            <p className="text-xs font-bold text-sky-800">
+            <p className="text-xs font-bold text-slate-700">
               Exames complementares vinculados a esta consulta ({linkedExams.length}):
             </p>
             {linkedExams.map((exam) => (
               <div
                 key={exam.id}
-                className="flex items-center justify-between gap-3 bg-sky-50 border border-sky-200 rounded-xl px-4 py-2.5"
+                className="flex items-center justify-between gap-3 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5"
               >
                 <div className="flex items-center gap-2 min-w-0">
-                  <span className="text-xs font-bold text-sky-950 truncate">{exam.title}</span>
-                  <span className="bg-sky-200 text-sky-900 text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0">
+                  <span className="text-xs font-bold text-slate-900 truncate">{exam.title}</span>
+                  <span className="bg-slate-200 text-slate-800 text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0">
                     {exam.category}
                   </span>
-                  <span className="text-[10px] text-sky-600 font-medium shrink-0">
+                  <span className="text-[10px] text-slate-600 font-medium shrink-0">
                     {exam.items.length} parâmetro{exam.items.length !== 1 ? 's' : ''}
                   </span>
                 </div>
@@ -595,7 +595,7 @@ export const ConsultationForm: React.FC<ConsultationFormProps> = ({
                   className="text-slate-400 hover:text-red-600 transition-colors p-1 rounded-lg hover:bg-red-50 shrink-0"
                   title="Remover exame"
                 >
-                  <X className="w-3.5 h-3.5" />
+                  <X strokeWidth={1.75} className="w-3.5 h-3.5" />
                 </button>
               </div>
             ))}
@@ -605,7 +605,7 @@ export const ConsultationForm: React.FC<ConsultationFormProps> = ({
 
       {/* Section E — Suporte à Decisão Clínica (CDSS) */}
       <div className="space-y-2">
-        <p className="text-xs font-extrabold text-sky-950 uppercase tracking-wider px-1">
+        <p className="text-xs font-extrabold text-slate-800 uppercase tracking-wider px-1">
           E — Suporte à Decisão Clínica (CDSS IA)
         </p>
         <ClinicalAiAssistant
@@ -642,15 +642,15 @@ export const ConsultationForm: React.FC<ConsultationFormProps> = ({
             <button
               type="button"
               onClick={addPrescription}
-              className="flex items-center gap-1.5 text-xs font-bold text-sky-700 hover:text-sky-900 bg-sky-100 hover:bg-sky-200 border border-sky-300 px-3 py-1.5 rounded-xl transition-all"
+              className="flex items-center gap-1.5 text-xs font-bold text-blue-700 hover:text-blue-900 bg-blue-100 hover:bg-blue-200 border border-blue-300 px-3 py-1.5 rounded-xl transition-all"
             >
-              <Plus className="w-3.5 h-3.5" />
+              <Plus strokeWidth={1.75} className="w-3.5 h-3.5" />
               Adicionar Medicamento
             </button>
           </div>
 
           {prescriptions.length === 0 ? (
-            <p className="text-xs text-sky-600 italic py-2 text-center border border-dashed border-sky-200 rounded-xl bg-sky-50/50">
+            <p className="text-xs text-slate-600 italic py-2 text-center border border-dashed border-slate-200 rounded-xl bg-slate-50/50">
               Nenhuma prescrição adicionada
             </p>
           ) : (
@@ -658,10 +658,10 @@ export const ConsultationForm: React.FC<ConsultationFormProps> = ({
               {prescriptions.map((rx, idx) => (
                 <div
                   key={rx.id}
-                  className="border border-sky-200 rounded-xl p-3 bg-sky-50/60 space-y-2"
+                  className="border border-slate-200 rounded-xl p-3 bg-slate-50/60 space-y-2"
                 >
                   <div className="flex items-center justify-between gap-2 mb-1">
-                    <span className="text-xs font-extrabold text-sky-800">
+                    <span className="text-xs font-extrabold text-slate-700">
                       Medicamento {idx + 1}
                     </span>
                     <button
@@ -669,7 +669,7 @@ export const ConsultationForm: React.FC<ConsultationFormProps> = ({
                       onClick={() => removePrescription(rx.id)}
                       className="text-slate-400 hover:text-red-600 transition-colors p-1 rounded-lg hover:bg-red-50"
                     >
-                      <Trash2 className="w-3.5 h-3.5" />
+                      <Trash2 strokeWidth={1.75} className="w-3.5 h-3.5" />
                     </button>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -740,7 +740,7 @@ export const ConsultationForm: React.FC<ConsultationFormProps> = ({
         <div>
           <label className={labelCls}>
             Sinais de Alerta para Retorno{' '}
-            <span className="font-medium text-sky-600">(separados por ponto e vírgula)</span>
+            <span className="font-medium text-blue-600">(separados por ponto e vírgula)</span>
           </label>
           <input
             type="text"
@@ -766,9 +766,9 @@ export const ConsultationForm: React.FC<ConsultationFormProps> = ({
         <div className="pt-2 flex justify-end">
           <button
             onClick={handleSaveAll}
-            className="flex items-center gap-2 bg-sky-600 hover:bg-sky-500 text-white text-sm font-bold px-6 py-3 rounded-xl transition-all shadow-md border border-sky-500/40"
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold px-6 py-3 rounded-xl transition-all shadow-md hover:-translate-y-0.5 hover:shadow-lg hover:shadow-blue-500/20 border border-blue-500/40"
           >
-            <CheckCircle className="w-4 h-4" />
+            <CheckCircle strokeWidth={1.75} className="w-4 h-4" />
             Finalizar e Salvar Consulta
           </button>
         </div>

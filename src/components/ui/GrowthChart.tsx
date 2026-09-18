@@ -143,42 +143,42 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({ patient, consultations
   const latestPerimetro = perimetroPoints[perimetroPoints.length - 1];
 
   return (
-    <div className="bg-white/90 backdrop-blur-md border border-sky-200/90 rounded-2xl p-5 shadow-sm space-y-5">
+    <div className="bg-white/90 backdrop-blur-md border border-slate-200/90 rounded-2xl p-5 shadow-sm space-y-5">
       {/* Header and Controls */}
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-sky-100 pb-4">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-slate-200 pb-4">
         <div className="flex items-center gap-3">
-          <div className="p-3 bg-sky-100 text-sky-800 rounded-2xl shadow-xs">
-            <TrendingUp className="w-6 h-6 text-sky-700" />
+          <div className="p-3 bg-slate-100 text-slate-800 rounded-2xl shadow-xs">
+            <TrendingUp strokeWidth={1.75} className="w-6 h-6 text-slate-700" />
           </div>
           <div>
-            <h2 className="text-base font-extrabold text-sky-950">
+            <h2 className="text-base font-extrabold text-slate-900">
               Curvas de Crescimento Antropométrico Pediátrico (OMS / SBP)
             </h2>
-            <p className="text-xs font-semibold text-sky-800/80">
+            <p className="text-xs font-semibold text-slate-700/80">
               Acompanhamento de ganho de peso, estatura e perímetro cefálico com percentis
             </p>
           </div>
         </div>
 
         {/* View Mode Selector Tabs */}
-        <div className="flex items-center gap-1 bg-sky-100/80 p-1 rounded-xl text-xs font-extrabold border border-sky-200 shadow-xs shrink-0">
+        <div className="flex items-center gap-1 bg-slate-100/80 p-1 rounded-xl text-xs font-extrabold border border-slate-200 shadow-xs shrink-0">
           <button
             onClick={() => setViewMode('todos')}
             className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg transition-all ${
               viewMode === 'todos'
-                ? 'bg-sky-700 text-white shadow-xs'
-                : 'text-sky-900 hover:bg-sky-200/70'
+                ? 'bg-slate-800 text-white shadow-xs'
+                : 'text-slate-700 hover:bg-slate-200/70'
             }`}
           >
-            <Layers className="w-3.5 h-3.5" />
+            <Layers strokeWidth={1.75} className="w-3.5 h-3.5" />
             <span>Todos os 3 Gráficos</span>
           </button>
           <button
             onClick={() => setViewMode('peso')}
             className={`px-3 py-1.5 rounded-lg transition-all ${
               viewMode === 'peso'
-                ? 'bg-sky-700 text-white shadow-xs'
-                : 'text-sky-900 hover:bg-sky-200/70'
+                ? 'bg-slate-800 text-white shadow-xs'
+                : 'text-slate-700 hover:bg-slate-200/70'
             }`}
           >
             1. Peso (kg)
@@ -187,8 +187,8 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({ patient, consultations
             onClick={() => setViewMode('estatura')}
             className={`px-3 py-1.5 rounded-lg transition-all ${
               viewMode === 'estatura'
-                ? 'bg-sky-700 text-white shadow-xs'
-                : 'text-sky-900 hover:bg-sky-200/70'
+                ? 'bg-slate-800 text-white shadow-xs'
+                : 'text-slate-700 hover:bg-slate-200/70'
             }`}
           >
             2. Estatura (cm)
@@ -197,8 +197,8 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({ patient, consultations
             onClick={() => setViewMode('perimetro')}
             className={`px-3 py-1.5 rounded-lg transition-all ${
               viewMode === 'perimetro'
-                ? 'bg-sky-700 text-white shadow-xs'
-                : 'text-sky-900 hover:bg-sky-200/70'
+                ? 'bg-slate-800 text-white shadow-xs'
+                : 'text-slate-700 hover:bg-slate-200/70'
             }`}
           >
             3. Perímetro Cefálico
@@ -209,19 +209,19 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({ patient, consultations
       {/* Summary Status Badges Bar */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {/* Peso Status Card */}
-        <div className="bg-sky-50/90 border border-sky-200 rounded-xl p-3 flex items-center justify-between gap-2">
+        <div className="bg-slate-50/90 border border-slate-200 rounded-xl p-3 flex items-center justify-between gap-2">
           <div>
-            <span className="text-[11px] font-bold text-sky-800 uppercase tracking-wide">Peso Atual</span>
-            <div className="text-base font-extrabold text-sky-950">
+            <span className="text-[11px] font-bold text-slate-800 uppercase tracking-wide">Peso Atual</span>
+            <div className="text-base font-extrabold text-slate-900">
               {latestPeso ? `${latestPeso.val} kg` : 'Sem registro'}
             </div>
           </div>
           {latestPeso && (
             <div className="text-right">
-              <span className="text-xs font-extrabold text-sky-900 bg-white border border-sky-200 px-2.5 py-1 rounded-lg inline-block shadow-2xs">
+              <span className="text-xs font-extrabold text-slate-800 bg-white border border-slate-200 px-2.5 py-1 rounded-lg inline-block shadow-2xs">
                 P{latestPeso.percentile} (Z: {latestPeso.zScore > 0 ? `+${latestPeso.zScore}` : latestPeso.zScore})
               </span>
-              <p className="text-[10px] font-bold text-sky-800 mt-0.5">
+              <p className="text-[10px] font-bold text-slate-700 mt-0.5">
                 {getZScoreClassification('peso', latestPeso.zScore).label}
               </p>
             </div>
@@ -229,19 +229,19 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({ patient, consultations
         </div>
 
         {/* Estatura Status Card */}
-        <div className="bg-sky-50/90 border border-sky-200 rounded-xl p-3 flex items-center justify-between gap-2">
+        <div className="bg-slate-50/90 border border-slate-200 rounded-xl p-3 flex items-center justify-between gap-2">
           <div>
-            <span className="text-[11px] font-bold text-sky-800 uppercase tracking-wide">Estatura Atual</span>
-            <div className="text-base font-extrabold text-sky-950">
+            <span className="text-[11px] font-bold text-slate-800 uppercase tracking-wide">Estatura Atual</span>
+            <div className="text-base font-extrabold text-slate-900">
               {latestEstatura ? `${latestEstatura.val} cm` : 'Sem registro'}
             </div>
           </div>
           {latestEstatura && (
             <div className="text-right">
-              <span className="text-xs font-extrabold text-sky-900 bg-white border border-sky-200 px-2.5 py-1 rounded-lg inline-block shadow-2xs">
+              <span className="text-xs font-extrabold text-slate-800 bg-white border border-slate-200 px-2.5 py-1 rounded-lg inline-block shadow-2xs">
                 P{latestEstatura.percentile} (Z: {latestEstatura.zScore > 0 ? `+${latestEstatura.zScore}` : latestEstatura.zScore})
               </span>
-              <p className="text-[10px] font-bold text-sky-800 mt-0.5">
+              <p className="text-[10px] font-bold text-slate-700 mt-0.5">
                 {getZScoreClassification('estatura', latestEstatura.zScore).label}
               </p>
             </div>
@@ -249,19 +249,19 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({ patient, consultations
         </div>
 
         {/* Perímetro Status Card */}
-        <div className="bg-sky-50/90 border border-sky-200 rounded-xl p-3 flex items-center justify-between gap-2">
+        <div className="bg-slate-50/90 border border-slate-200 rounded-xl p-3 flex items-center justify-between gap-2">
           <div>
-            <span className="text-[11px] font-bold text-sky-800 uppercase tracking-wide">Perímetro Cefálico</span>
-            <div className="text-base font-extrabold text-sky-950">
+            <span className="text-[11px] font-bold text-slate-800 uppercase tracking-wide">Perímetro Cefálico</span>
+            <div className="text-base font-extrabold text-slate-900">
               {latestPerimetro ? `${latestPerimetro.val} cm` : 'Sem registro'}
             </div>
           </div>
           {latestPerimetro && (
             <div className="text-right">
-              <span className="text-xs font-extrabold text-sky-900 bg-white border border-sky-200 px-2.5 py-1 rounded-lg inline-block shadow-2xs">
+              <span className="text-xs font-extrabold text-slate-800 bg-white border border-slate-200 px-2.5 py-1 rounded-lg inline-block shadow-2xs">
                 P{latestPerimetro.percentile} (Z: {latestPerimetro.zScore > 0 ? `+${latestPerimetro.zScore}` : latestPerimetro.zScore})
               </span>
-              <p className="text-[10px] font-bold text-sky-800 mt-0.5">
+              <p className="text-[10px] font-bold text-slate-700 mt-0.5">
                 {getZScoreClassification('perimetro', latestPerimetro.zScore).label}
               </p>
             </div>
@@ -411,18 +411,18 @@ const SingleMetricSVGChart: React.FC<SingleMetricSVGChartProps> = ({
   const xTicks = [0, 2, 4, 6, 9, 12, 18, 24, 36, 48, 60].filter((m) => m <= maxAge);
 
   return (
-    <div className="bg-sky-50/60 border border-sky-200/80 rounded-2xl p-4 space-y-3 shadow-2xs">
-      <div className="flex items-center justify-between border-b border-sky-200/60 pb-2">
+    <div className="bg-slate-50/60 border border-slate-200/80 rounded-2xl p-4 space-y-3 shadow-2xs">
+      <div className="flex items-center justify-between border-b border-slate-200/60 pb-2">
         <div className="flex items-center gap-2">
-          <Activity className="w-4 h-4 text-sky-800" />
-          <h3 className="text-sm font-extrabold text-sky-950">{title}</h3>
+          <Activity strokeWidth={1.75} className="w-4 h-4 text-slate-800" />
+          <h3 className="text-sm font-extrabold text-slate-900">{title}</h3>
         </div>
-        <span className="text-[11px] font-bold text-sky-800 bg-white border border-sky-200 px-2.5 py-0.5 rounded-lg">
+        <span className="text-[11px] font-bold text-slate-800 bg-white border border-slate-200 px-2.5 py-0.5 rounded-lg">
           Referência OMS / SBP
         </span>
       </div>
 
-      <div className="relative overflow-hidden bg-white border border-sky-200/90 rounded-xl p-3 shadow-inner">
+      <div className="relative overflow-hidden bg-white border border-slate-200/90 rounded-xl p-3 shadow-inner">
         <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto select-none">
           <defs>
             <linearGradient id={`blueAreaGrad_${metric}`} x1="0" y1="0" x2="0" y2="1">
@@ -442,7 +442,7 @@ const SingleMetricSVGChart: React.FC<SingleMetricSVGChartProps> = ({
                 y1={yScale(yVal)}
                 x2={width - padding}
                 y2={yScale(yVal)}
-                stroke="#E0F2FE"
+                stroke="#F1F5F9"
                 strokeWidth="1"
                 strokeDasharray="2,2"
               />
@@ -465,7 +465,7 @@ const SingleMetricSVGChart: React.FC<SingleMetricSVGChartProps> = ({
                 y1={padding}
                 x2={xScale(mVal)}
                 y2={height - padding}
-                stroke="#E0F2FE"
+                stroke="#F1F5F9"
                 strokeWidth="1"
               />
               <text
@@ -480,17 +480,17 @@ const SingleMetricSVGChart: React.FC<SingleMetricSVGChartProps> = ({
           ))}
 
           {/* Eixos Principais */}
-          <line x1={padding} y1={height - padding} x2={width - padding} y2={height - padding} stroke="#7DD3FC" strokeWidth="1.5" />
-          <line x1={padding} y1={padding} x2={padding} y2={height - padding} stroke="#7DD3FC" strokeWidth="1.5" />
+          <line x1={padding} y1={height - padding} x2={width - padding} y2={height - padding} stroke="#94A3B8" strokeWidth="1.5" />
+          <line x1={padding} y1={padding} x2={padding} y2={height - padding} stroke="#94A3B8" strokeWidth="1.5" />
 
           {/* Curvas de referência e dados do paciente — clipados à área do gráfico */}
           <g clipPath={`url(#chartArea_${metric})`}>
             {/* Curvas Teóricas de Percentis da OMS */}
-            <polyline fill="none" stroke="#7DD3FC" strokeWidth="1" strokeDasharray="3,3" points={p97Line} />
-            <polyline fill="none" stroke="#38BDF8" strokeWidth="1" strokeDasharray="3,3" points={p85Line} />
+            <polyline fill="none" stroke="#94A3B8" strokeWidth="1" strokeDasharray="3,3" points={p97Line} />
+            <polyline fill="none" stroke="#94A3B8" strokeWidth="1" strokeDasharray="3,3" points={p85Line} />
             <polyline fill="none" stroke="#0284C7" strokeWidth="2.5" points={p50Line} />
-            <polyline fill="none" stroke="#38BDF8" strokeWidth="1" strokeDasharray="3,3" points={p15Line} />
-            <polyline fill="none" stroke="#7DD3FC" strokeWidth="1" strokeDasharray="3,3" points={p3Line} />
+            <polyline fill="none" stroke="#94A3B8" strokeWidth="1" strokeDasharray="3,3" points={p15Line} />
+            <polyline fill="none" stroke="#94A3B8" strokeWidth="1" strokeDasharray="3,3" points={p3Line} />
 
             {/* Preenchimento Sombreado de Área do Paciente */}
             {areaPolygonPoints && (
@@ -501,7 +501,7 @@ const SingleMetricSVGChart: React.FC<SingleMetricSVGChartProps> = ({
             {linePoints && (
               <polyline
                 fill="none"
-                stroke="#1E3A8A"
+                stroke="#1E40AF"
                 strokeWidth="3.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -515,8 +515,8 @@ const SingleMetricSVGChart: React.FC<SingleMetricSVGChartProps> = ({
               const cy = yScale(p.val);
               return (
                 <g key={idx} className="group cursor-pointer">
-                  <circle cx={cx} cy={cy} r="10" className="fill-sky-400/0 group-hover:fill-sky-300/40 transition-all" />
-                  <circle cx={cx} cy={cy} r="5.5" className="fill-sky-500 stroke-sky-950 stroke-2 group-hover:r-7 transition-all" />
+                  <circle cx={cx} cy={cy} r="10" className="fill-blue-400/0 group-hover:fill-blue-300/40 transition-all" />
+                  <circle cx={cx} cy={cy} r="5.5" className="fill-blue-500 stroke-slate-900 stroke-2 group-hover:r-7 transition-all" />
                   <text
                     x={cx}
                     y={cy - 10}
@@ -540,17 +540,17 @@ const SingleMetricSVGChart: React.FC<SingleMetricSVGChartProps> = ({
         </svg>
 
         {/* Rodapé e Legendas do Gráfico */}
-        <div className="flex flex-wrap items-center justify-between gap-2 px-2 pt-2 text-[11px] text-sky-900 font-bold border-t border-sky-100">
+        <div className="flex flex-wrap items-center justify-between gap-2 px-2 pt-2 text-[11px] text-slate-700 font-bold border-t border-slate-200">
           <span>Eixo X: Idade em Meses (0m a {maxAge}m)</span>
           <div className="flex items-center gap-4 text-[10px]">
             <span className="flex items-center gap-1.5">
-              <span className="w-3.5 h-1 bg-sky-950 rounded-full inline-block" /> Paciente
+              <span className="w-3.5 h-1 bg-slate-900 rounded-full inline-block" /> Paciente
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="w-3.5 h-0.5 bg-sky-600 inline-block" /> Mediana OMS (P50)
+              <span className="w-3.5 h-0.5 bg-blue-600 inline-block" /> Mediana OMS (P50)
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="w-3.5 h-0.5 bg-sky-300 border-t border-dashed border-sky-400 inline-block" /> P3 / P97
+              <span className="w-3.5 h-0.5 bg-slate-400 border-t border-dashed border-slate-400 inline-block" /> P3 / P97
             </span>
           </div>
           <span>Eixo Y: {unit}</span>

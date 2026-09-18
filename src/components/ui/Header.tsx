@@ -58,7 +58,7 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <>
-      <header className="sticky top-0 z-40 bg-slate-900/95 backdrop-blur-md text-white border-b border-sky-900/60 shadow-lg">
+      <header className="sticky top-0 z-40 bg-slate-900/97 backdrop-blur-xl text-white border-b border-slate-800/60 shadow-[0_4px_20px_rgb(0,0,0,0.15)]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-3 sm:gap-4">
           {/* Brand */}
           <div className="flex items-center">
@@ -66,28 +66,28 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
 
           {/* Role Switcher */}
-          <div className="bg-sky-950/80 backdrop-blur-md p-1 rounded-xl border border-sky-800/60 flex items-center gap-1 shadow-inner">
+          <div className="bg-slate-800/80 backdrop-blur-md p-1 rounded-xl border border-slate-700/60 flex items-center gap-1 shadow-inner">
             <button
               onClick={() => onRoleChange('medico')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 ${
                 activeRole === 'medico'
-                  ? 'bg-sky-600 text-white shadow-sm'
-                  : 'text-sky-200 hover:text-white hover:bg-sky-900/50'
+                  ? 'bg-blue-600 text-white shadow-sm'
+                  : 'text-slate-300 hover:text-white hover:bg-slate-700/70'
               }`}
             >
-              <Stethoscope className="w-3.5 h-3.5" />
+              <Stethoscope className="w-3.5 h-3.5" strokeWidth={1.75} />
               <span className="hidden sm:inline">Área Médica</span>
               <span className="sm:hidden">Médico</span>
             </button>
             <button
               onClick={() => onRoleChange('paciente')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 ${
                 activeRole === 'paciente'
-                  ? 'bg-cyan-600 text-white shadow-sm'
-                  : 'text-sky-200 hover:text-white hover:bg-sky-900/50'
+                  ? 'bg-teal-600 text-white shadow-sm'
+                  : 'text-slate-300 hover:text-white hover:bg-slate-700/70'
               }`}
             >
-              <User className="w-3.5 h-3.5" />
+              <User className="w-3.5 h-3.5" strokeWidth={1.75} />
               <span className="hidden sm:inline">Portal dos Pais</span>
               <span className="sm:hidden">Pais</span>
             </button>
@@ -100,10 +100,10 @@ export const Header: React.FC<HeaderProps> = ({
             {activeRole === 'medico' && onRestoreData && (
               <button
                 onClick={() => setIsBackupModalOpen(true)}
-                className="p-2 bg-sky-950 hover:bg-sky-900 text-sky-300 hover:text-white rounded-xl transition-all border border-sky-800/80 active:scale-95 flex items-center gap-1.5 text-xs font-bold"
+                className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl transition-all duration-200 border border-slate-700/80 active:scale-95 flex items-center gap-1.5 text-xs font-bold"
                 title="Backup e Persistência de Dados"
               >
-                <Database className="w-3.5 h-3.5" />
+                <Database className="w-3.5 h-3.5" strokeWidth={1.75} />
                 <span className="hidden md:inline">Backup</span>
               </button>
             )}
@@ -112,12 +112,12 @@ export const Header: React.FC<HeaderProps> = ({
             {onOpenNotifications && (
               <button
                 onClick={onOpenNotifications}
-                className="p-2 bg-sky-950 hover:bg-sky-900 text-sky-300 hover:text-white rounded-xl transition-all border border-sky-800/80 relative active:scale-95"
+                className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl transition-all duration-200 border border-slate-700/80 relative active:scale-95"
                 title="Central de Notificações"
               >
-                <Bell className="w-4 h-4" />
+                <Bell className="w-4 h-4" strokeWidth={1.75} />
                 {unreadNotificationCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-sky-500 text-slate-950 font-extrabold text-[9px] w-4 h-4 rounded-full flex items-center justify-center border border-slate-950 shadow-sm animate-pulse">
+                  <span className="absolute -top-1 -right-1 bg-blue-500 text-white font-extrabold text-[9px] w-4 h-4 rounded-full flex items-center justify-center border border-slate-900 shadow-sm animate-pulse">
                     {unreadNotificationCount > 9 ? '9+' : unreadNotificationCount}
                   </span>
                 )}
@@ -128,16 +128,16 @@ export const Header: React.FC<HeaderProps> = ({
             <div className="relative">
               <button
                 onClick={() => setShowDoctorMenu((v) => !v)}
-                className="flex items-center gap-1.5 bg-sky-950 hover:bg-sky-900 border border-sky-800/80 rounded-xl px-2.5 py-1.5 transition-all active:scale-95"
+                className="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700/80 rounded-xl px-2.5 py-1.5 transition-all duration-200 active:scale-95"
                 title={`${doctorName} — ${doctorCrm}`}
               >
-                <div className="w-6 h-6 rounded-lg bg-sky-600 flex items-center justify-center text-white font-extrabold text-[10px] shrink-0">
+                <div className="w-6 h-6 rounded-lg bg-blue-600 flex items-center justify-center text-white font-extrabold text-[10px] shrink-0">
                   {shortName.charAt(0)}
                 </div>
-                <span className="hidden md:block text-xs font-semibold text-sky-100 max-w-[100px] truncate">
+                <span className="hidden md:block text-xs font-semibold text-slate-200 max-w-[100px] truncate">
                   {shortName}
                 </span>
-                <ChevronDown className="w-3 h-3 text-sky-400" />
+                <ChevronDown className="w-3 h-3 text-slate-400" strokeWidth={1.75} />
               </button>
 
               {showDoctorMenu && (
@@ -147,17 +147,17 @@ export const Header: React.FC<HeaderProps> = ({
                     className="fixed inset-0 z-40"
                     onClick={() => setShowDoctorMenu(false)}
                   />
-                  <div className="absolute right-0 top-full mt-2 z-50 bg-slate-900 border border-sky-800/60 rounded-xl shadow-2xl min-w-[220px] overflow-hidden">
-                    <div className="p-3 border-b border-sky-900/60">
+                  <div className="absolute right-0 top-full mt-2 z-50 bg-slate-900 border border-slate-700/60 rounded-xl shadow-2xl min-w-[220px] overflow-hidden">
+                    <div className="p-3 border-b border-slate-800/60">
                       <p className="text-xs font-extrabold text-white truncate">{doctorName}</p>
-                      <p className="text-[11px] text-sky-300 truncate mt-0.5">{doctorCrm}</p>
+                      <p className="text-[11px] text-blue-300 truncate mt-0.5">{doctorCrm}</p>
                     </div>
                     <div className="p-1">
                       <button
                         onClick={() => { setShowDoctorMenu(false); onLogout(); }}
                         className="w-full flex items-center gap-2.5 px-3 py-2.5 text-xs font-semibold text-red-400 hover:text-red-300 hover:bg-red-950/40 rounded-lg transition-all"
                       >
-                        <LogOut className="w-3.5 h-3.5" />
+                        <LogOut className="w-3.5 h-3.5" strokeWidth={1.75} />
                         Sair da Conta
                       </button>
                     </div>

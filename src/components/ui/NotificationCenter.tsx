@@ -65,15 +65,15 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
   const getCategoryIcon = (category: PediatricNotification['category'], priority: PediatricNotification['priority']) => {
     switch (category) {
       case 'vacina':
-        return <Syringe className="w-4 h-4 text-sky-400" />;
+        return <Syringe strokeWidth={1.75} className="w-4 h-4 text-blue-400" />;
       case 'exame':
-        return <FileText className="w-4 h-4 text-cyan-400" />;
+        return <FileText strokeWidth={1.75} className="w-4 h-4 text-cyan-400" />;
       case 'alerta_clinico':
-        return <AlertTriangle className="w-4 h-4 text-rose-400" />;
+        return <AlertTriangle strokeWidth={1.75} className="w-4 h-4 text-rose-400" />;
       case 'consulta':
-        return <Calendar className="w-4 h-4 text-sky-300" />;
+        return <Calendar strokeWidth={1.75} className="w-4 h-4 text-blue-300" />;
       case 'orientacao':
-        return <Activity className="w-4 h-4 text-sky-400" />;
+        return <Activity strokeWidth={1.75} className="w-4 h-4 text-blue-400" />;
     }
   };
 
@@ -84,7 +84,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
       case 'alta':
         return 'bg-amber-950/80 text-amber-300 border-amber-800 font-bold';
       case 'media':
-        return 'bg-sky-950/80 text-sky-300 border-sky-800 font-medium';
+        return 'bg-blue-950/80 text-blue-300 border-blue-800 font-medium';
       case 'baixa':
         return 'bg-slate-800 text-slate-300 border-slate-700 font-normal';
     }
@@ -143,8 +143,8 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
         {/* Header Drawer */}
         <div className="p-4 sm:p-5 border-b border-slate-800 bg-slate-950/80 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-sky-500/20 text-sky-400 rounded-xl border border-sky-500/30 relative">
-              <Bell className="w-5 h-5" />
+            <div className="p-2 bg-blue-500/20 text-blue-400 rounded-xl border border-blue-500/30 relative">
+              <Bell strokeWidth={1.75} className="w-5 h-5" />
               {unreadCount > 0 && (
                 <span className="absolute -top-1 -right-1 w-3 h-3 bg-rose-500 rounded-full border-2 border-slate-950" />
               )}
@@ -152,7 +152,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <span className="font-extrabold text-base text-white">Central de Notificações</span>
-                <span className="bg-sky-950 text-sky-300 text-[10px] font-bold px-2 py-0.5 rounded-full border border-sky-800">
+                <span className="bg-blue-950 text-blue-300 text-[10px] font-bold px-2 py-0.5 rounded-full border border-blue-800">
                   {unreadCount} não {unreadCount === 1 ? 'lida' : 'lidas'}
                 </span>
               </div>
@@ -166,7 +166,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
             onClick={onClose}
             className="p-2 text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-xl transition-colors border border-slate-700"
           >
-            <X className="w-5 h-5" />
+            <X strokeWidth={1.75} className="w-5 h-5" />
           </button>
         </div>
 
@@ -176,7 +176,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
             onClick={() => setActiveTab('todas')}
             className={`px-3 py-1.5 rounded-lg transition-all shrink-0 ${
               activeTab === 'todas'
-                ? 'bg-sky-500 text-slate-950 font-bold'
+                ? 'bg-blue-500 text-slate-950 font-bold'
                 : 'text-slate-400 hover:text-white hover:bg-slate-800'
             }`}
           >
@@ -186,7 +186,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
             onClick={() => setActiveTab('nao_lidas')}
             className={`px-3 py-1.5 rounded-lg transition-all shrink-0 ${
               activeTab === 'nao_lidas'
-                ? 'bg-sky-500 text-slate-950 font-bold'
+                ? 'bg-blue-500 text-slate-950 font-bold'
                 : 'text-slate-400 hover:text-white hover:bg-slate-800'
             }`}
           >
@@ -196,7 +196,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
             onClick={() => setActiveTab('vacinas')}
             className={`px-3 py-1.5 rounded-lg transition-all shrink-0 ${
               activeTab === 'vacinas'
-                ? 'bg-sky-500 text-slate-950 font-bold'
+                ? 'bg-blue-500 text-slate-950 font-bold'
                 : 'text-slate-400 hover:text-white hover:bg-slate-800'
             }`}
           >
@@ -206,7 +206,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
             onClick={() => setActiveTab('exames')}
             className={`px-3 py-1.5 rounded-lg transition-all shrink-0 ${
               activeTab === 'exames'
-                ? 'bg-sky-500 text-slate-950 font-bold'
+                ? 'bg-blue-500 text-slate-950 font-bold'
                 : 'text-slate-400 hover:text-white hover:bg-slate-800'
             }`}
           >
@@ -216,12 +216,12 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
             onClick={() => setActiveTab('configuracoes')}
             className={`px-2.5 py-1.5 rounded-lg transition-all shrink-0 flex items-center gap-1 ${
               activeTab === 'configuracoes'
-                ? 'bg-sky-500 text-slate-950 font-bold'
+                ? 'bg-blue-500 text-slate-950 font-bold'
                 : 'text-slate-400 hover:text-white hover:bg-slate-800'
             }`}
             title="Preferências de Notificação"
           >
-            <Settings className="w-3.5 h-3.5" />
+            <Settings strokeWidth={1.75} className="w-3.5 h-3.5" />
           </button>
         </div>
 
@@ -230,7 +230,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
           {activeTab === 'configuracoes' ? (
             <div className="space-y-4">
               <div className="border-b border-slate-800 pb-3">
-                <span className="font-bold text-sm text-sky-300 block">Preferências de Alertas & Notificações</span>
+                <span className="font-bold text-sm text-blue-300 block">Preferências de Alertas & Notificações</span>
                 <p className="text-xs text-slate-400">Personalize quais notificações deseja receber em tempo real.</p>
               </div>
 
@@ -244,7 +244,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
                     type="checkbox"
                     checked={preferences.vaccineAlerts}
                     onChange={(e) => onUpdatePreferences({ ...preferences, vaccineAlerts: e.target.checked })}
-                    className="w-4 h-4 text-sky-500 rounded focus:ring-sky-500 bg-slate-900 border-slate-700"
+                    className="w-4 h-4 text-blue-500 rounded focus:ring-blue-500 bg-slate-900 border-slate-700"
                   />
                 </label>
 
@@ -257,7 +257,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
                     type="checkbox"
                     checked={preferences.criticalLabAlerts}
                     onChange={(e) => onUpdatePreferences({ ...preferences, criticalLabAlerts: e.target.checked })}
-                    className="w-4 h-4 text-sky-500 rounded focus:ring-sky-500 bg-slate-900 border-slate-700"
+                    className="w-4 h-4 text-blue-500 rounded focus:ring-blue-500 bg-slate-900 border-slate-700"
                   />
                 </label>
 
@@ -270,7 +270,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
                     type="checkbox"
                     checked={preferences.appointmentReminders}
                     onChange={(e) => onUpdatePreferences({ ...preferences, appointmentReminders: e.target.checked })}
-                    className="w-4 h-4 text-sky-500 rounded focus:ring-sky-500 bg-slate-900 border-slate-700"
+                    className="w-4 h-4 text-blue-500 rounded focus:ring-blue-500 bg-slate-900 border-slate-700"
                   />
                 </label>
 
@@ -283,16 +283,16 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
                     type="checkbox"
                     checked={preferences.newCarePlanAlerts}
                     onChange={(e) => onUpdatePreferences({ ...preferences, newCarePlanAlerts: e.target.checked })}
-                    className="w-4 h-4 text-sky-500 rounded focus:ring-sky-500 bg-slate-900 border-slate-700"
+                    className="w-4 h-4 text-blue-500 rounded focus:ring-blue-500 bg-slate-900 border-slate-700"
                   />
                 </label>
               </div>
 
               <div className="pt-2 border-t border-slate-800 space-y-2">
-                <span className="font-bold text-xs text-sky-300 block">Canais de Transmissão Ativos</span>
+                <span className="font-bold text-xs text-blue-300 block">Canais de Transmissão Ativos</span>
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   <div className="p-2.5 bg-slate-800/40 rounded-xl border border-slate-700/60 flex items-center gap-2">
-                    <Smartphone className="w-4 h-4 text-sky-400" />
+                    <Smartphone strokeWidth={1.75} className="w-4 h-4 text-blue-400" />
                     <span>Push Web / App</span>
                   </div>
                   <div className="p-2.5 bg-slate-800/40 rounded-xl border border-slate-700/60 flex items-center gap-2">
@@ -305,7 +305,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
           ) : displayNotifications.length === 0 ? (
             <div className="text-center py-12 space-y-3">
               <div className="w-12 h-12 bg-slate-800 rounded-2xl flex items-center justify-center mx-auto text-slate-500">
-                <Bell className="w-6 h-6" />
+                <Bell strokeWidth={1.75} className="w-6 h-6" />
               </div>
               <div className="text-sm font-bold text-slate-300">Nenhuma notificação encontrada</div>
               <p className="text-xs text-slate-500 max-w-xs mx-auto">
@@ -319,7 +319,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
                 className={`p-3.5 rounded-2xl border transition-all space-y-2 relative ${
                   item.isRead
                     ? 'bg-slate-900/60 border-slate-800/80 text-slate-300'
-                    : 'bg-slate-800/90 border-sky-500/50 text-white shadow-md'
+                    : 'bg-slate-800/90 border-blue-500/50 text-white shadow-md'
                 }`}
               >
                 <div className="flex items-start justify-between gap-2">
@@ -329,7 +329,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
                     </div>
                     <div>
                       {item.patientName && (
-                        <span className="text-[10px] font-bold text-sky-400 block">{item.patientName}</span>
+                        <span className="text-[10px] font-bold text-blue-400 block">{item.patientName}</span>
                       )}
                       <span className="font-bold text-xs leading-tight block">{item.title}</span>
                     </div>
@@ -355,7 +355,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
                             onClose();
                           }
                         }}
-                        className="text-sky-400 hover:text-sky-300 font-bold transition-colors"
+                        className="text-blue-400 hover:text-blue-300 font-bold transition-colors"
                       >
                         {item.actionLabel}
                       </button>
@@ -367,7 +367,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
                         className="text-slate-400 hover:text-white p-1 rounded transition-colors"
                         title="Marcar como lida"
                       >
-                        <Check className="w-3.5 h-3.5" />
+                        <Check strokeWidth={1.75} className="w-3.5 h-3.5" />
                       </button>
                     )}
                   </div>
@@ -381,9 +381,9 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
         <div className="p-4 border-t border-slate-800 bg-slate-950 flex items-center justify-between gap-2 shrink-0">
           <button
             onClick={handleSimulateNewAlert}
-            className="flex items-center gap-1.5 text-xs font-semibold text-sky-400 hover:text-sky-300 bg-sky-950/80 hover:bg-sky-900 border border-sky-800/80 px-3 py-2 rounded-xl transition-all"
+            className="flex items-center gap-1.5 text-xs font-semibold text-blue-400 hover:text-blue-300 bg-blue-950/80 hover:bg-blue-900 border border-blue-800/80 px-3 py-2 rounded-xl transition-all"
           >
-            <PlusCircle className="w-3.5 h-3.5" />
+            <PlusCircle strokeWidth={1.75} className="w-3.5 h-3.5" />
             <span>Simular Novo Alerta</span>
           </button>
 
@@ -392,7 +392,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
               onClick={onMarkAllAsRead}
               className="flex items-center gap-1.5 text-xs font-semibold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 px-3 py-2 rounded-xl transition-all border border-slate-700"
             >
-              <CheckCheck className="w-3.5 h-3.5 text-sky-400" />
+              <CheckCheck strokeWidth={1.75} className="w-3.5 h-3.5 text-blue-400" />
               <span>Marcar todas como lidas</span>
             </button>
           )}

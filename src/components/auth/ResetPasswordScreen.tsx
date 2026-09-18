@@ -41,22 +41,22 @@ export const ResetPasswordScreen: React.FC<ResetPasswordScreenProps> = ({ onDone
   };
 
   const inputCls =
-    'w-full p-3 bg-sky-50/70 border border-sky-200 rounded-xl focus:outline-none focus:border-sky-600 focus:bg-white text-slate-900 text-sm transition-all placeholder:text-slate-400';
+    'w-full p-3 bg-slate-50/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 text-slate-900 text-sm transition-all placeholder:text-slate-400';
 
   return (
-    <div className="min-h-screen font-sans bg-gradient-to-br from-sky-100/70 via-sky-50/90 to-cyan-100/60 flex flex-col items-center justify-center px-4 py-10">
+    <div className="min-h-screen font-sans bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-100/40 via-slate-50 to-slate-100 flex flex-col items-center justify-center px-4 py-10">
       <div className="w-full max-w-md space-y-4">
         <div className="flex flex-col items-center gap-3 mb-2">
-          <PpueriAppIcon size="xl" variant="white" className="shadow-lg ring-2 ring-sky-200/80" />
+          <PpueriAppIcon size="xl" variant="white" className="shadow-lg ring-2 ring-blue-200/80" />
           <PpueriBrand size="lg" textColor="dark" iconVariant="white" className="justify-center" />
         </div>
 
-        <div className="bg-white/85 backdrop-blur-md border border-sky-200/80 rounded-2xl shadow-xl p-6">
+        <div className="bg-white/90 backdrop-blur-xl border border-slate-200/60 shadow-[0_20px_60px_rgb(0,0,0,0.08)] rounded-2xl p-6">
           {success ? (
             <div className="text-center space-y-4 py-4">
               <div className="flex justify-center">
-                <div className="p-3 bg-sky-100 rounded-full">
-                  <CheckCircle className="w-10 h-10 text-sky-600" />
+                <div className="p-3 bg-blue-100 rounded-full">
+                  <CheckCircle strokeWidth={1.75} className="w-10 h-10 text-blue-600" />
                 </div>
               </div>
               <div>
@@ -67,10 +67,10 @@ export const ResetPasswordScreen: React.FC<ResetPasswordScreenProps> = ({ onDone
               </div>
               <button
                 onClick={onDone}
-                className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-sky-600 to-sky-700 hover:from-sky-500 hover:to-sky-600 text-white font-extrabold py-3 rounded-xl transition-all shadow-md text-xs"
+                className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white font-extrabold py-3 rounded-xl transition-all shadow-md hover:-translate-y-0.5 hover:shadow-lg hover:shadow-blue-500/20 text-xs"
               >
                 Ir para o Login
-                <ArrowRight className="w-4 h-4" />
+                <ArrowRight strokeWidth={1.75} className="w-4 h-4" />
               </button>
             </div>
           ) : (
@@ -85,7 +85,7 @@ export const ResetPasswordScreen: React.FC<ResetPasswordScreenProps> = ({ onDone
               <div className="space-y-1">
                 <label className="block text-xs font-bold text-slate-700">Nova Senha</label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <Lock strokeWidth={1.75} className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                   <input
                     type={showPwd ? 'text' : 'password'}
                     required
@@ -100,7 +100,7 @@ export const ResetPasswordScreen: React.FC<ResetPasswordScreenProps> = ({ onDone
                     onClick={() => setShowPwd((v) => !v)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
                   >
-                    {showPwd ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    {showPwd ? <EyeOff strokeWidth={1.75} className="w-4 h-4" /> : <Eye strokeWidth={1.75} className="w-4 h-4" />}
                   </button>
                 </div>
               </div>
@@ -108,7 +108,7 @@ export const ResetPasswordScreen: React.FC<ResetPasswordScreenProps> = ({ onDone
               <div className="space-y-1">
                 <label className="block text-xs font-bold text-slate-700">Confirmar Nova Senha</label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <Lock strokeWidth={1.75} className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                   <input
                     type={showPwd ? 'text' : 'password'}
                     required
@@ -130,14 +130,14 @@ export const ResetPasswordScreen: React.FC<ResetPasswordScreenProps> = ({ onDone
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-sky-600 to-sky-700 hover:from-sky-500 hover:to-sky-600 disabled:opacity-60 text-white font-extrabold py-3 rounded-xl transition-all shadow-md active:scale-98 text-xs"
+                className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 disabled:opacity-60 text-white font-extrabold py-3 rounded-xl transition-all shadow-md hover:-translate-y-0.5 hover:shadow-lg hover:shadow-blue-500/20 active:scale-98 text-xs"
               >
                 {loading ? (
                   <span className="animate-pulse">Salvando senha...</span>
                 ) : (
                   <>
                     <span>Salvar Nova Senha</span>
-                    <ArrowRight className="w-4 h-4" />
+                    <ArrowRight strokeWidth={1.75} className="w-4 h-4" />
                   </>
                 )}
               </button>

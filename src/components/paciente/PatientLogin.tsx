@@ -121,14 +121,14 @@ export const PatientLogin: React.FC<PatientLoginProps> = ({ onLoginSuccess }) =>
   };
 
   const inputClass =
-    'w-full text-sm p-3 bg-sky-50/70 border border-sky-200 rounded-xl focus:outline-none focus:border-sky-600 focus:bg-white transition-all text-slate-900 placeholder-slate-400';
+    'w-full text-sm p-3 bg-slate-50/80 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 focus:bg-white transition-all text-slate-900 placeholder-slate-400';
 
   return (
     <div className="max-w-md mx-auto py-8 px-4">
-      <div className="bg-white/85 backdrop-blur-md border border-sky-200/80 rounded-2xl p-6 sm:p-8 shadow-xl space-y-5">
+      <div className="bg-white/90 backdrop-blur-xl border border-slate-200/60 shadow-[0_20px_60px_rgb(0,0,0,0.08)] rounded-2xl p-6 sm:p-8 space-y-5">
         {/* Logo */}
         <div className="flex flex-col items-center justify-center space-y-3">
-          <PpueriAppIcon size="xl" variant="white" className="shadow-md ring-2 ring-sky-200/80" />
+          <PpueriAppIcon size="xl" variant="white" className="shadow-md ring-2 ring-blue-200/80" />
           <PpueriBrand size="lg" textColor="dark" iconVariant="white" className="justify-center" />
         </div>
 
@@ -145,8 +145,8 @@ export const PatientLogin: React.FC<PatientLoginProps> = ({ onLoginSuccess }) =>
             {forgotSuccess ? (
               <div className="text-center space-y-4 py-2">
                 <div className="flex justify-center">
-                  <div className="p-3 bg-sky-100 rounded-full">
-                    <CheckCircle className="w-8 h-8 text-sky-600" />
+                  <div className="p-3 bg-blue-100 rounded-full">
+                    <CheckCircle strokeWidth={1.75} className="w-8 h-8 text-blue-600" />
                   </div>
                 </div>
                 <div>
@@ -158,7 +158,7 @@ export const PatientLogin: React.FC<PatientLoginProps> = ({ onLoginSuccess }) =>
                 </div>
                 <button
                   onClick={() => { setShowForgot(false); setForgotSuccess(false); setForgotEmail(''); }}
-                  className="w-full text-xs font-bold text-sky-700 hover:underline py-1"
+                  className="w-full text-xs font-bold text-blue-700 hover:underline py-1"
                 >
                   Voltar ao login
                 </button>
@@ -174,7 +174,7 @@ export const PatientLogin: React.FC<PatientLoginProps> = ({ onLoginSuccess }) =>
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">E-mail</label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <Mail strokeWidth={1.75} className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                     <input
                       type="email"
                       required
@@ -194,10 +194,10 @@ export const PatientLogin: React.FC<PatientLoginProps> = ({ onLoginSuccess }) =>
                 <button
                   type="submit"
                   disabled={forgotLoading}
-                  className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-sky-600 to-sky-700 hover:from-sky-500 hover:to-sky-600 disabled:opacity-60 text-white font-extrabold py-3.5 rounded-xl transition-all shadow-md text-xs"
+                  className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 disabled:opacity-60 text-white font-extrabold py-3.5 rounded-xl transition-all shadow-md hover:-translate-y-0.5 hover:shadow-lg hover:shadow-blue-500/20 text-xs"
                 >
                   {forgotLoading ? 'Enviando...' : 'Enviar Link de Recuperacao'}
-                  {!forgotLoading && <ArrowRight className="w-4 h-4" />}
+                  {!forgotLoading && <ArrowRight strokeWidth={1.75} className="w-4 h-4" />}
                 </button>
                 <button
                   type="button"
@@ -213,14 +213,14 @@ export const PatientLogin: React.FC<PatientLoginProps> = ({ onLoginSuccess }) =>
 
         {/* Tabs */}
         {!showForgot && (<>
-        <div className="grid grid-cols-2 gap-1 bg-sky-50 border border-sky-200 rounded-xl p-1">
+        <div className="grid grid-cols-2 gap-1 bg-slate-100 border border-slate-200 rounded-xl p-1">
           <button
             type="button"
             onClick={() => switchTab('login')}
             className={`py-2 text-xs font-bold rounded-lg transition-all ${
               tab === 'login'
-                ? 'bg-white text-sky-800 shadow-sm border border-sky-200'
-                : 'text-slate-600 hover:text-sky-700'
+                ? 'bg-white text-blue-800 shadow-sm border border-slate-200'
+                : 'text-slate-600 hover:text-blue-700'
             }`}
           >
             Entrar
@@ -230,8 +230,8 @@ export const PatientLogin: React.FC<PatientLoginProps> = ({ onLoginSuccess }) =>
             onClick={() => switchTab('register')}
             className={`py-2 text-xs font-bold rounded-lg transition-all ${
               tab === 'register'
-                ? 'bg-white text-sky-800 shadow-sm border border-sky-200'
-                : 'text-slate-600 hover:text-sky-700'
+                ? 'bg-white text-blue-800 shadow-sm border border-slate-200'
+                : 'text-slate-600 hover:text-blue-700'
             }`}
           >
             Criar Conta
@@ -266,10 +266,10 @@ export const PatientLogin: React.FC<PatientLoginProps> = ({ onLoginSuccess }) =>
                 <button
                   type="button"
                   onClick={() => setShowLoginPwd((v) => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-sky-700 transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-700 transition-colors"
                   tabIndex={-1}
                 >
-                  {showLoginPwd ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  {showLoginPwd ? <EyeOff strokeWidth={1.75} className="w-4 h-4" /> : <Eye strokeWidth={1.75} className="w-4 h-4" />}
                 </button>
               </div>
             </div>
@@ -283,10 +283,10 @@ export const PatientLogin: React.FC<PatientLoginProps> = ({ onLoginSuccess }) =>
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-sky-600 to-sky-700 hover:from-sky-500 hover:to-sky-600 disabled:opacity-60 text-white font-extrabold py-3.5 rounded-xl transition-all shadow-md text-xs"
+              className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 disabled:opacity-60 text-white font-extrabold py-3.5 rounded-xl transition-all shadow-md hover:-translate-y-0.5 hover:shadow-lg hover:shadow-blue-500/20 text-xs"
             >
               {isLoading ? 'Verificando...' : 'Acessar Portal'}
-              {!isLoading && <ArrowRight className="w-4 h-4" />}
+              {!isLoading && <ArrowRight strokeWidth={1.75} className="w-4 h-4" />}
             </button>
 
             <div className="flex items-center justify-between">
@@ -295,7 +295,7 @@ export const PatientLogin: React.FC<PatientLoginProps> = ({ onLoginSuccess }) =>
                 <button
                   type="button"
                   onClick={() => switchTab('register')}
-                  className="font-bold text-sky-700 hover:underline"
+                  className="font-bold text-blue-700 hover:underline"
                 >
                   Criar conta
                 </button>
@@ -303,7 +303,7 @@ export const PatientLogin: React.FC<PatientLoginProps> = ({ onLoginSuccess }) =>
               <button
                 type="button"
                 onClick={() => { setShowForgot(true); setForgotEmail(loginEmail); setForgotError(null); setForgotSuccess(false); }}
-                className="text-[11px] text-sky-700 hover:underline font-medium"
+                className="text-[11px] text-blue-700 hover:underline font-medium"
               >
                 Esqueceu sua senha?
               </button>
@@ -350,10 +350,10 @@ export const PatientLogin: React.FC<PatientLoginProps> = ({ onLoginSuccess }) =>
                 <button
                   type="button"
                   onClick={() => setShowRegPwd((v) => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-sky-700 transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-700 transition-colors"
                   tabIndex={-1}
                 >
-                  {showRegPwd ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  {showRegPwd ? <EyeOff strokeWidth={1.75} className="w-4 h-4" /> : <Eye strokeWidth={1.75} className="w-4 h-4" />}
                 </button>
               </div>
             </div>
@@ -393,10 +393,10 @@ export const PatientLogin: React.FC<PatientLoginProps> = ({ onLoginSuccess }) =>
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-sky-600 to-sky-700 hover:from-sky-500 hover:to-sky-600 disabled:opacity-60 text-white font-extrabold py-3.5 rounded-xl transition-all shadow-md text-xs"
+              className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 disabled:opacity-60 text-white font-extrabold py-3.5 rounded-xl transition-all shadow-md hover:-translate-y-0.5 hover:shadow-lg hover:shadow-blue-500/20 text-xs"
             >
               {isLoading ? 'Criando conta...' : 'Criar Conta e Acessar Portal'}
-              {!isLoading && <ArrowRight className="w-4 h-4" />}
+              {!isLoading && <ArrowRight strokeWidth={1.75} className="w-4 h-4" />}
             </button>
 
             <p className="text-center text-[11px] text-slate-500">
@@ -404,7 +404,7 @@ export const PatientLogin: React.FC<PatientLoginProps> = ({ onLoginSuccess }) =>
               <button
                 type="button"
                 onClick={() => switchTab('login')}
-                className="font-bold text-sky-700 hover:underline"
+                className="font-bold text-blue-700 hover:underline"
               >
                 Entrar
               </button>
@@ -414,8 +414,8 @@ export const PatientLogin: React.FC<PatientLoginProps> = ({ onLoginSuccess }) =>
 
         </>)}
 
-        <div className="pt-2 text-[11px] text-slate-500 flex items-center justify-center gap-1.5 border-t border-sky-100">
-          <ShieldCheck className="w-3.5 h-3.5 text-sky-700" />
+        <div className="pt-2 text-[11px] text-slate-500 flex items-center justify-center gap-1.5 border-t border-slate-200">
+          <ShieldCheck strokeWidth={1.75} className="w-3.5 h-3.5 text-blue-700" />
           <span>Dados protegidos em nuvem criptografada. Conformidade com a LGPD.</span>
         </div>
       </div>

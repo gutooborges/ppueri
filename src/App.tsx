@@ -82,8 +82,8 @@ export default function App() {
 
   if (!authReady) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-sky-100/70 via-sky-50/90 to-cyan-100/60 flex items-center justify-center">
-        <div className="text-sky-700 text-sm font-semibold animate-pulse">Carregando Ppueri...</div>
+      <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-100/40 via-slate-50 to-slate-100 flex items-center justify-center">
+        <div className="text-blue-700 text-sm font-semibold animate-pulse">Carregando Ppueri...</div>
       </div>
     );
   }
@@ -421,14 +421,14 @@ function MainApp({ authSession, onLogout }: MainAppProps) {
 
   if (dataLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-sky-100/70 via-sky-50/90 to-cyan-100/60 flex items-center justify-center">
-        <div className="text-sky-700 text-sm font-semibold animate-pulse">Carregando prontuários...</div>
+      <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-100/40 via-slate-50 to-slate-100 flex items-center justify-center">
+        <div className="text-blue-700 text-sm font-semibold animate-pulse">Carregando prontuários...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen font-sans text-slate-900 selection:bg-sky-500 selection:text-white pb-12 bg-gradient-to-br from-sky-100/70 via-sky-50/90 to-cyan-100/60 backdrop-blur-3xl">
+    <div className="min-h-screen font-sans text-slate-900 selection:bg-blue-500 selection:text-white pb-12 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-100/40 via-slate-50 to-slate-100">
       <Header
         activeRole={activeRole}
         onRoleChange={(role) => setActiveRole(role)}

@@ -85,16 +85,16 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
   return (
     <div className="space-y-6">
       {/* Top View Selector Tabs */}
-      <div className="flex items-center gap-2 bg-white/80 backdrop-blur-md p-1.5 rounded-2xl border border-sky-200/80 shadow-sm text-xs font-extrabold">
+      <div className="flex items-center gap-2 bg-white/85 backdrop-blur-sm p-1.5 rounded-2xl border border-slate-200/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] text-xs font-extrabold">
         <button
           onClick={() => setActiveTab('pacientes')}
           className={`flex items-center gap-2 px-5 py-2.5 rounded-xl transition-all ${
             activeTab === 'pacientes'
               ? 'bg-slate-900 text-white shadow-sm'
-              : 'text-sky-900 hover:text-sky-950 hover:bg-sky-100/60'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
           }`}
         >
-          <Users className="w-4 h-4" />
+          <Users strokeWidth={1.75} className="w-4 h-4" />
           <span>Pacientes & Prontuários ({patients.length})</span>
         </button>
 
@@ -103,10 +103,10 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
           className={`flex items-center gap-2 px-5 py-2.5 rounded-xl transition-all relative ${
             activeTab === 'agenda'
               ? 'bg-slate-900 text-white shadow-sm'
-              : 'text-sky-900 hover:text-sky-950 hover:bg-sky-100/60'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
           }`}
         >
-          <Calendar className="w-4 h-4" />
+          <Calendar strokeWidth={1.75} className="w-4 h-4" />
           <span>Agenda de Consultas</span>
           {todayAppointments.length > 0 && (
             <span className="bg-cyan-400 text-slate-950 text-[10px] font-black px-2 py-0.5 rounded-full">
@@ -132,21 +132,21 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
       ) : (
         <div className="space-y-6">
           {/* Top Welcome Banner */}
-          <div className="bg-slate-900/95 backdrop-blur-xl text-white rounded-2xl p-6 shadow-xl border border-sky-900/80">
+          <div className="bg-slate-900/95 backdrop-blur-xl text-white rounded-2xl p-6 shadow-xl border border-blue-900/80">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                  <span className="bg-sky-500/20 text-sky-300 text-xs font-bold px-2.5 py-0.5 rounded-full border border-sky-500/30">
+                  <span className="bg-blue-500/20 text-blue-300 text-xs font-bold px-2.5 py-0.5 rounded-full border border-blue-500/30">
                     Painel do Pediatra
                   </span>
-                  <span className="text-sky-300/80 text-xs">
+                  <span className="text-blue-300/80 text-xs">
                     • {new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}
                   </span>
                 </div>
                 <h1 className="text-2xl font-bold tracking-tight text-white">
                   Consultório e Prontuários dos Pacientes
                 </h1>
-                <p className="text-xs text-sky-200/80 max-w-2xl">
+                <p className="text-xs text-blue-200/80 max-w-2xl">
                   Selecione o paciente para registrar anamnese pediátrica, acompanhar curvas antropométricas de crescimento (OMS/SBP), analisar exames e prescrever o plano de cuidado.
                 </p>
               </div>
@@ -154,17 +154,17 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
               <div className="flex items-center gap-2.5 shrink-0">
                 <button
                   onClick={() => setActiveTab('agenda')}
-                  className="flex items-center justify-center gap-2 bg-sky-950/80 hover:bg-sky-900 text-sky-200 hover:text-white text-xs font-bold px-4 py-3 rounded-xl transition-all border border-sky-800"
+                  className="flex items-center justify-center gap-2 bg-blue-950/80 hover:bg-blue-900 text-blue-200 hover:text-white text-xs font-bold px-4 py-3 rounded-xl transition-all border border-blue-800"
                 >
-                  <Calendar className="w-4 h-4" />
+                  <Calendar strokeWidth={1.75} className="w-4 h-4" />
                   <span>Ver Agenda</span>
                 </button>
 
                 <button
                   onClick={onOpenNewPatientModal}
-                  className="flex items-center justify-center gap-2 bg-gradient-to-r from-sky-500 to-cyan-400 hover:from-sky-400 hover:to-cyan-300 text-slate-950 text-xs font-extrabold px-5 py-3 rounded-xl transition-all shadow-md active:scale-95 border border-cyan-300/40"
+                  className="flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white text-xs font-extrabold px-5 py-3 rounded-xl transition-all shadow-md hover:-translate-y-0.5 hover:shadow-lg hover:shadow-blue-500/20 active:scale-95"
                 >
-                  <Plus className="w-4 h-4 stroke-[3]" />
+                  <Plus strokeWidth={1.75} className="w-4 h-4 stroke-[3]" />
                   <span>Cadastrar Paciente</span>
                 </button>
               </div>
@@ -173,28 +173,28 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
 
           {/* Patients Filter Controls Bar */}
           <div className="space-y-4">
-            <div className="bg-white/80 backdrop-blur-md border border-sky-200/80 rounded-2xl p-4 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="bg-white/85 backdrop-blur-sm border border-slate-200/60 rounded-2xl p-4 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
               {/* Single Main Search Bar */}
               <div className="relative w-full sm:w-80">
-                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-sky-600" />
+                <Search strokeWidth={1.75} className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-blue-600" />
                 <input
                   type="text"
                   placeholder="Buscar paciente por nome, mãe ou código..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 text-xs bg-sky-50/70 border border-sky-200 rounded-xl font-medium text-sky-950 placeholder-sky-800/50 focus:outline-none focus:border-sky-500 focus:bg-white shadow-inner transition-all"
+                  className="w-full pl-9 pr-3 py-2 text-xs bg-slate-50/80 border border-slate-200 rounded-xl font-medium text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 shadow-inner transition-all"
                 />
               </div>
 
               <div className="flex flex-wrap items-center justify-between sm:justify-end w-full sm:w-auto gap-3">
                 {/* Sort Selector */}
-                <div className="flex items-center gap-2 bg-sky-50/80 border border-sky-200/80 px-3 py-1.5 rounded-xl text-xs font-bold text-sky-900">
-                  <ArrowUpDown className="w-3.5 h-3.5 text-sky-600" />
+                <div className="flex items-center gap-2 bg-slate-50/80 border border-slate-200/80 px-3 py-1.5 rounded-xl text-xs font-bold text-slate-900">
+                  <ArrowUpDown strokeWidth={1.75} className="w-3.5 h-3.5 text-blue-600" />
                   <span className="hidden md:inline">Ordem:</span>
                   <select
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value as any)}
-                    className="bg-transparent text-sky-950 font-bold focus:outline-none cursor-pointer"
+                    className="bg-transparent text-slate-900 font-bold focus:outline-none cursor-pointer"
                   >
                     <option value="name">Nome (A-Z)</option>
                     <option value="consultation">Última Consulta</option>
@@ -203,34 +203,34 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
                 </div>
 
                 {/* Toggle View Mode Buttons */}
-                <div className="flex items-center bg-sky-100/70 p-1 rounded-xl border border-sky-200/80 text-xs font-bold">
+                <div className="flex items-center bg-slate-100/70 p-1 rounded-xl border border-slate-200/80 text-xs font-bold">
                   <button
                     onClick={() => setViewMode('cards')}
                     className={`flex items-center gap-1 px-3 py-1.5 rounded-lg transition-all ${
                       viewMode === 'cards'
-                        ? 'bg-sky-600 text-white shadow-sm'
-                        : 'text-sky-900 hover:text-sky-950 hover:bg-sky-200/50'
+                        ? 'bg-blue-600 text-white shadow-sm'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
                     }`}
                     title="Visualização em Blocos/Grid"
                   >
-                    <LayoutGrid className="w-3.5 h-3.5" />
+                    <LayoutGrid strokeWidth={1.75} className="w-3.5 h-3.5" />
                     <span className="hidden xs:inline">Blocos</span>
                   </button>
                   <button
                     onClick={() => setViewMode('list')}
                     className={`flex items-center gap-1 px-3 py-1.5 rounded-lg transition-all ${
                       viewMode === 'list'
-                        ? 'bg-sky-600 text-white shadow-sm'
-                        : 'text-sky-900 hover:text-sky-950 hover:bg-sky-200/50'
+                        ? 'bg-blue-600 text-white shadow-sm'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
                     }`}
                     title="Visualização em Tabela/Lista Compacta"
                   >
-                    <List className="w-3.5 h-3.5" />
+                    <List strokeWidth={1.75} className="w-3.5 h-3.5" />
                     <span className="hidden xs:inline">Lista</span>
                   </button>
                 </div>
 
-                <div className="text-xs font-bold text-sky-900 bg-sky-100/80 px-3 py-1.5 rounded-xl border border-sky-200">
+                <div className="text-xs font-bold text-slate-900 bg-slate-100/80 px-3 py-1.5 rounded-xl border border-slate-200">
                   {sortedPatients.length} {sortedPatients.length === 1 ? 'paciente' : 'pacientes'}
                 </div>
               </div>
@@ -238,15 +238,15 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
 
             {/* Empty State */}
             {sortedPatients.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-20 px-6 text-center space-y-5 bg-white/60 backdrop-blur-md border border-sky-200/80 rounded-2xl shadow-sm">
-                <div className="w-20 h-20 rounded-2xl bg-sky-100 border border-sky-200 flex items-center justify-center">
-                  <Users className="w-10 h-10 text-sky-400" />
+              <div className="flex flex-col items-center justify-center py-20 px-6 text-center space-y-5 bg-white/85 backdrop-blur-sm border border-slate-200/60 rounded-2xl shadow-sm">
+                <div className="w-20 h-20 rounded-2xl bg-slate-100 border border-slate-200 flex items-center justify-center">
+                  <Users strokeWidth={1.75} className="w-10 h-10 text-slate-400" />
                 </div>
                 <div className="space-y-2 max-w-sm">
-                  <h3 className="text-lg font-extrabold text-sky-950">
+                  <h3 className="text-lg font-extrabold text-slate-900">
                     {searchTerm ? 'Nenhum resultado encontrado' : 'Nenhum paciente cadastrado ainda'}
                   </h3>
-                  <p className="text-sm text-sky-700 font-medium leading-relaxed">
+                  <p className="text-sm text-slate-700 font-medium leading-relaxed">
                     {searchTerm
                       ? `Nenhum paciente corresponde a "${searchTerm}". Verifique o nome, nome da mãe ou código de acesso.`
                       : 'Clique em "Novo Paciente" para iniciar o primeiro prontuário pediátrico da sua clínica.'}
@@ -255,9 +255,9 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
                 {!searchTerm && (
                   <button
                     onClick={onOpenNewPatientModal}
-                    className="flex items-center gap-2 bg-gradient-to-r from-sky-500 to-cyan-400 hover:from-sky-400 hover:to-cyan-300 text-slate-950 text-sm font-extrabold px-6 py-3 rounded-xl transition-all shadow-md active:scale-95 border border-cyan-300/40"
+                    className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white text-sm font-extrabold px-6 py-3 rounded-xl transition-all shadow-md hover:-translate-y-0.5 hover:shadow-lg hover:shadow-blue-500/20 active:scale-95"
                   >
-                    <Plus className="w-4 h-4 stroke-[3]" />
+                    <Plus strokeWidth={1.75} className="w-4 h-4 stroke-[3]" />
                     <span>Novo Paciente</span>
                   </button>
                 )}
@@ -274,50 +274,50 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
                   return (
                     <div
                       key={p.id}
-                      className={`bg-white/80 backdrop-blur-md border rounded-2xl p-5 transition-all flex flex-col justify-between space-y-4 shadow-sm hover:shadow-md ${
+                      className={`bg-white/85 backdrop-blur-sm border rounded-2xl p-5 transition-all flex flex-col justify-between space-y-4 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:-translate-y-0.5 hover:shadow-md duration-200 ${
                         isSelected
-                          ? 'border-sky-500 ring-2 ring-sky-500/30 bg-white'
-                          : 'border-sky-200/80 hover:border-sky-400'
+                          ? 'border-blue-500 ring-2 ring-blue-500/30 bg-white'
+                          : 'border-slate-200/60 hover:border-blue-400'
                       }`}
                     >
                       <div className="space-y-3">
                         <div className="flex items-start justify-between gap-3">
                           <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 rounded-xl bg-sky-100 overflow-hidden shrink-0 border border-sky-300/60 flex items-center justify-center">
+                            <div className="w-12 h-12 rounded-xl bg-blue-100 overflow-hidden shrink-0 border border-blue-300/60 flex items-center justify-center">
                               {p.photoUrl ? (
                                 <img src={p.photoUrl} alt={p.name} className="w-full h-full object-cover" />
                               ) : (
-                                <User className="w-6 h-6 text-sky-700" />
+                                <User strokeWidth={1.75} className="w-6 h-6 text-blue-700" />
                               )}
                             </div>
                             <div>
-                              <h3 className="font-bold text-sky-950 text-sm leading-snug">{p.name}</h3>
-                              <p className="text-xs font-extrabold text-sky-700 mt-0.5">
+                              <h3 className="font-bold text-slate-900 text-sm leading-snug">{p.name}</h3>
+                              <p className="text-xs font-extrabold text-slate-700 mt-0.5">
                                 {formatPediatricAge(p.birthDate)} ({p.gender === 'masculino' ? 'Menino' : 'Menina'})
                               </p>
                             </div>
                           </div>
 
                           {p.bloodType && (
-                            <span className="bg-sky-100 text-sky-900 border border-sky-300/80 text-[11px] font-extrabold px-2 py-0.5 rounded-md shrink-0">
+                            <span className="bg-slate-100 text-slate-800 border border-slate-300 text-[11px] font-extrabold px-2 py-0.5 rounded-md shrink-0">
                               {p.bloodType}
                             </span>
                           )}
                         </div>
 
-                        <div className="text-xs text-sky-950 space-y-1 bg-sky-50/80 p-2.5 rounded-xl border border-sky-200/70">
+                        <div className="text-xs text-slate-900 space-y-1 bg-slate-50/80 p-2.5 rounded-xl border border-slate-200/70">
                           <div className="flex justify-between">
-                            <span className="text-sky-800/80 font-medium">Mãe:</span>
-                            <span className="font-bold text-sky-950">{p.motherName}</span>
+                            <span className="text-slate-700/80 font-medium">Mãe:</span>
+                            <span className="font-bold text-slate-900">{p.motherName}</span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-sky-800/80 font-medium">Código de Acesso:</span>
-                            <span className="font-mono font-bold text-sky-900">{p.accessCode}</span>
+                            <span className="text-slate-700/80 font-medium">Código de Acesso:</span>
+                            <span className="font-mono font-bold text-slate-800">{p.accessCode}</span>
                           </div>
                           {lastConsultation && (
-                            <div className="flex justify-between pt-1 border-t border-sky-200/60">
-                              <span className="text-sky-800/80 font-medium">Última Consulta:</span>
-                              <span className="font-bold text-sky-950">
+                            <div className="flex justify-between pt-1 border-t border-slate-200/60">
+                              <span className="text-slate-700/80 font-medium">Última Consulta:</span>
+                              <span className="font-bold text-slate-900">
                                 {new Date(lastConsultation.date).toLocaleDateString('pt-BR')}
                               </span>
                             </div>
@@ -326,9 +326,9 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
 
                         {/* Next Scheduled Appointment */}
                         {nextApt && (
-                          <div className="text-[11px] bg-sky-100/90 border border-sky-300/80 p-2.5 rounded-xl font-bold text-sky-950 flex items-center justify-between gap-1">
+                          <div className="text-[11px] bg-blue-100/90 border border-blue-300/80 p-2.5 rounded-xl font-bold text-blue-950 flex items-center justify-between gap-1">
                             <div className="flex items-center gap-1.5">
-                              <Clock className="w-3.5 h-3.5 text-sky-700 shrink-0" />
+                              <Clock strokeWidth={1.75} className="w-3.5 h-3.5 text-blue-700 shrink-0" />
                               <span>
                                 Agendada: {new Date(nextApt.date + 'T00:00:00').toLocaleDateString('pt-BR')} às {nextApt.time}
                               </span>
@@ -338,28 +338,28 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
 
                         {/* Allergies Alert */}
                         {p.allergies.length > 0 && p.allergies[0] !== 'Aprovado sem alergias conhecidas até o momento' && (
-                          <div className="text-[11px] text-sky-950 bg-sky-100/90 border border-sky-300/80 p-2 rounded-lg font-bold flex items-center gap-1.5">
-                            <ShieldAlert className="w-3.5 h-3.5 text-sky-700 shrink-0" />
+                          <div className="text-[11px] text-amber-950 bg-amber-100/90 border border-amber-300/80 p-2 rounded-lg font-bold flex items-center gap-1.5">
+                            <ShieldAlert strokeWidth={1.75} className="w-3.5 h-3.5 text-amber-700 shrink-0" />
                             <span>Alergia: {p.allergies.join(', ')}</span>
                           </div>
                         )}
                       </div>
 
                       {/* Actions */}
-                      <div className="flex items-center gap-2 pt-2 border-t border-sky-200/60">
+                      <div className="flex items-center gap-2 pt-2 border-t border-slate-200/60">
                         <button
                           onClick={() => onViewPatient(p.id)}
-                          className="flex-1 py-2 rounded-xl text-xs font-bold transition-all bg-sky-100/70 text-sky-900 hover:bg-sky-200/80 border border-sky-300/60"
+                          className="flex-1 py-2 rounded-xl text-xs font-bold transition-all bg-slate-100/70 text-slate-900 hover:bg-slate-200/80 border border-slate-300/60"
                         >
                           Prontuário
                         </button>
 
                         <button
                           onClick={() => onStartNewConsultation(p.id)}
-                          className="flex items-center gap-1.5 bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold px-3 py-2 rounded-xl transition-all shadow-sm"
+                          className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-3 py-2 rounded-xl transition-all shadow-sm hover:-translate-y-0.5 hover:shadow-lg hover:shadow-blue-500/20"
                           title="Novo Atendimento"
                         >
-                          <Stethoscope className="w-3.5 h-3.5" />
+                          <Stethoscope strokeWidth={1.75} className="w-3.5 h-3.5" />
                           <span>Atender</span>
                         </button>
                       </div>
@@ -369,11 +369,11 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
               </div>
             ) : (
               /* View Mode 2: List / Table View */
-              <div className="bg-white/80 backdrop-blur-md border border-sky-200/80 rounded-2xl overflow-hidden shadow-sm">
+              <div className="bg-white/85 backdrop-blur-sm border border-slate-200/60 rounded-2xl overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs border-collapse">
                     <thead>
-                      <tr className="bg-sky-100/80 text-sky-900 border-b border-sky-200 font-extrabold uppercase tracking-wider text-[11px]">
+                      <tr className="bg-slate-100/80 text-slate-700 border-b border-slate-200 font-extrabold uppercase tracking-wider text-[11px]">
                         <th className="p-3.5">Paciente</th>
                         <th className="p-3.5">Idade</th>
                         <th className="p-3.5">Mãe / Acompanhante</th>
@@ -383,7 +383,7 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
                         <th className="p-3.5 text-center">Ações</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-sky-100 font-medium text-sky-950">
+                    <tbody className="divide-y divide-slate-100 font-medium text-slate-900">
                       {sortedPatients.map((p) => {
                         const isSelected = p.id === selectedPatientId;
                         const patientConsultations = consultations.filter((c) => c.patientId === p.id);
@@ -393,13 +393,13 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
                         return (
                           <tr
                             key={p.id}
-                            className={`hover:bg-sky-50/80 transition-colors ${
-                              isSelected ? 'bg-sky-100/50 font-bold' : ''
+                            className={`hover:bg-slate-50/80 transition-colors ${
+                              isSelected ? 'bg-blue-100/50 font-bold' : ''
                             }`}
                           >
                             <td className="p-3.5">
                               <div className="flex items-center gap-2.5">
-                                <div className="w-8 h-8 rounded-lg bg-sky-200/80 overflow-hidden shrink-0 flex items-center justify-center font-bold text-sky-900">
+                                <div className="w-8 h-8 rounded-lg bg-slate-200/80 overflow-hidden shrink-0 flex items-center justify-center font-bold text-slate-700">
                                   {p.photoUrl ? (
                                     <img src={p.photoUrl} alt={p.name} className="w-full h-full object-cover" />
                                   ) : (
@@ -407,26 +407,26 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
                                   )}
                                 </div>
                                 <div>
-                                  <div className="font-bold text-sky-950">{p.name}</div>
+                                  <div className="font-bold text-slate-900">{p.name}</div>
                                   {p.bloodType && (
-                                    <span className="text-[10px] text-sky-700 font-extrabold">{p.bloodType}</span>
+                                    <span className="text-[10px] text-slate-600 font-extrabold">{p.bloodType}</span>
                                   )}
                                 </div>
                               </div>
                             </td>
-                            <td className="p-3.5 font-bold text-sky-800">
+                            <td className="p-3.5 font-bold text-slate-700">
                               {formatPediatricAge(p.birthDate)}
                             </td>
-                            <td className="p-3.5 text-sky-900 font-semibold">{p.motherName}</td>
-                            <td className="p-3.5 font-mono font-bold text-sky-900">{p.accessCode}</td>
-                            <td className="p-3.5 text-sky-900 font-semibold">
+                            <td className="p-3.5 text-slate-700 font-semibold">{p.motherName}</td>
+                            <td className="p-3.5 font-mono font-bold text-slate-700">{p.accessCode}</td>
+                            <td className="p-3.5 text-slate-700 font-semibold">
                               {lastConsultation
                                 ? new Date(lastConsultation.date).toLocaleDateString('pt-BR')
                                 : 'Nenhuma'}
                             </td>
-                            <td className="p-3.5 text-sky-900 font-semibold">
+                            <td className="p-3.5 text-slate-700 font-semibold">
                               {nextApt ? (
-                                <span className="bg-sky-100 text-sky-950 font-bold px-2 py-0.5 rounded-md border border-sky-300 text-[11px]">
+                                <span className="bg-blue-100 text-blue-900 font-bold px-2 py-0.5 rounded-md border border-blue-300 text-[11px]">
                                   {new Date(nextApt.date + 'T00:00:00').toLocaleDateString('pt-BR')} {nextApt.time}
                                 </span>
                               ) : (
@@ -437,15 +437,15 @@ export const DoctorDashboard: React.FC<DoctorDashboardProps> = ({
                               <div className="flex items-center justify-center gap-2">
                                 <button
                                   onClick={() => onViewPatient(p.id)}
-                                  className="px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-sky-100 text-sky-900 hover:bg-sky-200 border border-sky-300/80"
+                                  className="px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-slate-100 text-slate-900 hover:bg-slate-200 border border-slate-300/80"
                                 >
                                   Prontuário
                                 </button>
                                 <button
                                   onClick={() => onStartNewConsultation(p.id)}
-                                  className="bg-sky-600 hover:bg-sky-500 text-white font-bold px-3 py-1.5 rounded-lg transition-all shadow-sm flex items-center gap-1"
+                                  className="bg-blue-600 hover:bg-blue-500 text-white font-bold px-3 py-1.5 rounded-lg transition-all shadow-sm flex items-center gap-1"
                                 >
-                                  <Stethoscope className="w-3.5 h-3.5" />
+                                  <Stethoscope strokeWidth={1.75} className="w-3.5 h-3.5" />
                                   <span>Atender</span>
                                 </button>
                               </div>
